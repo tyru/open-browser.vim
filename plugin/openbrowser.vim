@@ -98,6 +98,9 @@ endif
 if !exists('g:openbrowser_fix_schemes')
     let g:openbrowser_fix_schemes = {'ttp': 'http'}
 endif
+if !exists('g:openbrowser_isfname')
+    let g:openbrowser_isfname = &isfname
+endif
 " }}}
 
 " Functions {{{
@@ -151,6 +154,16 @@ function! s:get_selected_text() "{{{
     endtry
 endfunction "}}}
 
+function! s:get_url_on_cursor() "{{{
+    let save_isfname = &isfname
+    let &isfname = g:openbrowser_isfname
+    try
+        return expand('<cfile>')
+    finally
+        let &isfname = save_isfname
+    endtry
+endfunction "}}}
+
 " }}}
 
 " Interfaces {{{
@@ -162,7 +175,7 @@ command!
 \   call OpenBrowser(<q-args>)
 
 " Key-mapping
-nnoremap <Plug>(openbrowser-open) :<C-u>call OpenBrowser(expand('<cfile>'))<CR>
+nnoremap <Plug>(openbrowser-open) :<C-u>call OpenBrowser(<SID>get_url_on_cursor())<CR>
 vnoremap <Plug>(openbrowser-open) :<C-u>call OpenBrowser(<SID>get_selected_text())<CR>
 " TODO operator
 " noremap <Plug>(openbrowser-op-open)
