@@ -161,7 +161,8 @@ endfunction "}}}
 
 function! s:open_browser(uri) "{{{
     for browser in g:openbrowser_open_commands
-        if !executable(browser)
+        " NOTE: On MS Windows, 'start' command is not executable.
+        if !executable(browser) && (s:is_mswin && browser !=# 'start' && !executable(browser))
             continue
         endif
 
