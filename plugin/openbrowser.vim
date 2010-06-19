@@ -66,22 +66,39 @@ if !(s:is_unix || s:is_mswin || s:is_cygwin || s:is_macunix)
 endif
 " }}}
 
-" Get default open commands. "{{{
+" Default values of global variables. "{{{
 if s:is_cygwin
     function! s:get_default_open_commands()
         return ['cygstart']
+    endfunction
+    function! s:get_default_open_rules()
+        return {'cygstart': '{browser} {shellescape(uri)}'}
     endfunction
 elseif s:is_macunix
     function! s:get_default_open_commands()
         return ['open']
     endfunction
+    function! s:get_default_open_rules()
+        return {'open': '{browser} {shellescape(uri)}'}
+    endfunction
 elseif s:is_unix
     function! s:get_default_open_commands()
         return ['xdg-open', 'x-www-browser', 'firefox', 'w3m']
     endfunction
+    function! s:get_default_open_rules()
+        return {
+        \   'xdg-open':      '{browser} {shellescape(uri)}',
+        \   'x-www-browser': '{browser} {shellescape(uri)}',
+        \   'firefox':       '{browser} {shellescape(uri)}',
+        \   'w3m':           '{browser} {shellescape(uri)}',
+        \}
+    endfunction
 elseif s:is_mswin
     function! s:get_default_open_commands()
         return ['start']
+    endfunction
+    function! s:get_default_open_rules()
+        return {'start': '&shell &shellcmdflag {browser} {uri}'}
     endfunction
 endif
 " }}}
@@ -89,6 +106,9 @@ endif
 " Global Variables {{{
 if !exists('g:openbrowser_open_commands')
     let g:openbrowser_open_commands = s:get_default_open_commands()
+endif
+if !exists('g:openbrowser_open_rules')
+    let g:openbrowser_open_rules = s:get_default_open_rules()
 endif
 if !exists('g:openbrowser_fix_schemes')
     let g:openbrowser_fix_schemes = {'ttp': 'http'}
@@ -120,11 +140,11 @@ function! OpenBrowser(uri) "{{{
             let uri_str = a:uri
         endif
 
-        if s:is_mswin
-            call system(printf('%s %s %s %s', &shell, &shellcmdflag, browser, uri_str))
-        else
-            call system(browser . ' ' . shellescape(uri_str))
+        if !has_key(g:openbrowser_open_rules, browser)
+            continue
         endif
+
+        call system(s:expand_keyword(g:openbrowser_open_rules[browser], browser, uri_str))
 
         let success = 0
         if v:shell_error ==# success
@@ -161,6 +181,63 @@ function! s:get_url_on_cursor() "{{{
     finally
         let &isfname = save_isfname
     endtry
+endfunction "}}}
+
+" This function is from quickrun.vim (http://github.com/thinca/vim-quickrun)
+" Original function is `s:Runner.expand()`.
+"
+" Expand the keyword.
+" - @register @{register}
+" - &option &{option}
+" - $ENV_NAME ${ENV_NAME}
+" - {expr}
+" Escape by \ if you does not want to expand.
+function! s:expand_keyword(str, browser, uri)  " {{{
+  if type(a:str) != type('')
+    return ''
+  endif
+  let i = 0
+  let rest = a:str
+  let result = ''
+
+  " Assign these variables for eval().
+  let browser = a:browser
+  let uri = a:uri
+
+  while 1
+    let f = match(rest, '\\\?[@&${]')
+    if f < 0
+      let result .= rest
+      break
+    endif
+
+    if f != 0
+      let result .= rest[: f - 1]
+      let rest = rest[f :]
+    endif
+
+    if rest[0] == '\'
+      let result .= rest[1]
+      let rest = rest[2 :]
+    else
+      if rest =~ '^[@&$]{'
+        let rest = rest[1] . rest[0] . rest[2 :]
+      endif
+      if rest[0] == '@'
+        let e = 2
+        let expr = rest[0 : 1]
+      elseif rest =~ '^[&$]'
+        let e = matchend(rest, '.\w\+')
+        let expr = rest[: e - 1]
+      else  " rest =~ '^{'
+        let e = matchend(rest, '\\\@<!}')
+        let expr = substitute(rest[1 : e - 2], '\\}', '}', 'g')
+      endif
+      let result .= eval(expr)
+      let rest = rest[e :]
+    endif
+  endwhile
+  return result
 endfunction "}}}
 
 " }}}
