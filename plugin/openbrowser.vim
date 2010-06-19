@@ -71,7 +71,7 @@ if s:is_unix
     endfunction
 elseif s:is_mswin
     function! s:get_default_open_commands()
-        throw 's:get_default_open_commands(): Your platform is not supported!'
+        return ['start']
     endfunction
 elseif s:is_cygwin
     function! s:get_default_open_commands()
