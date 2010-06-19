@@ -71,6 +71,10 @@ if s:is_cygwin
     function! s:get_default_open_commands()
         return ['cygstart']
     endfunction
+elseif s:is_macunix
+    function! s:get_default_open_commands()
+        return ['open']
+    endfunction
 elseif s:is_unix
     function! s:get_default_open_commands()
         return ['xdg-open', 'x-www-browser', 'firefox', 'w3m']
@@ -78,10 +82,6 @@ elseif s:is_unix
 elseif s:is_mswin
     function! s:get_default_open_commands()
         return ['start']
-    endfunction
-elseif s:is_macunix
-    function! s:get_default_open_commands()
-        return ['open']
     endfunction
 endif
 " }}}
