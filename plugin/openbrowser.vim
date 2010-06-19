@@ -98,7 +98,7 @@ elseif s:is_mswin
         return ['start']
     endfunction
     function! s:get_default_open_rules()
-        return {'start': '&shell &shellcmdflag {browser} {uri}'}
+        return {'start': '&shell &shellcmdflag {browser} rundll32 url.dll,FileProtocolHandler {uri}'}
     endfunction
 endif
 " }}}
