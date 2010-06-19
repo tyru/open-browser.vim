@@ -50,13 +50,15 @@ set cpo&vim
 let s:is_unix = has('unix')
 let s:is_mswin = has('win16') || has('win32') || has('win64')
 let s:is_cygwin = has('win32unix')
+let s:is_mswin = has('macunix')
 lockvar s:is_unix
 lockvar s:is_mswin
 lockvar s:is_cygwin
+lockvar s:is_macunix
 " }}}
 
 " Check your platform {{{
-if !(s:is_unix || s:is_mswin || s:is_cygwin)
+if !(s:is_unix || s:is_mswin || s:is_cygwin || s:is_macunix)
     echoerr 'Your platform is not supported!'
     finish
 endif
@@ -74,6 +76,10 @@ elseif s:is_mswin
 elseif s:is_cygwin
     function! s:get_default_open_commands()
         throw 's:get_default_open_commands(): Your platform is not supported!'
+    endfunction
+elseif s:is_macunix
+    function! s:get_default_open_commands()
+        throw ['open']
     endfunction
 endif
 " }}}
