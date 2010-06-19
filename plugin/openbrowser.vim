@@ -113,6 +113,18 @@ function! s:open_browser(url) "{{{
     endfor
 endfunction "}}}
 
+function! s:get_selected_text() "{{{
+    let save_z = getreg('z', 1)
+    let save_z_type = getregtype('z')
+
+    try
+        normal! gv"zy
+        return @z
+    finally
+        call setreg('z', save_z, save_z_type)
+    endtry
+endfunction "}}}
+
 " }}}
 
 " Interfaces {{{
@@ -125,8 +137,7 @@ command!
 
 " Key-mapping
 nnoremap <Plug>(openbrowser-open) :<C-u>call <SID>open_browser(expand('<cfile>'))<CR>
-" TODO
-" vnoremap <Plug>(openbrowser-open)
+vnoremap <Plug>(openbrowser-open) :<C-u>call <SID>open_browser(<SID>get_selected_text())<CR>
 " TODO operator
 " noremap <Plug>(openbrowser-op-open)
 
