@@ -88,12 +88,7 @@ endif
 
 " Global Variables {{{
 if !exists('g:openbrowser_open_commands')
-    try
-        let g:openbrowser_open_commands = s:get_default_open_commands()
-    catch
-        echoerr v:exception
-        finish
-    endtry
+    let g:openbrowser_open_commands = s:get_default_open_commands()
 endif
 if !exists('g:openbrowser_fix_schemes')
     let g:openbrowser_fix_schemes = {'ttp': 'http'}
