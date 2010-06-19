@@ -75,11 +75,11 @@ elseif s:is_mswin
     endfunction
 elseif s:is_cygwin
     function! s:get_default_open_commands()
-        throw ['cygstart']
+        return ['cygstart']
     endfunction
 elseif s:is_macunix
     function! s:get_default_open_commands()
-        throw ['open']
+        return ['open']
     endfunction
 endif
 " }}}
