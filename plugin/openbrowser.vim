@@ -75,7 +75,7 @@ elseif s:is_mswin
     endfunction
 elseif s:is_cygwin
     function! s:get_default_open_commands()
-        throw 's:get_default_open_commands(): Your platform is not supported!'
+        throw ['cygstart']
     endfunction
 elseif s:is_macunix
     function! s:get_default_open_commands()
