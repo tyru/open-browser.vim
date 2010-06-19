@@ -159,7 +159,7 @@ function! s:uri.to_string() dict "{{{
 endfunction "}}}
 " }}}
 
-function! s:open_browser(uri) "{{{
+function! OpenBrowser(uri) "{{{
     for browser in g:openbrowser_open_commands
         " NOTE: On MS Windows, 'start' command is not executable.
         if !executable(browser) && (s:is_mswin && browser !=# 'start' && !executable(browser))
@@ -210,11 +210,11 @@ endfunction "}}}
 command!
 \   -bar -nargs=+ -complete=file
 \   OpenBrowser
-\   call s:open_browser(<q-args>)
+\   call OpenBrowser(<q-args>)
 
 " Key-mapping
-nnoremap <Plug>(openbrowser-open) :<C-u>call <SID>open_browser(expand('<cfile>'))<CR>
-vnoremap <Plug>(openbrowser-open) :<C-u>call <SID>open_browser(<SID>get_selected_text())<CR>
+nnoremap <Plug>(openbrowser-open) :<C-u>call OpenBrowser(expand('<cfile>'))<CR>
+vnoremap <Plug>(openbrowser-open) :<C-u>call OpenBrowser(<SID>get_selected_text())<CR>
 " TODO operator
 " noremap <Plug>(openbrowser-op-open)
 
