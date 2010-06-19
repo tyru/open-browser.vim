@@ -108,7 +108,12 @@ function! s:open_browser(url) "{{{
         " Or it is file path.
         " Convert it into url with `file:` scheme.
 
-        call system(browser . ' ' . shellescape(a:url))
+        if s:is_mswin
+            call system(printf('%s %s %s %s', &shell, &shellcmdflag, browser, a:url))
+        else
+            call system(browser . ' ' . shellescape(a:url))
+        endif
+
         let success = 0
         if v:shell_error ==# success
             return
