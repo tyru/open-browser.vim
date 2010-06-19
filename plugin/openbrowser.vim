@@ -110,7 +110,7 @@ function! OpenBrowser(uri) "{{{
         endif
 
         if s:is_urilib_installed
-            let uri = urilib#new_no_throw(a:uri, -1)
+            let uri = urilib#new(a:uri, -1)
             if type(uri) != type(-1)
                 let uri.scheme = get(g:openbrowser_fix_schemes, uri.scheme, uri.scheme)
                 let uri_str = uri.to_string()
