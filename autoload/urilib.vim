@@ -52,9 +52,7 @@ function! urilib#new(str, ...) "{{{
     try
         return s:new(a:str)
     catch
-        if a:0 &&
-        \   (v:exception =~# '^not valid uri:'
-        \   || v:exception =~# '^uri parse error:')
+        if a:0 && s:is_urilib_exception(v:exception)
             return a:1
         else
             throw v:exception
@@ -96,6 +94,9 @@ lockvar s:uri
 " }}}
 
 
+function! s:is_urilib_exception(str) "{{{
+    return a:str =~# '^uri parse error:'
+endfunction "}}}
 
 " Parsing URI
 function! s:split_uri(str) "{{{
