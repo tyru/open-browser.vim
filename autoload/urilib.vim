@@ -95,10 +95,6 @@ lockvar s:uri
 
 
 function! s:new(str) "{{{
-    if !urilib#is_uri(a:str)
-        throw 'not valid uri'
-    endif
-
     let [scheme, host, path] = s:split_uri(a:str)
     return extend(deepcopy(s:uri), {'scheme': scheme, 'host': host, 'path': path}, 'force')
 endfunction "}}}
