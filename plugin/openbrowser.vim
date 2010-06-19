@@ -93,32 +93,97 @@ if !exists('g:openbrowser_open_commands')
         finish
     endtry
 endif
+if !exists('g:openbrowser_fix_schemes')
+    let g:openbrowser_fix_schemes = {'ttp': 'http'}
+endif
 " }}}
 
 " Functions {{{
 
-function! s:open_browser(url) "{{{
+" s:uri {{{
+let s:uri = {}
+
+function! s:uri_new(str, ...) "{{{
+    if !s:is_uri(a:str)
+        throw 'not valid uri'
+    endif
+
+    let [scheme, host, path] = s:split_uri(a:str)
+    return extend(deepcopy(s:uri), {'scheme': scheme, 'host': host, 'path': path}, 'force')
+endfunction "}}}
+function! s:uri_new_no_throw(str, default) "{{{
+    try
+        return s:uri_new(a:str)
+    catch /^not valid uri:/
+        return a:default
+    catch /^uri parse error:/
+        return a:default
+    endtry
+endfunction "}}}
+
+function! s:is_uri(str) "{{{
+    " TODO
+    return 1
+endfunction "}}}
+
+" Parsing URI
+function! s:split_uri(str) "{{{
+    let rest = a:str
+    let [scheme, rest] = s:eat_scheme(rest)
+    let [host  , rest] = s:eat_host(rest)
+    let [path  , rest] = s:eat_path(rest)
+    " FIXME: What should I do for `rest`?
+    return [scheme, host, path]
+endfunction "}}}
+function! s:eat_em(str, pat) "{{{
+    let m = matchlist(a:str, a:pat)
+    if empty(m)
+        throw 'uri parse error:' . printf("can't parse '%s' with '%s'.", a:str, a:pat)
+    endif
+    let [match, want] = m[0:1]
+    let rest = strpart(a:str, strlen(match))
+    return [want, rest]
+endfunction "}}}
+function! s:eat_scheme(str) "{{{
+    return s:eat_em(a:str, '^\(\w\+\):'.'\C')
+endfunction "}}}
+function! s:eat_host(str) "{{{
+    return s:eat_em(a:str, '^\/\/\([^/]\+\)'.'\C')
+endfunction "}}}
+function! s:eat_path(str) "{{{
+    return s:eat_em(a:str, '^\/\(.*\)'.'\C')
+endfunction "}}}
+
+function! s:uri.to_string() dict "{{{
+    return printf('%s://%s/%s', self.scheme, self.host, self.path)
+endfunction "}}}
+" }}}
+
+function! s:open_browser(uri) "{{{
     for browser in g:openbrowser_open_commands
         if !executable(browser)
             continue
         endif
 
-        " TODO
-        " Check if it is correct url?
-        " Or it is file path.
-        " Convert it into url with `file:` scheme.
+        let uri = s:uri_new_no_throw(a:uri, -1)
+        if type(uri) != type(-1)
+            let uri.scheme = get(g:openbrowser_fix_schemes, uri.scheme, uri.scheme)
+            let uri_str = uri.to_string()
+        else
+            let uri_str = a:uri
+        endif
 
         if s:is_mswin
-            call system(printf('%s %s %s %s', &shell, &shellcmdflag, browser, a:url))
+            call system(printf('%s %s %s %s', &shell, &shellcmdflag, browser, uri_str))
         else
-            call system(browser . ' ' . shellescape(a:url))
+            call system(browser . ' ' . shellescape(uri_str))
         endif
 
         let success = 0
         if v:shell_error ==# success
             return
         else
-            echoerr printf("Can't open url with '%s'.", browser)
+            echoerr printf("Can't open url with '%s': %s", browser, uri_str)
             return
         endif
     endfor
