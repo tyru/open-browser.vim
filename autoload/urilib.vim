@@ -59,14 +59,6 @@ function! urilib#new(str, ...) "{{{
         endif
     endtry
 endfunction "}}}
-function! s:new(str) "{{{
-    if !urilib#is_uri(a:str)
-        throw 'not valid uri'
-    endif
-
-    let [scheme, host, path] = s:split_uri(a:str)
-    return extend(deepcopy(s:uri), {'scheme': scheme, 'host': host, 'path': path}, 'force')
-endfunction "}}}
 
 function! urilib#is_uri(str) "{{{
     " TODO
@@ -93,6 +85,15 @@ let s:uri.is_uri = function('urilib#is_uri')
 lockvar s:uri
 " }}}
 
+
+function! s:new(str) "{{{
+    if !urilib#is_uri(a:str)
+        throw 'not valid uri'
+    endif
+
+    let [scheme, host, path] = s:split_uri(a:str)
+    return extend(deepcopy(s:uri), {'scheme': scheme, 'host': host, 'path': path}, 'force')
+endfunction "}}}
 
 function! s:is_urilib_exception(str) "{{{
     return a:str =~# '^uri parse error:'
