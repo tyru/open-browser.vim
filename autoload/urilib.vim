@@ -20,7 +20,7 @@ scriptencoding utf-8
 " Name: urilib
 " Version: 0.0.0
 " Author:  tyru <tyru.exe@gmail.com>
-" Last Change: 2010-06-19.
+" Last Change: 2010-06-20.
 "
 " Description:
 "   NO DESCRIPTION YET
@@ -48,23 +48,26 @@ set cpo&vim
 
 
 
-function! urilib#new(str) "{{{
+function! urilib#new(str, ...) "{{{
+    try
+        return s:new(a:str)
+    catch
+        if a:0 &&
+        \   (v:exception =~# '^not valid uri:'
+        \   || v:exception =~# '^uri parse error:')
+            return a:1
+        else
+            throw v:exception
+        endif
+    endtry
+endfunction "}}}
+function! s:new(str) "{{{
     if !urilib#is_uri(a:str)
         throw 'not valid uri'
     endif
 
     let [scheme, host, path] = s:split_uri(a:str)
     return extend(deepcopy(s:uri), {'scheme': scheme, 'host': host, 'path': path}, 'force')
-endfunction "}}}
-
-function! urilib#new_no_throw(str, default) "{{{
-    try
-        return urilib#new(a:str)
-    catch /^not valid uri:/
-        return a:default
-    catch /^uri parse error:/
-        return a:default
-    endtry
 endfunction "}}}
 
 function! urilib#is_uri(str) "{{{
