@@ -55,6 +55,8 @@ lockvar s:is_unix
 lockvar s:is_mswin
 lockvar s:is_cygwin
 lockvar s:is_macunix
+
+let s:is_urilib_installed = exists('*urilib#new')
 " }}}
 
 " Check your platform {{{
@@ -100,65 +102,6 @@ endif
 
 " Functions {{{
 
-" s:uri {{{
-let s:uri = {}
-
-function! s:uri_new(str, ...) "{{{
-    if !s:is_uri(a:str)
-        throw 'not valid uri'
-    endif
-
-    let [scheme, host, path] = s:split_uri(a:str)
-    return extend(deepcopy(s:uri), {'scheme': scheme, 'host': host, 'path': path}, 'force')
-endfunction "}}}
-function! s:uri_new_no_throw(str, default) "{{{
-    try
-        return s:uri_new(a:str)
-    catch /^not valid uri:/
-        return a:default
-    catch /^uri parse error:/
-        return a:default
-    endtry
-endfunction "}}}
-
-function! s:is_uri(str) "{{{
-    " TODO
-    return 1
-endfunction "}}}
-
-" Parsing URI
-function! s:split_uri(str) "{{{
-    let rest = a:str
-    let [scheme, rest] = s:eat_scheme(rest)
-    let [host  , rest] = s:eat_host(rest)
-    let [path  , rest] = s:eat_path(rest)
-    " FIXME: What should I do for `rest`?
-    return [scheme, host, path]
-endfunction "}}}
-function! s:eat_em(str, pat) "{{{
-    let m = matchlist(a:str, a:pat)
-    if empty(m)
-        throw 'uri parse error:' . printf("can't parse '%s' with '%s'.", a:str, a:pat)
-    endif
-    let [match, want] = m[0:1]
-    let rest = strpart(a:str, strlen(match))
-    return [want, rest]
-endfunction "}}}
-function! s:eat_scheme(str) "{{{
-    return s:eat_em(a:str, '^\(\w\+\):'.'\C')
-endfunction "}}}
-function! s:eat_host(str) "{{{
-    return s:eat_em(a:str, '^\/\/\([^/]\+\)'.'\C')
-endfunction "}}}
-function! s:eat_path(str) "{{{
-    return s:eat_em(a:str, '^\/\(.*\)'.'\C')
-endfunction "}}}
-
-function! s:uri.to_string() dict "{{{
-    return printf('%s://%s/%s', self.scheme, self.host, self.path)
-endfunction "}}}
-" }}}
-
 function! OpenBrowser(uri) "{{{
     for browser in g:openbrowser_open_commands
         " NOTE: On MS Windows, 'start' command is not executable.
@@ -166,10 +109,14 @@ function! OpenBrowser(uri) "{{{
             continue
         endif
 
-        let uri = s:uri_new_no_throw(a:uri, -1)
-        if type(uri) != type(-1)
-            let uri.scheme = get(g:openbrowser_fix_schemes, uri.scheme, uri.scheme)
-            let uri_str = uri.to_string()
+        if s:is_urilib_installed
+            let uri = urilib#new_no_throw(a:uri, -1)
+            if type(uri) != type(-1)
+                let uri.scheme = get(g:openbrowser_fix_schemes, uri.scheme, uri.scheme)
+                let uri_str = uri.to_string()
+            else
+                let uri_str = a:uri
+            endif
         else
             let uri_str = a:uri
         endif
