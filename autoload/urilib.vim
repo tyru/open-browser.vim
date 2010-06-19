@@ -55,7 +55,7 @@ function! urilib#new(str, ...) "{{{
         if a:0 && s:is_urilib_exception(v:exception)
             return a:1
         else
-            throw v:exception
+            throw substitute(v:exception, '^Vim([^()]\+):', '', '')
         endif
     endtry
 endfunction "}}}
@@ -68,7 +68,7 @@ function! urilib#is_uri(str) "{{{
         if s:is_urilib_exception(v:exception)
             return 0
         else
-            throw v:exception
+            throw substitute(v:exception, '^Vim([^()]\+):', '', '')
         endif
     endtry
 endfunction "}}}
