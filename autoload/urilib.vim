@@ -63,8 +63,13 @@ endfunction "}}}
 function! urilib#is_uri(str) "{{{
     try
         call urilib#new(a:str)
+        return 1
     catch
-        return s:is_urilib_exception(v:exception)
+        if s:is_urilib_exception(v:exception)
+            return 0
+        else
+            throw v:exception
+        endif
     endtry
 endfunction "}}}
 
