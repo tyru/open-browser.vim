@@ -61,8 +61,11 @@ function! urilib#new(str, ...) "{{{
 endfunction "}}}
 
 function! urilib#is_uri(str) "{{{
-    " TODO
-    return 1
+    try
+        call urilib#new(a:str)
+    catch
+        return s:is_urilib_exception(v:exception)
+    endtry
 endfunction "}}}
 
 
