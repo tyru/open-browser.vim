@@ -20,7 +20,7 @@ scriptencoding utf-8
 " Name: openbrowser
 " Version: 0.0.0
 " Author:  tyru <tyru.exe@gmail.com>
-" Last Change: 2010-06-19.
+" Last Change: 2010-06-20.
 "
 " Description:
 "   Simple plugin to open URL with your favorite browser
@@ -102,6 +102,7 @@ endif
 
 " Functions {{{
 
+" Open URL with `g:openbrowser_open_commands`.
 function! OpenBrowser(uri) "{{{
     for browser in g:openbrowser_open_commands
         " NOTE: On MS Windows, 'start' command is not executable.
@@ -137,6 +138,7 @@ function! OpenBrowser(uri) "{{{
     endfor
 endfunction "}}}
 
+" Get selected text in visual mode.
 function! s:get_selected_text() "{{{
     let save_z = getreg('z', 1)
     let save_z_type = getregtype('z')
