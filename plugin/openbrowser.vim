@@ -134,6 +134,10 @@ function! OpenBrowser(uri) "{{{
             return
         endif
     endfor
+
+    echohl WarningMsg
+    echomsg "open-browser doesn't know how to open " . a:uri
+    echohl None
 endfunction "}}}
 
 " Get selected text in visual mode.
