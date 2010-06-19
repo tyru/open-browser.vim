@@ -62,7 +62,7 @@ if !(s:is_unix || s:is_mswin || s:is_cygwin)
 endif
 " }}}
 
-" s:get_default_open_commands() "{{{
+" Get default open commands. "{{{
 if s:is_unix
     function! s:get_default_open_commands()
         return ['xdg-open', 'x-www-browser', 'firefox', 'w3m']
