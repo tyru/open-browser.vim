@@ -113,6 +113,9 @@ endif
 if !exists('g:openbrowser_fix_schemes')
     let g:openbrowser_fix_schemes = {'ttp': 'http'}
 endif
+if !exists('g:openbrowser_fix_hosts')
+    let g:openbrowser_fix_hosts = {}
+endif
 if !exists('g:openbrowser_isfname')
     let g:openbrowser_isfname = &isfname
 endif
@@ -132,6 +135,7 @@ function! OpenBrowser(uri) "{{{
             let uri = urilib#new(a:uri, -1)
             if type(uri) != type(-1)
                 let uri.scheme = get(g:openbrowser_fix_schemes, uri.scheme, uri.scheme)
+                let uri.host   = get(g:openbrowser_fix_hosts, uri.host, uri.host)
                 let uri_str = uri.to_string()
             else
                 let uri_str = a:uri
