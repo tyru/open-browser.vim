@@ -116,6 +116,9 @@ endif
 if !exists('g:openbrowser_fix_hosts')
     let g:openbrowser_fix_hosts = {}
 endif
+if !exists('g:openbrowser_fix_paths')
+    let g:openbrowser_fix_paths = {}
+endif
 if !exists('g:openbrowser_isfname')
     let g:openbrowser_isfname = &isfname
 endif
@@ -136,6 +139,7 @@ function! OpenBrowser(uri) "{{{
             if type(uri) != type(-1)
                 let uri.scheme = get(g:openbrowser_fix_schemes, uri.scheme, uri.scheme)
                 let uri.host   = get(g:openbrowser_fix_hosts, uri.host, uri.host)
+                let uri.path = get(g:openbrowser_fix_paths, uri.path, uri.path)
                 let uri_str = uri.to_string()
             else
                 let uri_str = a:uri
