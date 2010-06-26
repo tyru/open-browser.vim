@@ -1,4 +1,4 @@
-*openbrowser.txt* *openbrowser*
+*openbrowser.txt* *openbrowser* *open-browser*
 
 Author:
   tyru <tyru.exe@gmail.com>
@@ -25,6 +25,7 @@ Interface			|openbrowser-interface|
   Keymappings		|openbrowser-keymappings|
   Variables			|openbrowser-variables|
   Commands			|openbrowser-commands|
+Library to enhance open-browser		|openbrowser-library|
 Platform dependent values		|openbrowser-platform-dependent|
 Changelog			|openbrowser-changelog|
 
@@ -46,32 +47,81 @@ INTERFACE				*openbrowser-interface* {{{
 ------------------------------------------------------------------------------
 KEYMAPPINGS					*openbrowser-keymappings* {{{
 
-n <Plug>(openbrowser-open)
+n <Plug>(openbrowser-open)				|<Plug>(openbrowser-open)|
 	Open current <cfile> text with |:OpenBrowser|.
 
-v <Plug>(openbrowser-open)
+v <Plug>(openbrowser-open)				|<Plug>(openbrowser-open)|
 	Open selected text with |:OpenBrowser|.
+
 }}}
 ------------------------------------------------------------------------------
 VARIABLES					*openbrowser-variables* {{{
 
 g:openbrowser_open_commands			*g:openbrowser_open_commands*
 								(default: Platform dependent)
+	See |openbrowser-platform-dependent|.
 
 g:openbrowser_open_rules			*g:openbrowser_open_rules*
 								(default: Platform dependent)
+	See |openbrowser-platform-dependent|.
 
 g:openbrowser_fix_schemes			*g:openbrowser_fix_schemes*
 								(default: {"ttp": "http"})
+	You can use this variable if you installed |urilib|.
+	See |openbrowser-library|.
+
+	If this value is default,
+	If you execute |<Plug>(openbrowser-open)| on URI like: >
+		ttp://google.com/
+<	It is fixed to: >
+		http://google.com/
+<
+	I think |g:openbrowser_fix_hosts| and
+	|g:openbrowser_fix_paths| are not so helpful.
+	But |g:openbrowser_fix_schemes| might be helpful particularly on Japan.
+	Because "ttp" is used as like "http" on particular net community.
+	(I know it's desecration of standard
+	but I'm particular member and this is my plugin :) )
+
+	It is not interesting for almost people
+	and default value of |g:openbrowser_fix_schemes| would not
+	bother you.
 
 g:openbrowser_fix_hosts				*g:openbrowser_fix_hosts*
 								(default: {})
+	You can use this variable if you installed |urilib|.
+	See |openbrowser-library|.
 
+	If this value is: >
+	{'google.com': 'yahoo.com'}
+<
+	If you execute |<Plug>(openbrowser-open)| on URI like: >
+		http://google.com/
+<	It is fixed to: >
+		http://yahoo.com/
+<
 g:openbrowser_fix_paths				*g:openbrowser_fix_paths*
 								(default: {})
+	You can use this variable if you installed |urilib|.
+	See |openbrowser-library|.
 
+	If this value is: >
+	{'/google': '/tyru'}
+<
+	If you execute |<Plug>(openbrowser-open)| on URI like: >
+		http://twitter.com/google
+<	It is fixed to: >
+		http://twitter.com/tyru
+<
+	Note that this works on the URL like: >
+		http://yahoo.com/google
+<	It is fixed to: >
+		http://yahoo.com/tyru
+<
 g:openbrowser_isfname				*g:openbrowser_isfname*
 								(default: Same as 'isfname')
+	|<Plug>(openbrowser-open)| opens <cfile> text in normal mode.
+	This variable temporarily changes 'isfname' option value at that time.
 }}}
 ------------------------------------------------------------------------------
 COMMANDS					*openbrowser-commands* {{{
@@ -80,6 +130,17 @@ OpenBrowser {uri}
 	Open URI with your favorite browser.
 
 }}}
+}}}
+==============================================================================
+LIBRARY TO ENHANCE OPEN-BROWSER		*openbrowser-library* {{{
+
+urilib.vim: http://github.com/tyru/urilib.vim
+
+If you installed |urilib|, you can use these variables:
+- |g:openbrowser_fix_schemes|
+- |g:openbrowser_fix_hosts|
+- |g:openbrowser_fix_paths|
+
 }}}
 ==============================================================================
 PLATFORM DEPENDENT VALUES		*openbrowser-platform-dependent* {{{
