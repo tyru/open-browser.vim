@@ -101,10 +101,16 @@ function! OpenBrowser(uri) "{{{
     try
         let uri = s:convert_uri(a:uri)
     catch /^invalid$/
-        echohl WarningMsg
-        echomsg printf("open-browser doesn't know how to open '%s'.", a:uri)
-        echohl None
-        return
+        " Neither
+        " - File path
+        " - |urilib| has been installed and |urilib| determine a:uri is URI
+
+        let uri = a:uri
+
+        " ...But openbrowser should try to open!
+        " Because a:uri might be URI like "file://...".
+        " In this case, this is not file path and
+        " |urilib| might not have been installed :(.
     endtry
 
     for browser in g:openbrowser_open_commands
