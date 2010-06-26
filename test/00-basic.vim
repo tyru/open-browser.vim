@@ -22,6 +22,21 @@ function! s:run()
     Is uri.path(), '/tyru/20100619/git_push_vim_plugins_to_github'
     Is uri.opaque(), '//d.hatena.ne.jp/tyru/20100619/git_push_vim_plugins_to_github'
     Is uri.fragment(), 'c'
+
+
+    OK urilib#is_uri('http://twitter.com/tyru')
+    OK urilib#is_uri('http://d.hatena.ne.jp/tyru/20100619/git_push_vim_plugins_to_github#c')
+    OK ! urilib#is_uri('foo')
+    OK ! urilib#is_uri('/bar')
+    OK urilib#is_uri('file://baz/')
+    OK urilib#is_uri('ftp://withoutslash.com')
+
+    OK uri.is_uri('http://twitter.com/tyru')
+    OK uri.is_uri('http://d.hatena.ne.jp/tyru/20100619/git_push_vim_plugins_to_github#c')
+    OK ! uri.is_uri('foo')
+    OK ! uri.is_uri('/bar')
+    OK uri.is_uri('file://baz/')
+    OK uri.is_uri('ftp://withoutslash.com')
 endfunction
 
 call s:run()
