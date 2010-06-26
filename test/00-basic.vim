@@ -29,6 +29,8 @@ function! s:run()
     OK ! urilib#is_uri('foo')
     OK ! urilib#is_uri('/bar')
     OK urilib#is_uri('file://baz/')
+    OK urilib#is_uri('file:///home/tyru/')
+    OK urilib#is_uri('file:///home/tyru')
     OK urilib#is_uri('ftp://withoutslash.com')
 
     OK uri.is_uri('http://twitter.com/tyru')
@@ -36,6 +38,8 @@ function! s:run()
     OK ! uri.is_uri('foo')
     OK ! uri.is_uri('/bar')
     OK uri.is_uri('file://baz/')
+    OK uri.is_uri('file:///home/tyru/')
+    OK uri.is_uri('file:///home/tyru')
     OK uri.is_uri('ftp://withoutslash.com')
 endfunction
 
