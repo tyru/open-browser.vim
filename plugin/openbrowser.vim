@@ -96,28 +96,6 @@ endif
 
 " Functions {{{
 
-function! s:convert_uri(uri) "{{{
-    if getftype(a:uri) =~# '^\(file\|dir\|link\)$'
-        " a:uri is File path. Converts a:uri to `file://` URI.
-        let save_shellslash = &shellslash
-        let &l:shellslash = 1
-        try
-            return 'file:///' . fnamemodify(a:uri, ':p')
-        finally
-            let &l:shellslash = save_shellslash
-        endtry
-    elseif s:is_urilib_installed && urilib#is_uri(a:uri)
-        " a:uri is URI.
-        let uri = urilib#new(a:uri)
-        call uri.scheme(get(g:openbrowser_fix_schemes, uri.scheme(), uri.scheme()))
-        call uri.host  (get(g:openbrowser_fix_hosts, uri.host(), uri.host()))
-        call uri.path  (get(g:openbrowser_fix_paths, uri.path(), uri.path()))
-        return uri.to_string()
-    else
-        throw 'invalid'
-    endif
-endfunction "}}}
-
 " Open URL with `g:openbrowser_open_commands`.
 function! OpenBrowser(uri) "{{{
     try
@@ -150,6 +128,28 @@ function! OpenBrowser(uri) "{{{
     echohl WarningMsg
     echomsg printf("open-browser doesn't know how to open '%s'.", uri)
     echohl None
+endfunction "}}}
+
+function! s:convert_uri(uri) "{{{
+    if getftype(a:uri) =~# '^\(file\|dir\|link\)$'
+        " a:uri is File path. Converts a:uri to `file://` URI.
+        let save_shellslash = &shellslash
+        let &l:shellslash = 1
+        try
+            return 'file:///' . fnamemodify(a:uri, ':p')
+        finally
+            let &l:shellslash = save_shellslash
+        endtry
+    elseif s:is_urilib_installed && urilib#is_uri(a:uri)
+        " a:uri is URI.
+        let uri = urilib#new(a:uri)
+        call uri.scheme(get(g:openbrowser_fix_schemes, uri.scheme(), uri.scheme()))
+        call uri.host  (get(g:openbrowser_fix_hosts, uri.host(), uri.host()))
+        call uri.path  (get(g:openbrowser_fix_paths, uri.path(), uri.path()))
+        return uri.to_string()
+    else
+        throw 'invalid'
+    endif
 endfunction "}}}
 
 " Get selected text in visual mode.
