@@ -20,7 +20,7 @@ scriptencoding utf-8
 " Name: openbrowser
 " Version: 0.0.0
 " Author:  tyru <tyru.exe@gmail.com>
-" Last Change: 2010-06-26.
+" Last Change: 2010-06-27.
 "
 " Description:
 "   Simple plugin to open URL with your favorite browser
@@ -83,6 +83,13 @@ elseif s:is_macunix
     function! s:get_default_open_rules()
         return {'open': '{browser} {shellescape(uri)}'}
     endfunction
+elseif s:is_mswin
+    function! s:get_default_open_commands()
+        return ['start']
+    endfunction
+    function! s:get_default_open_rules()
+        return {'start': '&shell &shellcmdflag {browser} {uri}'}
+    endfunction
 elseif s:is_unix
     function! s:get_default_open_commands()
         return ['xdg-open', 'x-www-browser', 'firefox', 'w3m']
@@ -94,13 +101,6 @@ elseif s:is_unix
         \   'firefox':       '{browser} {shellescape(uri)}',
         \   'w3m':           '{browser} {shellescape(uri)}',
         \}
-    endfunction
-elseif s:is_mswin
-    function! s:get_default_open_commands()
-        return ['start']
-    endfunction
-    function! s:get_default_open_rules()
-        return {'start': '&shell &shellcmdflag {browser} {uri}'}
     endfunction
 endif
 " }}}
