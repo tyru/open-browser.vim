@@ -96,33 +96,48 @@ endif
 
 " Functions {{{
 
+function! s:convert_uri(uri) "{{{
+    if getftype(a:uri) =~# '^\(file\|dir\|link\)$'
+        " a:uri is File path. Converts a:uri to `file://` URI.
+        return 'file:///' . fnamemodify(a:uri, ':p')
+    elseif urilib#is_uri(a:uri)
+        " a:uri is URI.
+        let uri_str = a:uri
+        if s:is_urilib_installed
+            let uri = urilib#new(uri_str)
+            call uri.scheme(get(g:openbrowser_fix_schemes, uri.scheme(), uri.scheme()))
+            call uri.host  (get(g:openbrowser_fix_hosts, uri.host(), uri.host()))
+            call uri.path  (get(g:openbrowser_fix_paths, uri.path(), uri.path()))
+            let uri_str = uri.to_string()
+        endif
+        return uri_str
+    else
+        throw 'invalid'
+    endif
+endfunction "}}}
+
 " Open URL with `g:openbrowser_open_commands`.
 function! OpenBrowser(uri) "{{{
+    try
+        let uri = s:convert_uri(a:uri)
+    catch /^invalid$/
+        echohl WarningMsg
+        echomsg printf("open-browser doesn't know how to open '%s'.", a:uri)
+        echohl None
+        return
+    endtry
+
     for browser in g:openbrowser_open_commands
         " NOTE: On MS Windows, 'start' command is not executable.
         if !executable(browser) && (s:is_mswin && browser !=# 'start' && !executable(browser))
             continue
         endif
 
-        if s:is_urilib_installed
-            let uri = urilib#new(a:uri, -1)
-            if type(uri) != type(-1)
-                call uri.scheme(get(g:openbrowser_fix_schemes, uri.scheme(), uri.scheme()))
-                call uri.host  (get(g:openbrowser_fix_hosts, uri.host(), uri.host()))
-                call uri.path  (get(g:openbrowser_fix_paths, uri.path(), uri.path()))
-                let uri_str = uri.to_string()
-            else
-                let uri_str = a:uri
-            endif
-        else
-            let uri_str = a:uri
-        endif
-
         if !has_key(g:openbrowser_open_rules, browser)
             continue
         endif
 
-        call system(s:expand_keyword(g:openbrowser_open_rules[browser], browser, uri_str))
+        call system(s:expand_keyword(g:openbrowser_open_rules[browser], browser, uri))
 
         let success = 0
         if v:shell_error ==# success
@@ -131,7 +146,7 @@ function! OpenBrowser(uri) "{{{
     endfor
 
     echohl WarningMsg
-    echomsg printf("open-browser doesn't know how to open '%s'.", a:uri)
+    echomsg printf("open-browser doesn't know how to open '%s'.", uri)
     echohl None
 endfunction "}}}
 
