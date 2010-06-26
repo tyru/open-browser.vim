@@ -20,7 +20,7 @@ scriptencoding utf-8
 " Name: urilib
 " Version: 0.0.0
 " Author:  tyru <tyru.exe@gmail.com>
-" Last Change: 2010-06-20.
+" Last Change: 2010-06-26.
 "
 " Description:
 "   NO DESCRIPTION YET
@@ -76,14 +76,39 @@ endfunction "}}}
 
 
 " s:uri {{{
-let s:uri = {}
+let s:uri = {
+\   '__scheme': '',
+\   '__host': '',
+\   '__path': '',
+\}
 
 
 
 " Methods
 
+function! s:uri.scheme(...) dict "{{{
+    if a:0
+        let self.__scheme = a:1
+    endif
+    return self.__scheme
+endfunction "}}}
+
+function! s:uri.host(...) dict "{{{
+    if a:0
+        let self.__host = a:1
+    endif
+    return self.__host
+endfunction "}}}
+
+function! s:uri.path(...) dict "{{{
+    if a:0
+        let self.__path = a:1
+    endif
+    return self.__path
+endfunction "}}}
+
 function! s:uri.to_string() dict "{{{
-    return printf('%s://%s/%s', self.scheme, self.host, self.path)
+    return printf('%s://%s/%s', self.scheme(), self.host(), self.path())
 endfunction "}}}
 
 let s:uri.is_uri = function('urilib#is_uri')
@@ -96,7 +121,7 @@ lockvar s:uri
 
 function! s:new(str) "{{{
     let [scheme, host, path] = s:split_uri(a:str)
-    return extend(deepcopy(s:uri), {'scheme': scheme, 'host': host, 'path': path}, 'force')
+    return extend(deepcopy(s:uri), {'__scheme': scheme, '__host': host, '__path': path}, 'force')
 endfunction "}}}
 
 function! s:is_urilib_exception(str) "{{{
