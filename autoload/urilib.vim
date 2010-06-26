@@ -148,7 +148,8 @@ function! s:eat_scheme(str) "{{{
     return s:eat_em(a:str, '^\(\w\+\):'.'\C')
 endfunction "}}}
 function! s:eat_host(str) "{{{
-    return s:eat_em(a:str, '^\/\/\([^/]\+\)'.'\C')
+    let for_file_scheme = '\/*'
+    return s:eat_em(a:str, '^\/\/\('.for_file_scheme.'[^/]\+\)'.'\C')
 endfunction "}}}
 function! s:eat_path(str) "{{{
     return s:eat_em(a:str, '^\(\/[^#]*\)'.'\C')
