@@ -20,7 +20,7 @@ scriptencoding utf-8
 " Name: openbrowser
 " Version: 0.0.0
 " Author:  tyru <tyru.exe@gmail.com>
-" Last Change: 2010-06-20.
+" Last Change: 2010-06-26.
 "
 " Description:
 "   Simple plugin to open URL with your favorite browser
@@ -137,9 +137,9 @@ function! OpenBrowser(uri) "{{{
         if s:is_urilib_installed
             let uri = urilib#new(a:uri, -1)
             if type(uri) != type(-1)
-                let uri.scheme = get(g:openbrowser_fix_schemes, uri.scheme, uri.scheme)
-                let uri.host   = get(g:openbrowser_fix_hosts, uri.host, uri.host)
-                let uri.path = get(g:openbrowser_fix_paths, uri.path, uri.path)
+                call uri.scheme(get(g:openbrowser_fix_schemes, uri.scheme(), uri.scheme()))
+                call uri.host  (get(g:openbrowser_fix_hosts, uri.host(), uri.host()))
+                call uri.path  (get(g:openbrowser_fix_paths, uri.path(), uri.path()))
                 let uri_str = uri.to_string()
             else
                 let uri_str = a:uri
