@@ -54,7 +54,9 @@ elseif s:is_mswin
         return ['start']
     endfunction
     function! s:get_default_open_rules()
-        return {'start': '&shell &shellcmdflag {browser} {uri}'}
+        " If &shellslash == 1,
+        " `shellescape(uri)` uses single quotes not double quote.
+        return {'start': '&shell &shellcmdflag {browser} "openbrowser.vim" "{uri}"'}
     endfunction
 elseif s:is_unix
     function! s:get_default_open_commands()
