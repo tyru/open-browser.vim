@@ -124,11 +124,11 @@ endfunction "}}}
 
 function! s:uri.to_string() dict "{{{
     return printf(
-    \   '%s://%s/%s%s',
+    \   '%s://%s%s%s',
     \   self.__scheme,
     \   self.__host,
     \   self.__path,
-    \   self.__fragment,
+    \   (self.__fragment != '' ? '#' . self.__fragment : ''),
     \)
 endfunction "}}}
 
