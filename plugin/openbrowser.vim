@@ -106,17 +106,13 @@ function! s:convert_uri(uri) "{{{
         finally
             let &l:shellslash = save_shellslash
         endtry
-    elseif urilib#is_uri(a:uri)
+    elseif s:is_urilib_installed && urilib#is_uri(a:uri)
         " a:uri is URI.
-        let uri_str = a:uri
-        if s:is_urilib_installed
-            let uri = urilib#new(uri_str)
-            call uri.scheme(get(g:openbrowser_fix_schemes, uri.scheme(), uri.scheme()))
-            call uri.host  (get(g:openbrowser_fix_hosts, uri.host(), uri.host()))
-            call uri.path  (get(g:openbrowser_fix_paths, uri.path(), uri.path()))
-            let uri_str = uri.to_string()
-        endif
-        return uri_str
+        let uri = urilib#new(a:uri)
+        call uri.scheme(get(g:openbrowser_fix_schemes, uri.scheme(), uri.scheme()))
+        call uri.host  (get(g:openbrowser_fix_hosts, uri.host(), uri.host()))
+        call uri.path  (get(g:openbrowser_fix_paths, uri.path(), uri.path()))
+        return uri.to_string()
     else
         throw 'invalid'
     endif
