@@ -20,7 +20,7 @@ scriptencoding utf-8
 " Name: urilib
 " Version: 0.0.0
 " Author:  tyru <tyru.exe@gmail.com>
-" Last Change: 2010-06-26.
+" Last Change: 2010-06-27.
 "
 " Description:
 "   NO DESCRIPTION YET
@@ -154,8 +154,14 @@ function! s:split_uri(str) "{{{
     let rest = a:str
     let [scheme  , rest] = s:eat_scheme(rest)
     let [host    , rest] = s:eat_host(rest)
-    let [path    , rest] = s:eat_path(rest)
-    let [fragment, rest] = s:eat_fragment(rest)
+    if rest == ''
+        " URI allows no slash after host? Is it correct?
+        let path = ''
+        let fragment = ''
+    else
+        let [path    , rest] = s:eat_path(rest)
+        let [fragment, rest] = s:eat_fragment(rest)
+    endif
     " FIXME: What should I do for `rest`?
     return [scheme, host, path, fragment]
 endfunction "}}}
