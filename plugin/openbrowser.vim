@@ -158,7 +158,9 @@ function! OpenBrowser(uri) "{{{
         if v:shell_error ==# success
             return
         else
-            echoerr printf("Can't open url with '%s': %s", browser, uri_str)
+            echohl WarningMsg
+            echomsg printf("Can't open url with '%s': %s", browser, uri_str)
+            echohl None
             return
         endif
     endfor
