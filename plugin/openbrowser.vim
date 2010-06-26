@@ -61,7 +61,9 @@ let s:is_urilib_installed = exists('*urilib#new')
 
 " Check your platform {{{
 if !(s:is_unix || s:is_mswin || s:is_cygwin || s:is_macunix)
-    echoerr 'Your platform is not supported!'
+    echohl WarningMsg
+    echomsg 'Your platform is not supported!'
+    echohl None
     finish
 endif
 " }}}
@@ -166,7 +168,7 @@ function! OpenBrowser(uri) "{{{
     endfor
 
     echohl WarningMsg
-    echomsg "open-browser doesn't know how to open " . a:uri
+    echomsg printf("open-browser doesn't know how to open '%s'.", a:uri)
     echohl None
 endfunction "}}}
 
