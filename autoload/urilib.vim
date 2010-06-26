@@ -80,6 +80,7 @@ let s:uri = {
 \   '__scheme': '',
 \   '__host': '',
 \   '__path': '',
+\   '__fragment': '',
 \}
 
 
@@ -107,8 +108,28 @@ function! s:uri.path(...) dict "{{{
     return self.__path
 endfunction "}}}
 
+function! s:uri.opaque(...) dict "{{{
+    if a:0
+        " TODO
+    endif
+    return printf('//%s%s', self.__host, self.__path)
+endfunction "}}}
+
+function! s:uri.fragment(...) dict "{{{
+    if a:0
+        let self.__fragment = a:1
+    endif
+    return self.__fragment
+endfunction "}}}
+
 function! s:uri.to_string() dict "{{{
-    return printf('%s://%s/%s', self.scheme(), self.host(), self.path())
+    return printf(
+    \   '%s://%s/%s%s',
+    \   self.__scheme,
+    \   self.__host,
+    \   self.__path,
+    \   self.__fragment,
+    \)
 endfunction "}}}
 
 let s:uri.is_uri = function('urilib#is_uri')
@@ -120,8 +141,8 @@ lockvar s:uri
 
 
 function! s:new(str) "{{{
-    let [scheme, host, path] = s:split_uri(a:str)
-    return extend(deepcopy(s:uri), {'__scheme': scheme, '__host': host, '__path': path}, 'force')
+    let [scheme, host, path, fragment] = s:split_uri(a:str)
+    return extend(deepcopy(s:uri), {'__scheme': scheme, '__host': host, '__path': path, '__fragment': fragment}, 'force')
 endfunction "}}}
 
 function! s:is_urilib_exception(str) "{{{
@@ -131,16 +152,21 @@ endfunction "}}}
 " Parsing URI
 function! s:split_uri(str) "{{{
     let rest = a:str
-    let [scheme, rest] = s:eat_scheme(rest)
-    let [host  , rest] = s:eat_host(rest)
-    let [path  , rest] = s:eat_path(rest)
+    let [scheme  , rest] = s:eat_scheme(rest)
+    let [host    , rest] = s:eat_host(rest)
+    let [path    , rest] = s:eat_path(rest)
+    let [fragment, rest] = s:eat_fragment(rest)
     " FIXME: What should I do for `rest`?
-    return [scheme, host, path]
+    return [scheme, host, path, fragment]
 endfunction "}}}
-function! s:eat_em(str, pat) "{{{
+function! s:eat_em(str, pat, ...) "{{{
     let m = matchlist(a:str, a:pat)
     if empty(m)
-        throw 'uri parse error:' . printf("can't parse '%s' with '%s'.", a:str, a:pat)
+        if a:0
+            return [a:1, a:str]
+        else
+            throw 'uri parse error:' . printf("can't parse '%s' with '%s'.", a:str, a:pat)
+        endif
     endif
     let [match, want] = m[0:1]
     let rest = strpart(a:str, strlen(match))
@@ -153,7 +179,10 @@ function! s:eat_host(str) "{{{
     return s:eat_em(a:str, '^\/\/\([^/]\+\)'.'\C')
 endfunction "}}}
 function! s:eat_path(str) "{{{
-    return s:eat_em(a:str, '^\/\(.*\)'.'\C')
+    return s:eat_em(a:str, '^\(\/[^#]*\)'.'\C')
+endfunction "}}}
+function! s:eat_fragment(str) "{{{
+    return s:eat_em(a:str, '^#\(.*\)'.'\C', '')
 endfunction "}}}
 
 
