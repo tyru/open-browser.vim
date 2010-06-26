@@ -99,7 +99,13 @@ endif
 function! s:convert_uri(uri) "{{{
     if getftype(a:uri) =~# '^\(file\|dir\|link\)$'
         " a:uri is File path. Converts a:uri to `file://` URI.
-        return 'file:///' . fnamemodify(a:uri, ':p')
+        let save_shellslash = &shellslash
+        let &l:shellslash = 1
+        try
+            return 'file:///' . fnamemodify(a:uri, ':p')
+        finally
+            let &l:shellslash = save_shellslash
+        endtry
     elseif urilib#is_uri(a:uri)
         " a:uri is URI.
         let uri_str = a:uri
