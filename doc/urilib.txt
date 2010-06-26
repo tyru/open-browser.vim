@@ -1,4 +1,4 @@
-*urilib.txt* *urilib*
+*urilib.txt* *urilib* URI library in vim script inspired by URI.pm
 
 Author:
   tyru <tyru.exe@gmail.com>
