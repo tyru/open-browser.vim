@@ -98,20 +98,7 @@ endif
 
 " Open URL with `g:openbrowser_open_commands`.
 function! OpenBrowser(uri) "{{{
-    try
-        let uri = s:convert_uri(a:uri)
-    catch /^invalid$/
-        " Neither
-        " - File path
-        " - |urilib| has been installed and |urilib| determine a:uri is URI
-
-        let uri = a:uri
-
-        " ...But openbrowser should try to open!
-        " Because a:uri might be URI like "file://...".
-        " In this case, this is not file path and
-        " |urilib| might not have been installed :(.
-    endtry
+    let uri = s:convert_uri(a:uri)
 
     for browser in g:openbrowser_open_commands
         " NOTE: On MS Windows, 'start' command is not executable.
@@ -134,7 +121,7 @@ function! OpenBrowser(uri) "{{{
     endfor
 
     echohl WarningMsg
-    echomsg printf("open-browser doesn't know how to open '%s'.", uri)
+    echomsg "open-browser doesn't know how to open '" . uri . "'."
     echohl None
 endfunction "}}}
 
@@ -156,7 +143,15 @@ function! s:convert_uri(uri) "{{{
         call uri.path  (get(g:openbrowser_fix_paths, uri.path(), uri.path()))
         return uri.to_string()
     else
-        throw 'invalid'
+        " Neither
+        " - File path
+        " - |urilib| has been installed and |urilib| determine a:uri is URI
+
+        " ...But openbrowser should try to open!
+        " Because a:uri might be URI like "file://...".
+        " In this case, this is not file path and
+        " |urilib| might not have been installed :(.
+        return a:uri
     endif
 endfunction "}}}
 
