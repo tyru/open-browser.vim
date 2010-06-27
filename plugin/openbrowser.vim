@@ -121,6 +121,7 @@ function! OpenBrowser(uri) "{{{
     endfor
 
     echohl WarningMsg
+    redraw
     echomsg "open-browser doesn't know how to open '" . uri . "'."
     echohl None
 endfunction "}}}
