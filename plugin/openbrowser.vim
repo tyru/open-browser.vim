@@ -150,7 +150,7 @@ function! OpenBrowser(uri) "{{{
         let success = 0
         if v:shell_error ==# success
             redraw
-            echo "opening '" . uri . "' ... done!"
+            echo "opening '" . uri . "' ... done! (" . browser . ")"
             return
         endif
     endfor
