@@ -51,13 +51,13 @@ elseif s:is_macunix
     endfunction
 elseif s:is_mswin
     function! s:get_default_open_commands()
-        return ['cmd']
+        return ['cmd.exe']
     endfunction
     function! s:get_default_open_rules()
         " NOTE: On MS Windows, 'start' command is not executable.
         " NOTE: If &shellslash == 1,
         " `shellescape(uri)` uses single quotes not double quote.
-        return {'cmd': 'cmd /c start "openbrowser.vim" "{uri}"'}
+        return {'cmd.exe': 'cmd /c start "openbrowser.vim" "{uri}"'}
     endfunction
 elseif s:is_unix
     function! s:get_default_open_commands()
