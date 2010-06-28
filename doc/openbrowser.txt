@@ -190,7 +190,18 @@ Unix like environment:
 ==============================================================================
 CHANGELOG						*openbrowser-changelog* {{{
 
-See git-log :p
+0.0.0:
+- Initial upload
+
+0.0.1:
+- Support opening file path.
+- Fix minor bugs.
+
+0.0.2:
+- Rename |g:openbrowser_isfname| to |g:openbrowser_iskeyword|.
+variable |g:openbrowser_isfname| is still available for
+backward compatibility.
+- Specialize |g:openbrowser_iskeyword| value to get URI in <cword>.
 
 }}}
 ==============================================================================
