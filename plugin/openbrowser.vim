@@ -89,8 +89,41 @@ endif
 if !exists('g:openbrowser_fix_paths')
     let g:openbrowser_fix_paths = {}
 endif
-if !exists('g:openbrowser_isfname')
-    let g:openbrowser_isfname = &isfname
+if exists('g:openbrowser_isfname')
+    " Backward compatibility.
+    let g:openbrowser_iskeyword = g:openbrowser_isfname
+endif
+if !exists('g:openbrowser_iskeyword')
+    " Getting only URI from <cfile>.
+    let g:openbrowser_iskeyword = join(
+    \   range(char2nr('A'), char2nr('Z'))
+    \   + range(char2nr('a'), char2nr('z'))
+    \   + range(char2nr('0'), char2nr('9'))
+    \   + [
+    \   '_',
+    \   ':',
+    \   '/',
+    \   '.',
+    \   '-',
+    \   '+',
+    \   '%',
+    \   '#',
+    \   '?',
+    \   '&',
+    \   '=',
+    \   ';',
+    \   '@',
+    \   '$',
+    \   ',',
+    \   '[',
+    \   ']',
+    \   '!',
+    \   "'",
+    \   "(",
+    \   ")",
+    \   "*",
+    \   "~",
+    \], ',')
 endif
 " }}}
 
@@ -170,12 +203,12 @@ function! s:get_selected_text() "{{{
 endfunction "}}}
 
 function! s:get_url_on_cursor() "{{{
-    let save_isfname = &isfname
-    let &isfname = g:openbrowser_isfname
+    let save_iskeyword = &iskeyword
+    let &l:iskeyword = g:openbrowser_iskeyword
     try
-        return expand('<cfile>')
+        return expand('<cword>')
     finally
-        let &isfname = save_isfname
+        let &l:iskeyword = save_iskeyword
     endtry
 endfunction "}}}
 
