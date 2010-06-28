@@ -202,6 +202,7 @@ CHANGELOG						*openbrowser-changelog* {{{
 variable |g:openbrowser_isfname| is still available for
 backward compatibility.
 - Specialize |g:openbrowser_iskeyword| value to get URI in <cword>.
+- More readable messages.
 
 }}}
 ==============================================================================
