@@ -51,12 +51,13 @@ elseif s:is_macunix
     endfunction
 elseif s:is_mswin
     function! s:get_default_open_commands()
-        return ['start']
+        return ['cmd']
     endfunction
     function! s:get_default_open_rules()
-        " If &shellslash == 1,
+        " NOTE: On MS Windows, 'start' command is not executable.
+        " NOTE: If &shellslash == 1,
         " `shellescape(uri)` uses single quotes not double quote.
-        return {'start': '&shell &shellcmdflag {browser} "openbrowser.vim" "{uri}"'}
+        return {'cmd': 'cmd /c start "openbrowser.vim" "{uri}"'}
     endfunction
 elseif s:is_unix
     function! s:get_default_open_commands()
@@ -134,8 +135,7 @@ function! OpenBrowser(uri) "{{{
     let uri = s:convert_uri(a:uri)
 
     for browser in g:openbrowser_open_commands
-        " NOTE: On MS Windows, 'start' command is not executable.
-        if !executable(browser) && (s:is_mswin && browser !=# 'start' && !executable(browser))
+        if !executable(browser)
             continue
         endif
 
