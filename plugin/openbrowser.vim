@@ -133,6 +133,8 @@ endif
 " Open URL with `g:openbrowser_open_commands`.
 function! OpenBrowser(uri) "{{{
     let uri = s:convert_uri(a:uri)
+    redraw
+    echo "opening '" . uri . "' ..."
 
     for browser in g:openbrowser_open_commands
         if !executable(browser)
