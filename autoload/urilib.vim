@@ -14,6 +14,10 @@ set cpo&vim
 
 
 
+function! urilib#load() "{{{
+    " dummy function to load this script
+endfunction "}}}
+
 function! urilib#new(str, ...) "{{{
     try
         return s:new(a:str)
