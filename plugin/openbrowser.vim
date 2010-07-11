@@ -21,8 +21,6 @@ lockvar s:is_unix
 lockvar s:is_mswin
 lockvar s:is_cygwin
 lockvar s:is_macunix
-
-let s:is_urilib_installed = exists('*urilib#new')
 " }}}
 
 " Check your platform {{{
@@ -161,6 +159,15 @@ function! OpenBrowser(uri) "{{{
     echohl None
 endfunction "}}}
 
+function! s:is_urilib_installed() "{{{
+    try
+        call urilib#load()
+        return 1
+    catch
+        return 0
+    endtry
+endfunction "}}}
+
 function! s:convert_uri(uri) "{{{
     if getftype(a:uri) =~# '^\(file\|dir\|link\)$'
         " a:uri is File path. Converts a:uri to `file://` URI.
@@ -171,7 +178,7 @@ function! s:convert_uri(uri) "{{{
         finally
             let &l:shellslash = save_shellslash
         endtry
-    elseif s:is_urilib_installed && urilib#is_uri(a:uri)
+    elseif s:is_urilib_installed() && urilib#is_uri(a:uri)
         " a:uri is URI.
         let uri = urilib#new(a:uri)
         call uri.scheme(get(g:openbrowser_fix_schemes, uri.scheme(), uri.scheme()))
