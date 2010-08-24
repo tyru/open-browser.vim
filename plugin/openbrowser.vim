@@ -146,7 +146,7 @@ function! OpenBrowser(uri) "{{{
             continue
         endif
 
-        call system(s:expand_keyword(g:openbrowser_open_rules[browser], browser, uri))
+        call system(s:expand_keyword(g:openbrowser_open_rules[browser], {'browser': browser, 'uri': uri}))
 
         let success = 0
         if v:shell_error ==# success
@@ -269,7 +269,7 @@ endfunction "}}}
 " - $ENV_NAME ${ENV_NAME}
 " - {expr}
 " Escape by \ if you does not want to expand.
-function! s:expand_keyword(str, browser, uri)  " {{{
+function! s:expand_keyword(str, options)  " {{{
   if type(a:str) != type('')
     return ''
   endif
@@ -278,8 +278,10 @@ function! s:expand_keyword(str, browser, uri)  " {{{
   let result = ''
 
   " Assign these variables for eval().
-  let browser = a:browser
-  let uri = a:uri
+  unlockvar l:
+  for [name, val] in items(a:options)
+      let l:[name] = val
+  endfor
 
   while 1
     let f = match(rest, '\\\?[@&${]')
