@@ -124,6 +124,9 @@ if !exists('g:openbrowser_iskeyword')
     \   "~",
     \], ',')
 endif
+if !exists('g:openbrowser_default_search')
+    let g:openbrowser_default_search = 'google'
+endif
 " }}}
 
 " Functions {{{
@@ -157,6 +160,27 @@ function! OpenBrowser(uri) "{{{
     redraw
     echomsg "open-browser doesn't know how to open '" . uri . "'."
     echohl None
+endfunction "}}}
+
+function! OpenBrowserSearch(word, ...) "{{{
+    if !s:is_urilib_installed()
+        echohl WarningMsg
+        echomsg 'OpenBrowserSearch() requires urilib.'
+        echohl None
+        return
+    endif
+
+    let search = a:0 ? a:1 : g:openbrowser_default_search
+    if search ==# 'google'
+        let uri = 'http://google.com/search?q='.urilib#uri_escape(a:word)
+    else
+        echohl WarningMsg
+        echomsg "Unknown search engine '" . search . "'."
+        echohl None
+        return
+    endif
+
+    call OpenBrowser(uri)
 endfunction "}}}
 
 function! s:is_urilib_installed() "{{{
@@ -287,6 +311,10 @@ command!
 \   -bar -nargs=+ -complete=file
 \   OpenBrowser
 \   call OpenBrowser(<q-args>)
+command!
+\   -bar -nargs=+
+\   OpenBrowserSearch
+\   call OpenBrowserSearch(<q-args>)
 
 " Key-mapping
 nnoremap <Plug>(openbrowser-open) :<C-u>call OpenBrowser(<SID>get_url_on_cursor())<CR>
