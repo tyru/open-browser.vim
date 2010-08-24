@@ -278,9 +278,10 @@ function! s:expand_keyword(str, options)  " {{{
   let result = ''
 
   " Assign these variables for eval().
-  unlockvar l:
   for [name, val] in items(a:options)
-      let l:[name] = val
+      " unlockvar l:
+      " let l:[name] = val
+      execute 'let ' . name . ' = ' . string(val)
   endfor
 
   while 1
