@@ -127,6 +127,12 @@ endif
 if !exists('g:openbrowser_default_search')
     let g:openbrowser_default_search = 'google'
 endif
+if !exists('g:openbrowser_search_engines')
+    let g:openbrowser_search_engines = {
+    \   'google': 'http://google.com/search?q={query}',
+    \   'yahoo': 'http://search.yahoo.com/search?p={query}',
+    \}
+endif
 " }}}
 
 " Functions {{{
@@ -171,16 +177,16 @@ function! OpenBrowserSearch(word, ...) "{{{
     endif
 
     let engine = a:0 ? a:1 : g:openbrowser_default_search
-    if engine ==# 'google'
-        let uri = 'http://google.com/search?q='.urilib#uri_escape(a:word)
-    else
+    if !has_key(g:openbrowser_search_engines, engine)
         echohl WarningMsg
         echomsg "Unknown search engine '" . engine . "'."
         echohl None
         return
     endif
 
-    call OpenBrowser(uri)
+    call OpenBrowser(
+    \   s:expand_keyword(g:openbrowser_search_engines[engine], {'query': urilib#uri_escape(a:word)})
+    \)
 endfunction "}}}
 
 function! s:cmd_open_browser_search(args) "{{{
