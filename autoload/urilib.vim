@@ -43,6 +43,53 @@ function! urilib#is_uri(str) "{{{
     endtry
 endfunction "}}}
 
+function! urilib#uri_escape(str) "{{{
+    let escaped = ''
+    for char in s:split_to_bytes(a:str)
+        if char =~# '\a'
+            let escaped .= char
+        else
+            let escaped .= '%' . s:nr2hex(char2nr(char))
+        endif
+    endfor
+    return escaped
+endfunction "}}}
+
+function! s:split_to_bytes(str) "{{{
+    let save_enc = &encoding
+    noautocmd let &encoding = 'latin1'
+    try
+        return split(a:str, '\zs')
+    finally
+        noautocmd let &encoding = save_enc
+    endtry
+endfunction "}}}
+
+function! s:nr2hex(nr) "{{{
+    if !(0 <= a:nr && a:nr <= 255)
+        return -1
+    endif
+    if a:nr < 16
+        return "0" . "0123456789ABCDEF"[a:nr]
+    endif
+
+    let nr = a:nr
+    let i = 8
+    let hex_nr = 0
+    while nr ># 0
+        let n = 16 * i
+        if nr >=# n
+            let nr -= n
+            let hex_nr += i
+        else
+            if i ==# 1
+                break
+            endif
+            let i -= 1
+        endif
+    endwhile
+    return (hex_nr < 16 ? "0123456789ABCDEF"[hex_nr] : "0") . "0123456789ABCDEF"[nr]
+endfunction "}}}
 
 
 " s:uri {{{
