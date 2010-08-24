@@ -183,6 +183,21 @@ function! OpenBrowserSearch(word, ...) "{{{
     call OpenBrowser(uri)
 endfunction "}}}
 
+function! s:cmd_open_browser_search(args) "{{{
+    let NONE = -1
+    let engine = NONE
+    let args = substitute(a:args, '^\s\+', '', '')
+
+    if args =~# '^-\w\+\s\+'
+        let m = matchlist(args, '^-\(\w\+\)\s\+\(.*\)')
+        if empty(m)
+        endif
+        let [engine, args] = m[1:2]
+    endif
+
+    call call('OpenBrowserSearch', [args] + (engine ==# NONE ? [] : [engine]))
+endfunction "}}}
+
 function! s:is_urilib_installed() "{{{
     try
         call urilib#load()
@@ -314,7 +329,7 @@ command!
 command!
 \   -bar -nargs=+
 \   OpenBrowserSearch
-\   call OpenBrowserSearch(<q-args>)
+\   call s:cmd_open_browser_search(<q-args>)
 
 " Key-mapping
 nnoremap <Plug>(openbrowser-open) :<C-u>call OpenBrowser(<SID>get_url_on_cursor())<CR>
