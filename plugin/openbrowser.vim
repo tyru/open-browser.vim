@@ -170,12 +170,12 @@ function! OpenBrowserSearch(word, ...) "{{{
         return
     endif
 
-    let search = a:0 ? a:1 : g:openbrowser_default_search
-    if search ==# 'google'
+    let engine = a:0 ? a:1 : g:openbrowser_default_search
+    if engine ==# 'google'
         let uri = 'http://google.com/search?q='.urilib#uri_escape(a:word)
     else
         echohl WarningMsg
-        echomsg "Unknown search engine '" . search . "'."
+        echomsg "Unknown search engine '" . engine . "'."
         echohl None
         return
     endif
