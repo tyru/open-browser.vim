@@ -287,7 +287,7 @@ function! s:expand_keyword(str, options)  " {{{
   for [name, val] in items(a:options)
       " unlockvar l:
       " let l:[name] = val
-      execute 'let ' . name . ' = ' . string(val)
+      execute 'let' name '=' string(val)
   endfor
 
   while 1
