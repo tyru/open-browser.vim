@@ -123,6 +123,12 @@ g:openbrowser_isfname				*g:openbrowser_isfname*
 	|<Plug>(openbrowser-open)| opens <cfile> text in normal mode.
 	This variable temporarily changes 'isfname' option value at that time.
 
+g:openbrowser_default_search		*g:openbrowser_default_search*
+								(default: "google")
+	Key of Dictionary |g:openbrowser_search_engines|.
+	See |g:openbrowser_search_engines| , |:OpenBrowserSearch|,
+	|OpenBrowserSearch()|.
+
 g:openbrowser_search_engines		*g:openbrowser_search_engines*
 								(default: See below)
 	Default value is: >
