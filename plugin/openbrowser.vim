@@ -127,12 +127,17 @@ endif
 if !exists('g:openbrowser_default_search')
     let g:openbrowser_default_search = 'google'
 endif
-if !exists('g:openbrowser_search_engines')
-    let g:openbrowser_search_engines = {
-    \   'google': 'http://google.com/search?q={query}',
-    \   'yahoo': 'http://search.yahoo.com/search?p={query}',
-    \}
+
+let s:default = {
+\   'google': 'http://google.com/search?q={query}',
+\   'yahoo': 'http://search.yahoo.com/search?p={query}',
+\}
+if exists('g:openbrowser_search_engines')
+    call extend(g:openbrowser_search_engines, s:default, 'keep')
+else
+    let g:openbrowser_search_engines = s:default
 endif
+unlet s:default
 " }}}
 
 " Functions {{{
