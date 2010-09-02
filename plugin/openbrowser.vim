@@ -138,12 +138,24 @@ else
     let g:openbrowser_search_engines = s:default
 endif
 unlet s:default
+
+if !exists('g:openbrowser_path_open_vim')
+    let g:openbrowser_path_open_vim = 1
+endif
+if !exists('g:openbrowser_open_vim_command')
+    let g:openbrowser_open_vim_command = 'vsplit'
+endif
 " }}}
 
 " Functions {{{
 
 " Open URL with `g:openbrowser_open_commands`.
 function! OpenBrowser(uri) "{{{
+    if g:openbrowser_path_open_vim && s:seems_path(a:uri)
+        execute g:openbrowser_open_vim_command a:uri
+        return
+    endif
+
     let uri = s:convert_uri(a:uri)
     redraw
     echo "opening '" . uri . "' ..."
@@ -218,9 +230,18 @@ function! s:is_urilib_installed() "{{{
     endtry
 endfunction "}}}
 
+function! s:seems_path(path) "{{{
+    return
+    \   stridx(a:path, 'file://') ==# 0
+    \   || getftype(a:path) =~# '^\(file\|dir\|link\)$'
+endfunction "}}}
+
 function! s:convert_uri(uri) "{{{
-    if getftype(a:uri) =~# '^\(file\|dir\|link\)$'
+    if s:seems_path(a:uri)
         " a:uri is File path. Converts a:uri to `file://` URI.
+        if stridx(a:uri, 'file://') ==# 0
+            return a:uri
+        endif
         let save_shellslash = &shellslash
         let &l:shellslash = 1
         try
