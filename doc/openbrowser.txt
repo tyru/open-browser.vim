@@ -143,7 +143,7 @@ g:openbrowser_search_engines		*g:openbrowser_search_engines*
 COMMANDS					*openbrowser-commands* {{{
 
 :OpenBrowser {uri}				*:OpenBrowser*
-	Open URI with your favorite browser.
+	Opens URI with your favorite browser.
 
 :OpenBrowserSearch [-{search-engine}] {query}		*:OpenBrowserSearch*
 	{query}: Query string
