@@ -126,7 +126,7 @@ g:openbrowser_isfname				*g:openbrowser_isfname*
 ------------------------------------------------------------------------------
 COMMANDS					*openbrowser-commands* {{{
 
-OpenBrowser {uri}
+:OpenBrowser {uri}				*:OpenBrowser*
 	Open URI with your favorite browser.
 
 }}}
