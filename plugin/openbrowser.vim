@@ -173,7 +173,7 @@ function! OpenBrowser(uri) "{{{
     echohl None
 endfunction "}}}
 
-function! OpenBrowserSearch(word, ...) "{{{
+function! OpenBrowserSearch(query, ...) "{{{
     if !s:is_urilib_installed()
         echohl WarningMsg
         echomsg 'OpenBrowserSearch() requires urilib.'
@@ -190,7 +190,7 @@ function! OpenBrowserSearch(word, ...) "{{{
     endif
 
     call OpenBrowser(
-    \   s:expand_keyword(g:openbrowser_search_engines[engine], {'query': urilib#uri_escape(a:word)})
+    \   s:expand_keyword(g:openbrowser_search_engines[engine], {'query': urilib#uri_escape(a:query)})
     \)
 endfunction "}}}
 
