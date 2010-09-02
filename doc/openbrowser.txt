@@ -25,6 +25,7 @@ Interface			|openbrowser-interface|
   Keymappings		|openbrowser-keymappings|
   Variables			|openbrowser-variables|
   Commands			|openbrowser-commands|
+  Functions			|openbrowser-functions|
 Library to enhance open-browser		|openbrowser-library|
 Platform dependent values		|openbrowser-platform-dependent|
 Changelog			|openbrowser-changelog|
@@ -158,6 +159,18 @@ COMMANDS					*openbrowser-commands* {{{
 <	This opens http://search.yahoo.com/search?p=word as default.
 	You can change this URI with |g:openbrowser_search_engines|.
 
+
+}}}
+------------------------------------------------------------------------------
+FUNCTIONS						*openbrowser-functions* {{{
+
+OpenBrowser({uri})				*OpenBrowser()*
+	Function version of |:OpenBrowser|.
+
+OpenBrowserSearch({query} [, {search-engine}])		*OpenBrowserSearch()*
+	Function version of |:OpenBrowserSearch|.
+	If {search-engine} is omitted,
+	|g:openbrowser_default_search| is used instead.
 
 }}}
 }}}
