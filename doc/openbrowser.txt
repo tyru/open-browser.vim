@@ -145,6 +145,14 @@ COMMANDS					*openbrowser-commands* {{{
 :OpenBrowser {uri}				*:OpenBrowser*
 	Open URI with your favorite browser.
 
+:OpenBrowserSearch [-{search-engine}] {query}		*:OpenBrowserSearch*
+	{query}: Query string
+	{search-engine}: >
+		:OpenBrowserSearch -yahoo word
+<	This opens http://search.yahoo.com/search?p=word as default.
+	You can change this URI with |g:openbrowser_search_engines|.
+
+
 }}}
 }}}
 ==============================================================================
