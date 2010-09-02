@@ -122,6 +122,22 @@ g:openbrowser_isfname				*g:openbrowser_isfname*
 								(default: Same as 'isfname')
 	|<Plug>(openbrowser-open)| opens <cfile> text in normal mode.
 	This variable temporarily changes 'isfname' option value at that time.
+
+g:openbrowser_search_engines		*g:openbrowser_search_engines*
+								(default: See below)
+	Default value is: >
+    let g:openbrowser_search_engines = {
+    \   'google': 'http://google.com/search?q={query}',
+    \   'yahoo': 'http://search.yahoo.com/search?p={query}',
+    \}
+<
+	As default, supported search engines are Google and Yahoo.
+	You can add favorite search engines like: >
+    let g:openbrowser_search_engines = {
+    \   'favorite': 'http://example.com/search?q={query}',
+    \}
+<	{query} will be replaced with given query.
+
 }}}
 ------------------------------------------------------------------------------
 COMMANDS					*openbrowser-commands* {{{
