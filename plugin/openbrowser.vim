@@ -348,8 +348,6 @@ command!
 " Key-mapping
 nnoremap <Plug>(openbrowser-open) :<C-u>call OpenBrowser(<SID>get_url_on_cursor())<CR>
 vnoremap <Plug>(openbrowser-open) :<C-u>call OpenBrowser(<SID>get_selected_text())<CR>
-" TODO operator
-" noremap <Plug>(openbrowser-op-open)
 
 " }}}
 
