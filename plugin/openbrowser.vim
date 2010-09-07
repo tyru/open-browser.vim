@@ -151,6 +151,10 @@ endif
 
 " Open URL with `g:openbrowser_open_commands`.
 function! OpenBrowser(uri) "{{{
+    if a:uri =~# '^\s*$'
+        return
+    endif
+
     if g:openbrowser_path_open_vim && s:seems_path(a:uri)
         execute g:openbrowser_open_vim_command a:uri
         return
