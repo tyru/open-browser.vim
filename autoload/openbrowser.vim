@@ -103,9 +103,19 @@ function! openbrowser#_cmd_complete_open_browser_search(ArgLead, CmdLine, Cursor
     endif
     let cmdline = substitute(a:CmdLine, r, '', '')
 
+    let engine_options = map(keys(g:openbrowser_search_engines), '"-" . v:val')
     if cmdline == ''
-        return map(keys(g:openbrowser_search_engines), '"-" . v:val')
+        return engine_options
     endif
+
+    if type(a:ArgLead) == type(0) || a:ArgLead == ''
+        return []
+    endif
+    for option in engine_options
+        if stridx(option, a:ArgLead) == 0
+            return [option]
+        endif
+    endfor
 
     " TODO
     return []
