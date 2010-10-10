@@ -1,23 +1,10 @@
 " vim:foldmethod=marker:fen:
 scriptencoding utf-8
 
-" Load Once {{{
-if exists('s:loaded') && s:loaded
-    finish
-endif
-let s:loaded = 1
-" }}}
 " Saving 'cpoptions' {{{
 let s:save_cpo = &cpo
 set cpo&vim
 " }}}
-
-" Global Variables {{{
-if !exists('g:openbrowser_debug')
-    let g:openbrowser_debug = 0
-endif
-" }}}
-
 
 " Functions {{{
 
