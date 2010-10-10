@@ -170,7 +170,7 @@ command!
 \   OpenBrowser
 \   call openbrowser#open(<q-args>)
 command!
-\   -bar -nargs=+
+\   -bar -nargs=+ -complete=customlist,openbrowser#_cmd_complete_open_browser_search
 \   OpenBrowserSearch
 \   call openbrowser#_cmd_open_browser_search(<q-args>)
 

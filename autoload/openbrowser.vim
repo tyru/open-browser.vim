@@ -96,6 +96,21 @@ function! openbrowser#_cmd_open_browser_search(args) "{{{
     call call('OpenBrowserSearch', [args] + (engine ==# NONE ? [] : [engine]))
 endfunction "}}}
 
+function! openbrowser#_cmd_complete_open_browser_search(ArgLead, CmdLine, CursorPos) "{{{
+    let r = '^\s*OpenBrowserSearch\s\+'
+    if a:CmdLine !~# r
+        return
+    endif
+    let cmdline = substitute(a:CmdLine, r, '', '')
+
+    if cmdline == ''
+        return map(keys(g:openbrowser_search_engines), '"-" . v:val')
+    endif
+
+    " TODO
+    return []
+endfunction "}}}
+
 function! openbrowser#_keymapping_open(mode) "{{{
     if a:mode ==# 'n'
         return openbrowser#open(s:get_url_on_cursor())
