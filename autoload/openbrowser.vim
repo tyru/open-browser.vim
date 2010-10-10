@@ -117,12 +117,17 @@ function! openbrowser#_keymapping_open(mode) "{{{
 endfunction "}}}
 
 function! s:is_urilib_installed() "{{{
+    if exists('s:__is_urilib_installed')
+        return s:__is_urilib_installed
+    endif
+
     try
         call urilib#load()
-        return 1
+        let s:__is_urilib_installed = 1
     catch
-        return 0
+        let s:__is_urilib_installed = 0
     endtry
+    return s:__is_urilib_installed
 endfunction "}}}
 
 function! s:seems_path(path) "{{{
