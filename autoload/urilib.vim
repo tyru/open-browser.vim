@@ -170,7 +170,7 @@ function! s:eat_em(str, pat, ...) "{{{
         if a:0
             return [a:1, a:str]
         else
-            throw 'uri parse error:' . printf("can't parse '%s' with '%s'.", a:str, a:pat)
+            throw 'uri parse error: ' . printf("can't parse '%s' with '%s'.", a:str, a:pat)
         endif
     endif
     let [match, want] = m[0:1]
