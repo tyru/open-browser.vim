@@ -112,6 +112,10 @@ urilib#like_uri({uri})
 	Return boolean value whether {uri} is URI.
 	{uri} is treated same as |urilib#new_from_uri_like_string()|.
 
+		*urilib#uri_escape()*
+urilib#uri_escape({uri})
+	Encode {uri} to URI string.
+
 }}}
 }}}
 ==============================================================================
