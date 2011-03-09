@@ -164,8 +164,13 @@ endfunction "}}}
 " Parsing URI
 function! s:split_uri(str) "{{{
     let rest = a:str
-    let [scheme  , rest] = s:eat_scheme(rest)
-    let [host    , rest] = s:eat_host(rest)
+
+    let [scheme, rest] = s:eat_scheme(rest)
+    call s:validate_scheme(scheme)
+
+    let [host, rest] = s:eat_host(rest)
+    call s:validate_host(host)
+
     if rest == ''
         " URI allows no slash after host? Is it correct?
         let path = ''
@@ -174,11 +179,14 @@ function! s:split_uri(str) "{{{
         let [path    , rest] = s:eat_path(rest)
         let [fragment, rest] = s:eat_fragment(rest)
     endif
+    call s:validate_path(path)
+    call s:validate_fragment(fragment)
 
     let rest = substitute(rest, '^\s\+', '', '')
     if rest != ''
         throw 'uri parse error: unnecessary string at the end.'
     endif
+
     return [scheme, host, path, fragment]
 endfunction "}}}
 function! s:eat_em(str, pat, ...) "{{{
@@ -197,15 +205,42 @@ endfunction "}}}
 function! s:eat_scheme(str) "{{{
     return s:eat_em(a:str, '^\(\w\+\):'.'\C')
 endfunction "}}}
+function! s:validate_scheme(scheme) "{{{
+    if a:scheme !~# '^[a-z]\+$'
+        throw 'uri parse error: all characters'
+        \   . ' in scheme must be [a-z].'
+    endif
+endfunction "}}}
 function! s:eat_host(str) "{{{
     " '\/*' for file:// scheme. it has 3 slashes.
     return s:eat_em(a:str, '^\/\/\(\/*[^/]\+\)'.'\C')
 endfunction "}}}
+function! s:validate_host(host) "{{{
+    " FIXME
+    if a:host =~# '[^\x00-\xff]'
+        throw 'uri parse error: all characters'
+        \   . ' in host must be [\x00-\xff].'
+    endif
+endfunction "}}}
 function! s:eat_path(str) "{{{
     return s:eat_em(a:str, '^\(\/[^#]*\)'.'\C')
 endfunction "}}}
+function! s:validate_path(path) "{{{
+    " FIXME
+    if a:path =~# '[^\x00-\xff]'
+        throw 'uri parse error: all characters'
+        \   . ' in path must be [\x00-\xff].'
+    endif
+endfunction "}}}
 function! s:eat_fragment(str) "{{{
     return s:eat_em(a:str, '^#\(.*\)'.'\C', '')
+endfunction "}}}
+function! s:validate_fragment(fragment) "{{{
+    " FIXME
+    if a:fragment =~# '[^\x00-\xff]'
+        throw 'uri parse error: all characters'
+        \   . ' in path must be [\x00-\xff].'
+    endif
 endfunction "}}}
 
 
