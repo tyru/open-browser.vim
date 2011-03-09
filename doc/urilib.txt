@@ -22,6 +22,7 @@ CONTENTS						*urilib-contents*
 
 Introduction		|urilib-introduction|
 Interface			|urilib-interface|
+  Variables			|uriib-variables|
   Functions			|urilib-functions|
 URI Object			|urilib-object|
 TODO				|urilib-todo|
@@ -70,6 +71,19 @@ INTRODUCTION						*urilib-introduction* {{{
 }}}
 ==============================================================================
 INTERFACE				*urilib-interface* {{{
+------------------------------------------------------------------------------
+VARIABLES				*urilib-variables* {{{
+
+g:urilib#version
+	Indicates current version of urilib.
+	This variable is defined like this: >
+		let g:urilib#version = str2nr(printf('%02d%02d%03d', 0, 0, 0))
+<	To detect urilib's version from this variable.
+	Do it like the followings: >
+	" current version is higher than 0.1.0
+	:echo g:urilib#version >= 1000
+<
+}}}
 ------------------------------------------------------------------------------
 FUNCTIONS					*urilib-functions* {{{
 
