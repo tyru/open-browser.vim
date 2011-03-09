@@ -136,6 +136,12 @@ function! s:seems_path(path) "{{{
     \   || getftype(a:path) =~# '^\(file\|dir\|link\)$'
 endfunction "}}}
 
+function! s:seems_uri(uri) "{{{
+    " urilib.vim should not deduce so tolerantly a:uri as URI.
+    return (s:is_urilib_installed() && urilib#is_uri(a:uri))
+    \   || a:uri =~# '^[a-zA-Z0-9./]\+$'
+endfunction "}}}
+
 function! s:convert_uri(uri) "{{{
     if s:seems_path(a:uri)
         " a:uri is File path. Converts a:uri to `file://` URI.
@@ -149,24 +155,32 @@ function! s:convert_uri(uri) "{{{
         finally
             let &l:shellslash = save_shellslash
         endtry
-    elseif s:is_urilib_installed() && urilib#is_uri(a:uri)
-        " a:uri is URI.
-        let uri = urilib#new(a:uri)
-        call uri.scheme(get(g:openbrowser_fix_schemes, uri.scheme(), uri.scheme()))
-        call uri.host  (get(g:openbrowser_fix_hosts, uri.host(), uri.host()))
-        call uri.path  (get(g:openbrowser_fix_paths, uri.path(), uri.path()))
-        return uri.to_string()
-    else
-        " Neither
-        " - File path
-        " - |urilib| has been installed and |urilib| determine a:uri is URI
-
-        " ...But openbrowser should try to open!
-        " Because a:uri might be URI like "file://...".
-        " In this case, this is not file path and
-        " |urilib| might not have been installed :(.
-        return a:uri
     endif
+
+    if s:seems_uri(a:uri)
+        let uri = a:uri
+        " uri is URI.
+        if uri !~# '^[a-z]\+://'    " no scheme.
+            let uri = 'http://' . uri
+        endif
+        if s:is_urilib_installed() && urilib#is_uri(uri)
+            let obj = urilib#new(uri)
+            call obj.scheme(get(g:openbrowser_fix_schemes, obj.scheme(), obj.scheme()))
+            call obj.host  (get(g:openbrowser_fix_hosts, obj.host(), obj.host()))
+            call obj.path  (get(g:openbrowser_fix_paths, obj.path(), obj.path()))
+            return obj.to_string()
+        endif
+    endif
+
+    " Neither
+    " - File path
+    " - |urilib| has been installed and |urilib| determine a:uri is URI
+
+    " ...But openbrowser should try to open!
+    " Because a:uri might be URI like "file://...".
+    " In this case, this is not file path and
+    " |urilib| might not have been installed :(.
+    return a:uri
 endfunction "}}}
 
 " Get selected text in visual mode.
