@@ -39,6 +39,11 @@ function! urilib#is_uri(str) "{{{
     return s:sandbox_call('urilib#new', [a:str, ERROR]) isnot ERROR
 endfunction "}}}
 
+function! urilib#like_uri(str) "{{{
+    let ERROR = []
+    return s:sandbox_call('urilib#new_from_uri_like_string', [a:str, ERROR]) isnot ERROR
+endfunction "}}}
+
 function! urilib#uri_escape(str) "{{{
     let escaped = ''
     for i in range(strlen(a:str))
