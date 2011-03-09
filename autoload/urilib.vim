@@ -34,6 +34,14 @@ function! urilib#new(...) "{{{
     return s:sandbox_call('s:new', a:000)
 endfunction "}}}
 
+function! urilib#new_from_uri_like_string(str, ...) "{{{
+    let str = a:str
+    if str !~# '^[a-z]\+://'    " no scheme.
+        let str = 'http://' . str
+    endif
+    return s:sandbox_call('urilib#new', [str] + a:000)
+endfunction "}}}
+
 function! urilib#is_uri(str) "{{{
     let ERROR = []
     return s:sandbox_call('urilib#new', [a:str, ERROR]) isnot ERROR
