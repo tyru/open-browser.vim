@@ -102,28 +102,30 @@ endfunction "}}}
 
 function! s:uri.path(...) dict "{{{
     if a:0
-        let self.__path = a:1
+        " NOTE: self.__path must not have "/" prefix.
+        let self.__path = substitute(a:1, '^/\+', '', '')
     endif
-    return self.__path
+    return "/" . self.__path
 endfunction "}}}
 
 function! s:uri.opaque(...) dict "{{{
     if a:0
         " TODO
     endif
-    return printf('//%s%s', self.__host, self.__path)
+    return printf('//%s/%s', self.__host, self.__path)
 endfunction "}}}
 
 function! s:uri.fragment(...) dict "{{{
     if a:0
-        let self.__fragment = a:1
+        " NOTE: self.__path must not have "#" prefix.
+        let self.__fragment = substitute(a:1, '^#\+', '', '')
     endif
     return self.__fragment
 endfunction "}}}
 
 function! s:uri.to_string() dict "{{{
     return printf(
-    \   '%s://%s%s%s',
+    \   '%s://%s/%s%s',
     \   self.__scheme,
     \   self.__host,
     \   self.__path,
@@ -137,7 +139,12 @@ endfunction "}}}
 
 function! s:new(str) "{{{
     let [scheme, host, path, fragment] = s:split_uri(a:str)
-    return extend(deepcopy(s:uri), {'__scheme': scheme, '__host': host, '__path': path, '__fragment': fragment}, 'force')
+    let obj = deepcopy(s:uri)
+    call obj.scheme(scheme)
+    call obj.host(host)
+    call obj.path(path)
+    call obj.fragment(fragment)
+    return obj
 endfunction "}}}
 
 function! s:is_urilib_exception(str) "{{{
