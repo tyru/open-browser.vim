@@ -56,11 +56,11 @@ endfunction "}}}
 
 " Ex command
 command!
-\   -bar -nargs=+ -complete=file
+\   -nargs=+ -complete=file
 \   OpenBrowser
 \   call openbrowser#open(<q-args>)
 command!
-\   -bar -nargs=+ -complete=customlist,openbrowser#_cmd_complete_open_browser_search
+\   -nargs=+ -complete=customlist,openbrowser#_cmd_complete_open_browser_search
 \   OpenBrowserSearch
 \   call openbrowser#_cmd_open_browser_search(<q-args>)
 
