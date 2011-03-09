@@ -48,13 +48,6 @@ function! openbrowser#open(uri) "{{{
 endfunction "}}}
 
 function! openbrowser#search(query, ...) "{{{
-    if !s:is_urilib_installed()
-        echohl WarningMsg
-        echomsg 'OpenBrowserSearch() requires urilib.'
-        echohl None
-        return
-    endif
-
     let engine = a:0 ? a:1 : g:openbrowser_default_search
     if !has_key(g:openbrowser_search_engines, engine)
         echohl WarningMsg
@@ -116,20 +109,6 @@ function! openbrowser#_keymapping_open(mode) "{{{
     endif
 endfunction "}}}
 
-function! s:is_urilib_installed() "{{{
-    if exists('s:__is_urilib_installed')
-        return s:__is_urilib_installed
-    endif
-
-    try
-        call urilib#load()
-        let s:__is_urilib_installed = 1
-    catch
-        let s:__is_urilib_installed = 0
-    endtry
-    return s:__is_urilib_installed
-endfunction "}}}
-
 function! s:seems_path(path) "{{{
     return
     \   stridx(a:path, 'file://') ==# 0
@@ -138,7 +117,7 @@ endfunction "}}}
 
 function! s:seems_uri(uri) "{{{
     " urilib.vim should not deduce so tolerantly a:uri as URI.
-    return (s:is_urilib_installed() && urilib#is_uri(a:uri))
+    return urilib#is_uri(a:uri)
     \   || a:uri =~# '^[a-zA-Z0-9./]\+$'
 endfunction "}}}
 
