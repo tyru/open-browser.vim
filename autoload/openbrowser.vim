@@ -116,8 +116,8 @@ else
 endif
 unlet s:default
 
-if !exists('g:openbrowser_path_open_vim')
-    let g:openbrowser_path_open_vim = 1
+if !exists('g:openbrowser_open_filepath_in_vim')
+    let g:openbrowser_open_filepath_in_vim = 1
 endif
 if !exists('g:openbrowser_open_vim_command')
     let g:openbrowser_open_vim_command = 'vsplit'
@@ -132,7 +132,7 @@ function! openbrowser#open(uri) "{{{
         return
     endif
 
-    if g:openbrowser_path_open_vim && s:seems_path(a:uri)
+    if g:openbrowser_open_filepath_in_vim && s:seems_path(a:uri)
         execute g:openbrowser_open_vim_command a:uri
         return
     endif
