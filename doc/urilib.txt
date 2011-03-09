@@ -73,7 +73,9 @@ INTERFACE				*urilib-interface* {{{
 FUNCTIONS					*urilib-functions* {{{
 
 urilib#new()
+urilib#new_from_uri_like_string()
 urilib#is_uri()
+urilib#like_uri()
 
 obj.scheme()
 obj.host()
