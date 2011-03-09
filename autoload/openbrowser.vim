@@ -116,9 +116,7 @@ function! s:seems_path(path) "{{{
 endfunction "}}}
 
 function! s:seems_uri(uri) "{{{
-    " urilib.vim should not deduce so tolerantly a:uri as URI.
-    return urilib#is_uri(a:uri)
-    \   || a:uri =~# '^[a-zA-Z0-9./]\+$'
+    return urilib#like_uri(a:uri)
 endfunction "}}}
 
 function! s:convert_uri(uri) "{{{
@@ -137,18 +135,11 @@ function! s:convert_uri(uri) "{{{
     endif
 
     if s:seems_uri(a:uri)
-        let uri = a:uri
-        " uri is URI.
-        if uri !~# '^[a-z]\+://'    " no scheme.
-            let uri = 'http://' . uri
-        endif
-        if s:is_urilib_installed() && urilib#is_uri(uri)
-            let obj = urilib#new(uri)
-            call obj.scheme(get(g:openbrowser_fix_schemes, obj.scheme(), obj.scheme()))
-            call obj.host  (get(g:openbrowser_fix_hosts, obj.host(), obj.host()))
-            call obj.path  (get(g:openbrowser_fix_paths, obj.path(), obj.path()))
-            return obj.to_string()
-        endif
+        let obj = urilib#new_from_uri_like_string(a:uri)
+        call obj.scheme(get(g:openbrowser_fix_schemes, obj.scheme(), obj.scheme()))
+        call obj.host  (get(g:openbrowser_fix_hosts, obj.host(), obj.host()))
+        call obj.path  (get(g:openbrowser_fix_paths, obj.path(), obj.path()))
+        return obj.to_string()
     endif
 
     " Neither
