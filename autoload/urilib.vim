@@ -13,7 +13,7 @@ set cpo&vim
 " }}}
 
 
-let g:urilib#version = str2nr(printf('%02d%02d%03d', 0, 0, 1))
+let g:urilib#version = str2nr(printf('%02d%02d%03d', 0, 0, 2))
 
 
 function! urilib#load() "{{{
@@ -170,7 +170,7 @@ function! s:eat_em(str, pat, ...) "{{{
         if a:0
             return [a:1, a:str]
         else
-            throw 'uri parse error:' . printf("can't parse '%s' with '%s'.", a:str, a:pat)
+            throw 'uri parse error: ' . printf("can't parse '%s' with '%s'.", a:str, a:pat)
         endif
     endif
     let [match, want] = m[0:1]
