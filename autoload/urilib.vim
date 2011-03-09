@@ -132,8 +132,6 @@ function! s:uri.to_string() dict "{{{
 endfunction "}}}
 
 
-
-lockvar s:uri
 " }}}
 
 
