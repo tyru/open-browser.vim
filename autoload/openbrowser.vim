@@ -195,6 +195,14 @@ function! openbrowser#_cmd_open_browser_search(args) "{{{
     call call('OpenBrowserSearch', [args] + (engine ==# NONE ? [] : [engine]))
 endfunction "}}}
 
+function! openbrowser#smart_search(query) "{{{
+    if s:seems_uri(a:query)
+        return openbrowser#open(a:query)
+    else
+        return openbrowser#search(a:query)
+    endif
+endfunction "}}}
+
 function! openbrowser#_cmd_complete_open_browser_search(unused1, cmdline, unused2) "{{{
     let r = '^\s*OpenBrowserSearch\s\+'
     if a:cmdline !~# r
@@ -231,6 +239,14 @@ function! openbrowser#_keymapping_open(mode) "{{{
 endfunction "}}}
 
 function! openbrowser#_keymapping_search(mode) "{{{
+    if a:mode ==# 'n'
+        return openbrowser#search(expand('<cword>'))
+    else
+        return openbrowser#search(s:get_selected_text())
+    endif
+endfunction "}}}
+
+function! openbrowser#_keymapping_smart_search(mode) "{{{
     if a:mode ==# 'n'
         return openbrowser#search(expand('<cword>'))
     else

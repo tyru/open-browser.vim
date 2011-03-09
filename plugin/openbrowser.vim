@@ -63,6 +63,10 @@ command!
 \   -nargs=+ -complete=customlist,openbrowser#_cmd_complete_open_browser_search
 \   OpenBrowserSearch
 \   call openbrowser#_cmd_open_browser_search(<q-args>)
+command!
+\   -nargs=+ -complete=file
+\   OpenBrowserSmartSearch
+\   call openbrowser#smart_search(<q-args>)
 
 
 
@@ -71,6 +75,8 @@ nnoremap <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymapping_open('n')<C
 vnoremap <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymapping_open('v')<CR>
 nnoremap <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymapping_search('n')<CR>
 vnoremap <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymapping_search('v')<CR>
+nnoremap <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymapping_smart_search('n')<CR>
+vnoremap <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymapping_smart_search('v')<CR>
 
 " }}}
 
