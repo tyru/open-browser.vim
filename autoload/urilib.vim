@@ -18,9 +18,9 @@ function! urilib#load() "{{{
     " dummy function to load this script
 endfunction "}}}
 
-function! urilib#new(str, ...) "{{{
+function! s:sandbox_call(fn, args) "{{{
     try
-        return s:new(a:str)
+        return call(a:fn, a:args)
     catch
         if a:0 && s:is_urilib_exception(v:exception)
             return a:1
@@ -30,17 +30,13 @@ function! urilib#new(str, ...) "{{{
     endtry
 endfunction "}}}
 
+function! urilib#new(...) "{{{
+    return s:sandbox_call('s:new', a:000)
+endfunction "}}}
+
 function! urilib#is_uri(str) "{{{
-    try
-        call urilib#new(a:str)
-        return 1
-    catch
-        if s:is_urilib_exception(v:exception)
-            return 0
-        else
-            throw substitute(v:exception, '^Vim([^()]\+):', '', '')
-        endif
-    endtry
+    let ERROR = []
+    return s:sandbox_call('urilib#new', [a:str, ERROR]) isnot ERROR
 endfunction "}}}
 
 function! urilib#uri_escape(str) "{{{
