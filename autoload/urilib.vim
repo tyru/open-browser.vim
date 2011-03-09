@@ -20,20 +20,23 @@ function! urilib#load() "{{{
     " dummy function to load this script
 endfunction "}}}
 
-function! s:sandbox_call(fn, args) "{{{
+function! s:sandbox_call(fn, args, nothrow, NothrowValue) "{{{
     try
         return call(a:fn, a:args)
     catch
-        if a:0 && s:is_urilib_exception(v:exception)
-            return a:1
+        if a:nothrow && s:is_urilib_exception(v:exception)
+            return a:NothrowValue
         else
             throw substitute(v:exception, '^Vim([^()]\+):', '', '')
         endif
     endtry
 endfunction "}}}
 
-function! urilib#new(...) "{{{
-    return s:sandbox_call('s:new', a:000)
+function! urilib#new(uri, ...) "{{{
+    let nothrow = a:0 != 0
+    let NothrowValue = a:0 ? a:1 : 'unused'
+    return s:sandbox_call(
+    \   's:new', [a:uri], nothrow, NothrowValue)
 endfunction "}}}
 
 function! urilib#new_from_uri_like_string(str, ...) "{{{
@@ -41,7 +44,11 @@ function! urilib#new_from_uri_like_string(str, ...) "{{{
     if str !~# '^[a-z]\+://'    " no scheme.
         let str = 'http://' . str
     endif
-    return s:sandbox_call('urilib#new', [str] + a:000)
+
+    let nothrow = a:0 != 0
+    let NothrowValue = a:0 ? a:1 : 'unused'
+    return s:sandbox_call(
+    \   's:new', [str], nothrow, NothrowValue)
 endfunction "}}}
 
 function! urilib#is_uri(str) "{{{
