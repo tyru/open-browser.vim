@@ -131,8 +131,6 @@ function! s:uri.to_string() dict "{{{
     \)
 endfunction "}}}
 
-let s:uri.is_uri = function('urilib#is_uri')
-
 
 
 lockvar s:uri
