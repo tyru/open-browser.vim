@@ -245,7 +245,11 @@ function! s:seems_path(path) "{{{
 endfunction "}}}
 
 function! s:seems_uri(uri) "{{{
-    return urilib#like_uri(a:uri)
+    let ERROR = []
+    let uri = urilib#new_from_uri_like_string(a:uri, ERROR)
+    return uri isnot ERROR
+    \   && uri.scheme() !=# ''
+    \   && uri.host() =~# '\.'
 endfunction "}}}
 
 function! s:convert_uri(uri) "{{{
