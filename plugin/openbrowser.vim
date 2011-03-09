@@ -69,6 +69,8 @@ command!
 " Key-mapping
 nnoremap <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymapping_open('n')<CR>
 vnoremap <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymapping_open('v')<CR>
+nnoremap <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymapping_search('n')<CR>
+vnoremap <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymapping_search('v')<CR>
 
 " }}}
 

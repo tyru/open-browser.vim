@@ -230,6 +230,14 @@ function! openbrowser#_keymapping_open(mode) "{{{
     endif
 endfunction "}}}
 
+function! openbrowser#_keymapping_search(mode) "{{{
+    if a:mode ==# 'n'
+        return openbrowser#search(expand('<cword>'))
+    else
+        return openbrowser#search(s:get_selected_text())
+    endif
+endfunction "}}}
+
 function! s:seems_path(path) "{{{
     return
     \   stridx(a:path, 'file://') ==# 0
