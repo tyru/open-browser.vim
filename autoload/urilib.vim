@@ -157,7 +157,11 @@ function! s:split_uri(str) "{{{
         let [path    , rest] = s:eat_path(rest)
         let [fragment, rest] = s:eat_fragment(rest)
     endif
-    " FIXME: What should I do for `rest`?
+
+    let rest = substitute(rest, '^\s\+', '', '')
+    if rest != ''
+        throw 'uri parse error: unnecessary string at the end.'
+    endif
     return [scheme, host, path, fragment]
 endfunction "}}}
 function! s:eat_em(str, pat, ...) "{{{
