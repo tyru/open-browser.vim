@@ -37,10 +37,26 @@ INTERFACE				*openbrowser-interface* {{{
 KEYMAPPINGS					*openbrowser-keymappings* {{{
 
 n <Plug>(openbrowser-open)				|<Plug>(openbrowser-open)|
-	Open current <cfile> text with |:OpenBrowser|.
+	Open current text under cursor with |:OpenBrowser|.
+	You can customize the definition of "text"
+	with |g:openbrowser_iskeyword|.
 
 v <Plug>(openbrowser-open)				|<Plug>(openbrowser-open)|
 	Open selected text with |:OpenBrowser|.
+
+
+n <Plug>(openbrowser-search)				|<Plug>(openbrowser-search)|
+	Open current <cfile> text with |:OpenBrowserSearch|.
+
+v <Plug>(openbrowser-search)				|<Plug>(openbrowser-search)|
+	Open selected text with |:OpenBrowserSearch|.
+
+
+n <Plug>(openbrowser-smart-search)	|<Plug>(openbrowser-smart-search)|
+	Open current <cfile> text with |:OpenBrowserSmartSearch|.
+
+v <Plug>(openbrowser-smart-search)	|<Plug>(openbrowser-smart-search)|
+	Open selected text with |:OpenBrowserSmartSearch|.
 
 }}}
 ------------------------------------------------------------------------------
@@ -108,9 +124,17 @@ g:openbrowser_fix_paths				*g:openbrowser_fix_paths*
 		http://yahoo.com/tyru
 <
 g:openbrowser_isfname				*g:openbrowser_isfname*
-								(default: Same as 'isfname')
+								(default: See |g:openbrowser_iskeyword|)
+	Now this variable is deprecated.
+	Use |g:openbrowser_iskeyword| instead.
+	NOTE: This works like |g:openbrowser_iskeyword|
+	for backward compatibility.
+
+g:openbrowser_iskeyword				*g:openbrowser_iskeyword*
+								(default: Very long.
+								see autoload/openbrowser.vim)
 	|<Plug>(openbrowser-open)| opens <cfile> text in normal mode.
-	This variable temporarily changes 'isfname' option value at that time.
+	This variable temporarily changes 'iskeyword' option value at that time.
 
 g:openbrowser_default_search		*g:openbrowser_default_search*
 								(default: "google")
@@ -126,12 +150,28 @@ g:openbrowser_search_engines		*g:openbrowser_search_engines*
     \   'yahoo': 'http://search.yahoo.com/search?p={query}',
     \}
 <
-	As default, supported search engines are Google and Yahoo.
+	As default, supported search engines are only Google and Yahoo.
+	(You can e-mail me to add more search engines :)
+
 	You can add favorite search engines like: >
     let g:openbrowser_search_engines = {
     \   'favorite': 'http://example.com/search?q={query}',
     \}
 <	{query} will be replaced with given query.
+
+					*g:openbrowser_open_filepath_in_vim*
+g:openbrowser_open_filepath_in_vim
+								(default: 1)
+	If this value is true,
+	open looks-like-a-path string in vim.
+	|g:openbrowser_open_vim_command| is used
+	for opening the path.
+
+					*g:openbrowser_open_vim_command*
+g:openbrowser_open_vim_command
+								(default: "vsplit")
+	This value is used for opening looks-like-a-path string.
+	See |g:openbrowser_open_filepath_in_vim| for the details.
 
 }}}
 ------------------------------------------------------------------------------
@@ -147,6 +187,10 @@ COMMANDS					*openbrowser-commands* {{{
 <	This opens http://search.yahoo.com/search?p=word as default.
 	You can change this URI with |g:openbrowser_search_engines|.
 
+:OpenBrowserSmartSearch {uri-or-query}	*:OpenBrowserSmartSearch*
+	This is wrapper for two above Ex commands.
+	If {uri-or-query} _seems_ like URI, open the URI.
+	If {uri-or-query} _seems_ like query, search the query.
 
 }}}
 ------------------------------------------------------------------------------
