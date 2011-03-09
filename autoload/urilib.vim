@@ -13,34 +13,52 @@ set cpo&vim
 " }}}
 
 
+let g:urilib#version = str2nr(printf('%02d%02d%03d', 0, 0, 0))
+
 
 function! urilib#load() "{{{
     " dummy function to load this script
 endfunction "}}}
 
-function! urilib#new(str, ...) "{{{
+function! s:sandbox_call(fn, args, nothrow, NothrowValue) "{{{
     try
-        return s:new(a:str)
+        return call(a:fn, a:args)
     catch
-        if a:0 && s:is_urilib_exception(v:exception)
-            return a:1
+        if a:nothrow && s:is_urilib_exception(v:exception)
+            return a:NothrowValue
         else
             throw substitute(v:exception, '^Vim([^()]\+):', '', '')
         endif
     endtry
 endfunction "}}}
 
+function! urilib#new(uri, ...) "{{{
+    let nothrow = a:0 != 0
+    let NothrowValue = a:0 ? a:1 : 'unused'
+    return s:sandbox_call(
+    \   's:new', [a:uri], nothrow, NothrowValue)
+endfunction "}}}
+
+function! urilib#new_from_uri_like_string(str, ...) "{{{
+    let str = a:str
+    if str !~# '^[a-z]\+://'    " no scheme.
+        let str = 'http://' . str
+    endif
+
+    let nothrow = a:0 != 0
+    let NothrowValue = a:0 ? a:1 : 'unused'
+    return s:sandbox_call(
+    \   's:new', [str], nothrow, NothrowValue)
+endfunction "}}}
+
 function! urilib#is_uri(str) "{{{
-    try
-        call urilib#new(a:str)
-        return 1
-    catch
-        if s:is_urilib_exception(v:exception)
-            return 0
-        else
-            throw substitute(v:exception, '^Vim([^()]\+):', '', '')
-        endif
-    endtry
+    let ERROR = []
+    return urilib#new(a:str, ERROR) isnot ERROR
+endfunction "}}}
+
+function! urilib#like_uri(str) "{{{
+    let ERROR = []
+    return urilib#new_from_uri_like_string(a:str, ERROR) isnot ERROR
 endfunction "}}}
 
 function! urilib#uri_escape(str) "{{{
@@ -113,11 +131,7 @@ function! s:uri.to_string() dict "{{{
     \)
 endfunction "}}}
 
-let s:uri.is_uri = function('urilib#is_uri')
 
-
-
-lockvar s:uri
 " }}}
 
 
