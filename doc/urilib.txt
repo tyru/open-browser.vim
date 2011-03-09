@@ -23,6 +23,7 @@ CONTENTS						*urilib-contents*
 Introduction		|urilib-introduction|
 Interface			|urilib-interface|
   Functions			|urilib-functions|
+URI Object			|urilib-object|
 TODO				|urilib-todo|
 Changelog			|urilib-changelog|
 
@@ -72,19 +73,51 @@ INTERFACE				*urilib-interface* {{{
 ------------------------------------------------------------------------------
 FUNCTIONS					*urilib-functions* {{{
 
-urilib#new()
-urilib#new_from_uri_like_string()
-urilib#is_uri()
-urilib#like_uri()
+		*urilib#new()*
+urilib#new({uri})
+	Create urilib object. See |urilib-object|.
 
-obj.scheme()
-obj.host()
-obj.path()
-obj.opaque()
-obj.fragment()
-obj.is_uri()
+		*urilib#new_from_uri_like_string()*
+urilib#new_from_uri_like_string({uri})
+	Create urilib object. See |urilib-object|.
+	This function treat {uri} as URI tolerantly.
+	for example, the following code will raise an error: >
+		urilib#new("example.com")
+<	but the following code will NOT raise an error: >
+		urilib#new("http://example.com/")
+		urilib#new("http://example.com")
+		urilib#new_from_uri_like_string("example.com")
+<
+		*urilib#is_uri()*
+urilib#is_uri({uri})
+	Return boolean value whether {uri} is URI.
+	{uri} is treated same as |urilib#new()|.
+
+		*urilib#like_uri()*
+urilib#like_uri({uri})
+	Return boolean value whether {uri} is URI.
+	{uri} is treated same as |urilib#new_from_uri_like_string()|.
 
 }}}
+}}}
+==============================================================================
+URI OBJECT					*urilib-object* {{{
+
+obj.scheme()
+	Returns scheme.
+
+obj.host()
+	Returns host.
+
+obj.path()
+	Returns path.
+
+obj.opaque()
+	Returns opaque.
+
+obj.fragment()
+	Returns fragment.
+
 }}}
 ==============================================================================
 TODO						*urilib-todo* {{{
