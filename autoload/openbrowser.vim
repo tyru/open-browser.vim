@@ -195,28 +195,30 @@ function! openbrowser#_cmd_open_browser_search(args) "{{{
     call call('OpenBrowserSearch', [args] + (engine ==# NONE ? [] : [engine]))
 endfunction "}}}
 
-function! openbrowser#_cmd_complete_open_browser_search(ArgLead, CmdLine, CursorPos) "{{{
+function! openbrowser#_cmd_complete_open_browser_search(unused1, cmdline, unused2) "{{{
     let r = '^\s*OpenBrowserSearch\s\+'
-    if a:CmdLine !~# r
+    if a:cmdline !~# r
         return
     endif
-    let cmdline = substitute(a:CmdLine, r, '', '')
+    let cmdline = substitute(a:cmdline, r, '', '')
 
-    let engine_options = map(keys(g:openbrowser_search_engines), '"-" . v:val')
-    if cmdline == ''
+    let engine_options = map(
+    \   sort(keys(g:openbrowser_search_engines)),
+    \   '"-" . v:val'
+    \)
+    if cmdline ==# '' || cmdline ==# '-'
+        " Return all search engines.
         return engine_options
     endif
 
-    if type(a:ArgLead) == type(0) || a:ArgLead == ''
-        return []
-    endif
+    " Inputting search engine.
+    " Find out which engine.
     for option in engine_options
-        if stridx(option, a:ArgLead) == 0
+        if stridx(option, cmdline) == 0
             return [option]
         endif
     endfor
 
-    " TODO
     return []
 endfunction "}}}
 
