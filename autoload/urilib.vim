@@ -13,6 +13,8 @@ set cpo&vim
 " }}}
 
 
+let g:urilib#version = str2nr(printf('%02d%02d%03d', 0, 0, 0))
+
 
 function! urilib#load() "{{{
     " dummy function to load this script
