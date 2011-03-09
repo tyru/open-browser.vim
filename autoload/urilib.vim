@@ -181,8 +181,8 @@ function! s:eat_scheme(str) "{{{
     return s:eat_em(a:str, '^\(\w\+\):'.'\C')
 endfunction "}}}
 function! s:eat_host(str) "{{{
-    let for_file_scheme = '\/*'
-    return s:eat_em(a:str, '^\/\/\('.for_file_scheme.'[^/]\+\)'.'\C')
+    " '\/*' for file:// scheme. it has 3 slashes.
+    return s:eat_em(a:str, '^\/\/\(\/*[^/]\+\)'.'\C')
 endfunction "}}}
 function! s:eat_path(str) "{{{
     return s:eat_em(a:str, '^\(\/[^#]*\)'.'\C')
