@@ -13,7 +13,7 @@ set cpo&vim
 " }}}
 
 
-let g:urilib#version = str2nr(printf('%02d%02d%03d', 0, 0, 4))
+let g:urilib#version = str2nr(printf('%02d%02d%03d', 0, 0, 5))
 
 
 function! urilib#load() "{{{
@@ -75,32 +75,29 @@ endfunction "}}}
 
 
 " s:uri {{{
-let s:uri = {
-\   '__scheme': '',
-\   '__host': '',
-\   '__path': '',
-\   '__fragment': '',
-\}
+
+function! s:local_func(name) "{{{
+    let sid = matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_local_func$')
+    return function('<SNR>' . sid . '_' . a:name)
+endfunction "}}}
 
 
 
-" Methods
-
-function! s:uri.scheme(...) dict "{{{
+function! s:uri_scheme(...) dict "{{{
     if a:0
         let self.__scheme = a:1
     endif
     return self.__scheme
 endfunction "}}}
 
-function! s:uri.host(...) dict "{{{
+function! s:uri_host(...) dict "{{{
     if a:0
         let self.__host = a:1
     endif
     return self.__host
 endfunction "}}}
 
-function! s:uri.path(...) dict "{{{
+function! s:uri_path(...) dict "{{{
     if a:0
         " NOTE: self.__path must not have "/" prefix.
         let self.__path = substitute(a:1, '^/\+', '', '')
@@ -108,14 +105,14 @@ function! s:uri.path(...) dict "{{{
     return "/" . self.__path
 endfunction "}}}
 
-function! s:uri.opaque(...) dict "{{{
+function! s:uri_opaque(...) dict "{{{
     if a:0
         " TODO
     endif
     return printf('//%s/%s', self.__host, self.__path)
 endfunction "}}}
 
-function! s:uri.fragment(...) dict "{{{
+function! s:uri_fragment(...) dict "{{{
     if a:0
         " NOTE: self.__path must not have "#" prefix.
         let self.__fragment = substitute(a:1, '^#\+', '', '')
@@ -123,7 +120,7 @@ function! s:uri.fragment(...) dict "{{{
     return self.__fragment
 endfunction "}}}
 
-function! s:uri.to_string() dict "{{{
+function! s:uri_to_string() dict "{{{
     return printf(
     \   '%s://%s/%s%s',
     \   self.__scheme,
@@ -134,6 +131,19 @@ function! s:uri.to_string() dict "{{{
 endfunction "}}}
 
 
+let s:uri = {
+\   '__scheme': '',
+\   '__host': '',
+\   '__path': '',
+\   '__fragment': '',
+\
+\   'scheme': s:local_func('uri_scheme'),
+\   'host': s:local_func('uri_host'),
+\   'path': s:local_func('uri_path'),
+\   'opaque': s:local_func('uri_opaque'),
+\   'fragment': s:local_func('uri_fragment'),
+\   'to_string': s:local_func('uri_to_string'),
+\}
 " }}}
 
 
