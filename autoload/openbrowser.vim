@@ -268,11 +268,14 @@ function! s:convert_uri(uri) "{{{
     endif
 
     if s:seems_uri(a:uri)
-        let obj = urilib#new_from_uri_like_string(a:uri)
-        call obj.scheme(get(g:openbrowser_fix_schemes, obj.scheme(), obj.scheme()))
-        call obj.host  (get(g:openbrowser_fix_hosts, obj.host(), obj.host()))
-        call obj.path  (get(g:openbrowser_fix_paths, obj.path(), obj.path()))
-        return obj.to_string()
+        let ERROR = []
+        let obj = urilib#new_from_uri_like_string(a:uri, ERROR)
+        if obj isnot ERROR
+            call obj.scheme(get(g:openbrowser_fix_schemes, obj.scheme(), obj.scheme()))
+            call obj.host  (get(g:openbrowser_fix_hosts, obj.host(), obj.host()))
+            call obj.path  (get(g:openbrowser_fix_paths, obj.path(), obj.path()))
+            return obj.to_string()
+        endif
     endif
 
     " Neither
