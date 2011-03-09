@@ -235,6 +235,16 @@ backward compatibility.
 - Specialize |g:openbrowser_iskeyword| value to get URI in <cword>.
 - More readable messages.
 
+0.0.3:
+- Implement g:openbrowser_default_search.
+- Implement g:openbrowser_search_engines.
+- Implement g:openbrowser_open_filepath_in_vim.
+- Implement g:openbrowser_open_vim_command.
+- Separate plugin/openbrowser.vim to autoload/openbrowser.vim to save the memory.
+- Bundle urilib.vim (autoload/urilib.vim)
+- Fix bug: openbrowser should open URI which has no scheme
+  (e.g.: example.com)
+
 }}}
 ==============================================================================
 vim:tw=78:fo=tcq2mM:ts=4:ft=help:norl:noet:fdm=marker:fen
