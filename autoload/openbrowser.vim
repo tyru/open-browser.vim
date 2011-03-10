@@ -70,7 +70,7 @@ if exists('g:openbrowser_isfname')
     let g:openbrowser_iskeyword = g:openbrowser_isfname
 endif
 if !exists('g:openbrowser_iskeyword')
-    " Getting only URI from <cfile>.
+    " Getting only URI from <cword>.
     let g:openbrowser_iskeyword = join(
     \   range(char2nr('A'), char2nr('Z'))
     \   + range(char2nr('a'), char2nr('z'))
@@ -248,9 +248,9 @@ endfunction "}}}
 
 function! openbrowser#_keymapping_smart_search(mode) "{{{
     if a:mode ==# 'n'
-        return openbrowser#search(expand('<cword>'))
+        return openbrowser#smart_search(s:get_url_on_cursor())
     else
-        return openbrowser#search(s:get_selected_text())
+        return openbrowser#smart_search(s:get_selected_text())
     endif
 endfunction "}}}
 

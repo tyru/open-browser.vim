@@ -46,14 +46,14 @@ v <Plug>(openbrowser-open)				|<Plug>(openbrowser-open)|
 
 
 n <Plug>(openbrowser-search)				|<Plug>(openbrowser-search)|
-	Open current <cfile> text with |:OpenBrowserSearch|.
+	Open current <cword> text with |:OpenBrowserSearch|.
 
 v <Plug>(openbrowser-search)				|<Plug>(openbrowser-search)|
 	Open selected text with |:OpenBrowserSearch|.
 
 
 n <Plug>(openbrowser-smart-search)	|<Plug>(openbrowser-smart-search)|
-	Open current <cfile> text with |:OpenBrowserSmartSearch|.
+	Open current <cword> text with |:OpenBrowserSmartSearch|.
 
 v <Plug>(openbrowser-smart-search)	|<Plug>(openbrowser-smart-search)|
 	Open selected text with |:OpenBrowserSmartSearch|.
@@ -133,7 +133,7 @@ g:openbrowser_isfname				*g:openbrowser_isfname*
 g:openbrowser_iskeyword				*g:openbrowser_iskeyword*
 								(default: Very long.
 								see autoload/openbrowser.vim)
-	|<Plug>(openbrowser-open)| opens <cfile> text in normal mode.
+	|<Plug>(openbrowser-open)| opens <cword> text in normal mode.
 	This variable temporarily changes 'iskeyword' option value at that time.
 
 g:openbrowser_default_search		*g:openbrowser_default_search*
