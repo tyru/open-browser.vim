@@ -70,7 +70,7 @@ if exists('g:openbrowser_isfname')
     let g:openbrowser_iskeyword = g:openbrowser_isfname
 endif
 if !exists('g:openbrowser_iskeyword')
-    " Getting only URI from <cfile>.
+    " Getting only URI from <cword>.
     let g:openbrowser_iskeyword = join(
     \   range(char2nr('A'), char2nr('Z'))
     \   + range(char2nr('a'), char2nr('z'))
