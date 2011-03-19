@@ -197,9 +197,17 @@ COMMANDS					*openbrowser-commands* {{{
 FUNCTIONS						*openbrowser-functions* {{{
 
 OpenBrowser({uri})				*OpenBrowser()*
+	For backward compatibility.
+	Use |openbrowser#open()| instead.
+
+openbrowser#open({uri})			*openbrowser#open()*
 	Function version of |:OpenBrowser|.
 
 OpenBrowserSearch({query} [, {search-engine}])		*OpenBrowserSearch()*
+	For backward compatibility.
+	Use |openbrowser#search()| instead.
+
+openbrowser#search({query} [, {search-engine}])			*openbrowser#search()*
 	Function version of |:OpenBrowserSearch|.
 	If {search-engine} is omitted,
 	|g:openbrowser_default_search| is used instead.
