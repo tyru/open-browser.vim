@@ -196,6 +196,10 @@ COMMANDS					*openbrowser-commands* {{{
 ------------------------------------------------------------------------------
 FUNCTIONS						*openbrowser-functions* {{{
 
+openbrowser#load()				*openbrowser#load()*
+	This function do nothing.
+	(this is dummy function to load autoload/openbrowser.vim)
+
 OpenBrowser({uri})				*OpenBrowser()*
 	For backward compatibility.
 	Use |openbrowser#open()| instead.

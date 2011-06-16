@@ -127,6 +127,12 @@ endif
 
 " Functions {{{
 
+function! openbrowser#load() "{{{
+    " dummy function to load this file.
+endfunction "}}}
+
+
+
 function! openbrowser#open(uri) "{{{
     if a:uri =~# '^\s*$'
         return
