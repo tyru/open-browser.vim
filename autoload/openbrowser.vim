@@ -137,7 +137,6 @@ function! openbrowser#open(uri) "{{{
     if a:uri =~# '^\s*$'
         return
     endif
-
     if g:openbrowser_open_filepath_in_vim && s:seems_path(a:uri)
         execute g:openbrowser_open_vim_command a:uri
         return
@@ -151,7 +150,6 @@ function! openbrowser#open(uri) "{{{
         if !executable(browser)
             continue
         endif
-
         if !has_key(g:openbrowser_open_rules, browser)
             continue
         endif
@@ -161,9 +159,7 @@ function! openbrowser#open(uri) "{{{
         \   {'browser': browser, 'uri': uri}
         \)
         call s:spawn_browser(cmdline)
-
-        let success = 0
-        if v:shell_error ==# success
+        if !v:shell_error
             redraw
             echo "opening '" . uri . "' ... done! (" . browser . ")"
             return
