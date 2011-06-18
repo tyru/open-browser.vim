@@ -57,7 +57,10 @@ if !exists('g:openbrowser_open_rules')
     let g:openbrowser_open_rules = s:get_default_open_rules()
 endif
 if !exists('g:openbrowser_fix_schemes')
-    let g:openbrowser_fix_schemes = {'ttp': 'http'}
+    let g:openbrowser_fix_schemes = {
+    \   'ttp': 'http',
+    \   'ttps': 'https',
+    \}
 endif
 if !exists('g:openbrowser_fix_hosts')
     let g:openbrowser_fix_hosts = {}
