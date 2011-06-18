@@ -162,11 +162,12 @@ function! openbrowser#open(uri) "{{{
         \   {'browser': browser, 'uri': uri}
         \)
         call s:spawn_browser(cmdline)
-        if !v:shell_error
-            redraw
-            echo "opening '" . uri . "' ... done! (" . browser . ")"
-            return
-        endif
+        " No need to check v:shell_error
+        " because browser is spawned in background process
+        " so can't check its return value.
+        redraw
+        echo "opening '" . uri . "' ... done! (" . browser . ")"
+        return
     endfor
 
     echohl WarningMsg
