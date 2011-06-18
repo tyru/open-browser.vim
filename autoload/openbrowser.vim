@@ -156,7 +156,11 @@ function! openbrowser#open(uri) "{{{
             continue
         endif
 
-        call system(s:expand_keyword(g:openbrowser_open_rules[browser], {'browser': browser, 'uri': uri}))
+        let cmdline = s:expand_keyword(
+        \   g:openbrowser_open_rules[browser],
+        \   {'browser': browser, 'uri': uri}
+        \)
+        call s:spawn_browser(cmdline)
 
         let success = 0
         if v:shell_error ==# success
@@ -393,6 +397,16 @@ function! s:expand_keyword(str, options)  " {{{
   endwhile
   return result
 endfunction "}}}
+
+" Determine what is used for spawning browser. {{{
+if globpath(&rtp, 'autoload/vimproc.vim') != ''
+    let s:spawn_browser = function('vimproc#system_gui')
+else
+    function! s:spawn_browser(cmdline)
+        return system(a:cmdline . ' &')
+    endfunction
+endif
+" }}}
 
 " }}}
 
