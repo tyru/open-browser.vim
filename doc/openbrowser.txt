@@ -2,7 +2,7 @@
 
 Author:
   tyru <tyru.exe@gmail.com>
-Version: 0.0.2
+Version: 0.0.4
 License: Under the same license as Vim itself (see :help license)
 
 ==============================================================================
@@ -300,6 +300,17 @@ backward compatibility.
 - Bundle urilib.vim (autoload/urilib.vim)
 - Fix bug: openbrowser should open URI which has no scheme
   (e.g.: example.com)
+
+0.0.4:
+- Improve |:OpenBrowserSearch| completion
+- Add <Plug>(openbrowser-search)
+- Add <Plug>(openbrowser-smart-search)
+- Merge Daniel Hahler's branch. thanks!
+- Spawn a browser in background
+  - This fixes freezing when spawning a browser
+- Change |g:openbrowser_fix_schemes| default value
+  - Add pair: "ttps" => "https"
+- etc.
 
 }}}
 ==============================================================================
