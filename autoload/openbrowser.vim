@@ -128,7 +128,7 @@ endif
 " }}}
 
 
-" Functions {{{
+" Interfaces {{{
 
 function! openbrowser#load() "{{{
     " dummy function to load this file.
@@ -136,6 +136,7 @@ endfunction "}}}
 
 
 
+" :OpenBrowser
 function! openbrowser#open(uri) "{{{
     if a:uri =~# '^\s*$'
         return
@@ -176,6 +177,7 @@ function! openbrowser#open(uri) "{{{
     echohl None
 endfunction "}}}
 
+" :OpenBrowserSearch
 function! openbrowser#search(query, ...) "{{{
     let engine = a:0 ? a:1 : g:openbrowser_default_search
     if !has_key(g:openbrowser_search_engines, engine)
@@ -190,6 +192,20 @@ function! openbrowser#search(query, ...) "{{{
     \)
 endfunction "}}}
 
+" :OpenBrowserSmartSearch
+function! openbrowser#smart_search(query) "{{{
+    if s:seems_uri(a:query)
+        return openbrowser#open(a:query)
+    else
+        return openbrowser#search(a:query)
+    endif
+endfunction "}}}
+
+" }}}
+
+" Implementations {{{
+
+" :OpenBrowserSearch
 function! openbrowser#_cmd_open_browser_search(args) "{{{
     let NONE = -1
     let engine = NONE
@@ -204,15 +220,6 @@ function! openbrowser#_cmd_open_browser_search(args) "{{{
 
     call call('OpenBrowserSearch', [args] + (engine ==# NONE ? [] : [engine]))
 endfunction "}}}
-
-function! openbrowser#smart_search(query) "{{{
-    if s:seems_uri(a:query)
-        return openbrowser#open(a:query)
-    else
-        return openbrowser#search(a:query)
-    endif
-endfunction "}}}
-
 function! openbrowser#_cmd_complete_open_browser_search(unused1, cmdline, unused2) "{{{
     let r = '^\s*OpenBrowserSearch\s\+'
     if a:cmdline !~# r
@@ -240,6 +247,7 @@ function! openbrowser#_cmd_complete_open_browser_search(unused1, cmdline, unused
     return []
 endfunction "}}}
 
+" <Plug>(openbrowser-open)
 function! openbrowser#_keymapping_open(mode) "{{{
     if a:mode ==# 'n'
         return openbrowser#open(s:get_url_on_cursor())
@@ -248,6 +256,7 @@ function! openbrowser#_keymapping_open(mode) "{{{
     endif
 endfunction "}}}
 
+" <Plug>(openbrowser-search)
 function! openbrowser#_keymapping_search(mode) "{{{
     if a:mode ==# 'n'
         return openbrowser#search(expand('<cword>'))
@@ -256,6 +265,7 @@ function! openbrowser#_keymapping_search(mode) "{{{
     endif
 endfunction "}}}
 
+" <Plug>(openbrowser-smart-search)
 function! openbrowser#_keymapping_smart_search(mode) "{{{
     if a:mode ==# 'n'
         return openbrowser#smart_search(s:get_url_on_cursor())
@@ -263,6 +273,8 @@ function! openbrowser#_keymapping_smart_search(mode) "{{{
         return openbrowser#smart_search(s:get_selected_text())
     endif
 endfunction "}}}
+
+
 
 function! s:seems_path(path) "{{{
     return
