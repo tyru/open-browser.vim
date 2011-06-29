@@ -214,6 +214,13 @@ function! openbrowser#_cmd_open_browser_search(args) "{{{
     if args =~# '^-\w\+\s\+'
         let m = matchlist(args, '^-\(\w\+\)\s\+\(.*\)')
         if empty(m)
+            echohl WarningMsg
+            echomsg 'usage:'
+            \       ':OpenBrowserSearch'
+            \       '[-{search-engine}]'
+            \       '{query}'
+            echohl None
+            return
         endif
         let [engine, args] = m[1:2]
     endif
