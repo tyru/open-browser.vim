@@ -108,7 +108,7 @@ g:openbrowser_fix_paths				*g:openbrowser_fix_paths*
 <	It is fixed to: >
 		http://twitter.com/tyru
 <
-	Note that this works on the URL like: >
+	Note that this works on the URI like: >
 		http://yahoo.com/google
 <	It is fixed to: >
 		http://yahoo.com/tyru
