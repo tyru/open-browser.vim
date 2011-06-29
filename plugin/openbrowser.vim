@@ -64,7 +64,7 @@ command!
 \   OpenBrowserSearch
 \   call openbrowser#_cmd_open_browser_search(<q-args>)
 command!
-\   -nargs=+ -complete=file
+\   -nargs=+ -complete=customlist,openbrowser#_cmd_complete_open_browser_search
 \   OpenBrowserSmartSearch
 \   call openbrowser#smart_search(<q-args>)
 

@@ -237,11 +237,11 @@ function! s:parse_search(cmdline) "{{{
     return [-1, a:cmdline]
 endfunction "}}}
 function! openbrowser#_cmd_complete_open_browser_search(unused1, cmdline, unused2) "{{{
-    let r = '^\s*OpenBrowserSearch\s\+'
-    if a:cmdline !~# r
+    let excmd = '^\s*OpenBrowser\w\+\s\+'
+    if a:cmdline !~# excmd
         return
     endif
-    let cmdline = substitute(a:cmdline, r, '', '')
+    let cmdline = substitute(a:cmdline, excmd, '', '')
 
     let engine_options = map(
     \   sort(keys(g:openbrowser_search_engines)),
