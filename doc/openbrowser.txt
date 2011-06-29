@@ -219,6 +219,7 @@ openbrowser#load()				*openbrowser#load()*
 
 OpenBrowser({uri})				*OpenBrowser()*
 	For backward compatibility.
+	Now it's same as |openbrowser#open()|.
 	Use |openbrowser#open()| instead.
 
 openbrowser#open({uri})			*openbrowser#open()*
@@ -226,6 +227,7 @@ openbrowser#open({uri})			*openbrowser#open()*
 
 OpenBrowserSearch({query} [, {search-engine}])		*OpenBrowserSearch()*
 	For backward compatibility.
+	Now it's same as |openbrowser#search()|.
 	Use |openbrowser#search()| instead.
 
 openbrowser#search({query} [, {search-engine}])			*openbrowser#search()*
