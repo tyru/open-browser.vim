@@ -235,6 +235,11 @@ openbrowser#search({query} [, {search-engine}])			*openbrowser#search()*
 	If {search-engine} is omitted,
 	|g:openbrowser_default_search| is used instead.
 
+openbrowser#smart_search({query} [, {search-engine}])			*openbrowser#smart_search()*
+	Function version of |:OpenBrowserSmartSearch|.
+	If {search-engine} is omitted,
+	|g:openbrowser_default_search| is used instead.
+
 }}}
 }}}
 ==============================================================================
