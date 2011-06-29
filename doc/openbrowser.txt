@@ -14,7 +14,6 @@ Interface			|openbrowser-interface|
   Variables			|openbrowser-variables|
   Commands			|openbrowser-commands|
   Functions			|openbrowser-functions|
-Library to enhance open-browser		|openbrowser-library|
 Platform dependent values		|openbrowser-platform-dependent|
 Changelog			|openbrowser-changelog|
 
@@ -72,9 +71,6 @@ g:openbrowser_open_rules			*g:openbrowser_open_rules*
 
 g:openbrowser_fix_schemes			*g:openbrowser_fix_schemes*
 								(default: {"ttp": "http"})
-	You can use this variable if you installed |urilib|.
-	See |openbrowser-library|.
-
 	If this value is default,
 	If you execute |<Plug>(openbrowser-open)| on URI like: >
 		ttp://google.com/
@@ -94,9 +90,6 @@ g:openbrowser_fix_schemes			*g:openbrowser_fix_schemes*
 
 g:openbrowser_fix_hosts				*g:openbrowser_fix_hosts*
 								(default: {})
-	You can use this variable if you installed |urilib|.
-	See |openbrowser-library|.
-
 	If this value is: >
 	{'google.com': 'yahoo.com'}
 <
@@ -107,9 +100,6 @@ g:openbrowser_fix_hosts				*g:openbrowser_fix_hosts*
 <
 g:openbrowser_fix_paths				*g:openbrowser_fix_paths*
 								(default: {})
-	You can use this variable if you installed |urilib|.
-	See |openbrowser-library|.
-
 	If this value is: >
 	{'/google': '/tyru'}
 <
@@ -217,17 +207,6 @@ openbrowser#search({query} [, {search-engine}])			*openbrowser#search()*
 	|g:openbrowser_default_search| is used instead.
 
 }}}
-}}}
-==============================================================================
-LIBRARY TO ENHANCE OPEN-BROWSER		*openbrowser-library* {{{
-
-urilib.vim: http://github.com/tyru/urilib.vim
-
-If you installed |urilib|, you can use these variables:
-- |g:openbrowser_fix_schemes|
-- |g:openbrowser_fix_hosts|
-- |g:openbrowser_fix_paths|
-
 }}}
 ==============================================================================
 PLATFORM DEPENDENT VALUES		*openbrowser-platform-dependent* {{{
