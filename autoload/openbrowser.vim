@@ -206,26 +206,35 @@ endfunction "}}}
 " Implementations {{{
 
 " :OpenBrowserSearch
-function! openbrowser#_cmd_open_browser_search(args) "{{{
+function! openbrowser#_cmd_open_browser_search(cmdline) "{{{
     let NONE = -1
     let engine = NONE
-    let args = substitute(a:args, '^\s\+', '', '')
+    let cmdline = substitute(a:cmdline, '^\s\+', '', '')
 
-    if args =~# '^-\w\+\s\+'
-        let m = matchlist(args, '^-\(\w\+\)\s\+\(.*\)')
+    try
+        let [engine, cmdline] = s:parse_search(cmdline)
+    catch /^parse error/
+        echohl WarningMsg
+        echomsg 'usage:'
+        \       ':OpenBrowserSearch'
+        \       '[-{search-engine}]'
+        \       '{query}'
+        echohl None
+        return
+    endtry
+
+    let args = [cmdline] + (engine ==# NONE ? [] : [engine])
+    call call('openbrowser#search', args)
+endfunction "}}}
+function! s:parse_search(cmdline) "{{{
+    if a:cmdline =~# '^-\w\+\s\+'
+        let m = matchlist(a:cmdline, '^-\(\w\+\)\s\+\(.*\)')
         if empty(m)
-            echohl WarningMsg
-            echomsg 'usage:'
-            \       ':OpenBrowserSearch'
-            \       '[-{search-engine}]'
-            \       '{query}'
-            echohl None
-            return
+            throw 'parse error'
         endif
-        let [engine, args] = m[1:2]
+        return m[1:2]
     endif
-
-    call call('openbrowser#search', [args] + (engine ==# NONE ? [] : [engine]))
+    return [-1, a:cmdline]
 endfunction "}}}
 function! openbrowser#_cmd_complete_open_browser_search(unused1, cmdline, unused2) "{{{
     let r = '^\s*OpenBrowserSearch\s\+'
