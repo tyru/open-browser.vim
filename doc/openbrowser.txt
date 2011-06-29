@@ -2,7 +2,7 @@
 
 Author:
   tyru <tyru.exe@gmail.com>
-Version: 0.0.4
+Version: 0.0.5
 License: Under the same license as Vim itself (see :help license)
 
 ==============================================================================
@@ -324,6 +324,14 @@ backward compatibility.
 - Change |g:openbrowser_fix_schemes| default value
   - Add pair: "ttps" => "https"
 - etc.
+
+0.0.5:
+(NOTE: Next release will break some backward compatibility, maybe)
+- Document fix/improvement
+- Add :command-completion to :OpenBrowserSmartSearch.
+- :OpenBrowserSmartSearch: allow {search-engine} option
+  like :OpenBrowserSearch
+- Minor bug fixes
 
 }}}
 ==============================================================================
