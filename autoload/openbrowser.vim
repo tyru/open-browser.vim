@@ -193,11 +193,12 @@ function! openbrowser#search(query, ...) "{{{
 endfunction "}}}
 
 " :OpenBrowserSmartSearch
-function! openbrowser#smart_search(query) "{{{
+function! openbrowser#smart_search(query, ...) "{{{
     if s:seems_uri(a:query)
         return openbrowser#open(a:query)
     else
-        return openbrowser#search(a:query)
+        let engine = a:0 ? a:1 : g:openbrowser_default_search
+        return openbrowser#search(a:query, engine)
     endif
 endfunction "}}}
 
