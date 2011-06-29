@@ -218,7 +218,7 @@ function! openbrowser#_cmd_open_browser_search(args) "{{{
         let [engine, args] = m[1:2]
     endif
 
-    call call('OpenBrowserSearch', [args] + (engine ==# NONE ? [] : [engine]))
+    call call('openbrowser#search', [args] + (engine ==# NONE ? [] : [engine]))
 endfunction "}}}
 function! openbrowser#_cmd_complete_open_browser_search(unused1, cmdline, unused2) "{{{
     let r = '^\s*OpenBrowserSearch\s\+'
