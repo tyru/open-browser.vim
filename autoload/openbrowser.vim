@@ -206,28 +206,29 @@ endfunction "}}}
 
 " Implementations {{{
 
-" :OpenBrowserSearch
-function! openbrowser#_cmd_open_browser_search(cmdline) "{{{
-    let NONE = -1
-    let engine = NONE
+let s:NONE = []
+
+
+
+function! s:parse_and_delegate(excmd, parse, delegate, cmdline) "{{{
     let cmdline = substitute(a:cmdline, '^\s\+', '', '')
 
     try
-        let [engine, cmdline] = s:parse_search(cmdline)
+        let [engine, cmdline] = {a:parse}(cmdline)
     catch /^parse error/
         echohl WarningMsg
         echomsg 'usage:'
-        \       ':OpenBrowserSearch'
+        \       a:excmd
         \       '[-{search-engine}]'
         \       '{query}'
         echohl None
         return
     endtry
 
-    let args = [cmdline] + (engine ==# NONE ? [] : [engine])
-    call call('openbrowser#search', args)
+    let args = [cmdline] + (engine is s:NONE ? [] : [engine])
+    return call(a:delegate, args)
 endfunction "}}}
-function! s:parse_search(cmdline) "{{{
+function! s:parse_cmdline(cmdline) "{{{
     if a:cmdline =~# '^-\w\+\s\+'
         let m = matchlist(a:cmdline, '^-\(\w\+\)\s\+\(.*\)')
         if empty(m)
@@ -235,9 +236,19 @@ function! s:parse_search(cmdline) "{{{
         endif
         return m[1:2]
     endif
-    return [-1, a:cmdline]
+    return [s:NONE, a:cmdline]
 endfunction "}}}
-function! openbrowser#_cmd_complete_open_browser_search(unused1, cmdline, unused2) "{{{
+
+" :OpenBrowserSearch
+function! openbrowser#_cmd_open_browser_search(cmdline) "{{{
+    return s:parse_and_delegate(
+    \   ':OpenBrowserSearch',
+    \   's:parse_cmdline',
+    \   'openbrowser#search',
+    \   a:cmdline
+    \)
+endfunction "}}}
+function! openbrowser#_cmd_complete(unused1, cmdline, unused2) "{{{
     let excmd = '^\s*OpenBrowser\w\+\s\+'
     if a:cmdline !~# excmd
         return
@@ -262,6 +273,16 @@ function! openbrowser#_cmd_complete_open_browser_search(unused1, cmdline, unused
     endfor
 
     return []
+endfunction "}}}
+
+" :OpenBrowserSmartSearch
+function! openbrowser#_cmd_open_browser_smart_search(cmdline) "{{{
+    return s:parse_and_delegate(
+    \   ':OpenBrowserSmartSearch',
+    \   's:parse_cmdline',
+    \   'openbrowser#smart_search',
+    \   a:cmdline
+    \)
 endfunction "}}}
 
 " <Plug>(openbrowser-open)
