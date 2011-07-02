@@ -162,7 +162,7 @@ function! openbrowser#open(uri) "{{{
         \   g:openbrowser_open_rules[browser],
         \   {'browser': browser, 'uri': uri}
         \)
-        call s:spawn_browser(cmdline)
+        call system(cmdline . ' &')
         " No need to check v:shell_error
         " because browser is spawned in background process
         " so can't check its return value.
@@ -447,16 +447,6 @@ function! s:expand_keyword(str, options)  " {{{
   endwhile
   return result
 endfunction "}}}
-
-" Determine what is used for spawning browser. {{{
-if globpath(&rtp, 'autoload/vimproc.vim') != ''
-    let s:spawn_browser = function('vimproc#system_gui')
-else
-    function! s:spawn_browser(cmdline)
-        return system(a:cmdline . ' &')
-    endfunction
-endif
-" }}}
 
 " }}}
 
