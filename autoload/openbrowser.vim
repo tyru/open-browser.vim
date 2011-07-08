@@ -13,14 +13,14 @@ if g:__openbrowser_platform.cygwin
         return ['cygstart']
     endfunction
     function! s:get_default_open_rules()
-        return {'cygstart': '{browser} {shellescape(uri)} &'}
+        return {'cygstart': '{browser} {shellescape(uri)} \&'}
     endfunction
 elseif g:__openbrowser_platform.macunix
     function! s:get_default_open_commands()
         return ['open']
     endfunction
     function! s:get_default_open_rules()
-        return {'open': '{browser} {shellescape(uri)} &'}
+        return {'open': '{browser} {shellescape(uri)} \&'}
     endfunction
 elseif g:__openbrowser_platform.mswin
     function! s:get_default_open_commands()
@@ -38,10 +38,10 @@ elseif g:__openbrowser_platform.unix
     endfunction
     function! s:get_default_open_rules()
         return {
-        \   'xdg-open':      '{browser} {shellescape(uri)} &',
-        \   'x-www-browser': '{browser} {shellescape(uri)} &',
-        \   'firefox':       '{browser} {shellescape(uri)} &',
-        \   'w3m':           '{browser} {shellescape(uri)} &',
+        \   'xdg-open':      '{browser} {shellescape(uri)} \&',
+        \   'x-www-browser': '{browser} {shellescape(uri)} \&',
+        \   'firefox':       '{browser} {shellescape(uri)} \&',
+        \   'w3m':           '{browser} {shellescape(uri)} \&',
         \}
     endfunction
 endif
