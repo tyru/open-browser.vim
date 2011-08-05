@@ -16,7 +16,7 @@ set cpo&vim
 let s:is_unix = has('unix')
 let s:is_mswin = has('win16') || has('win32') || has('win64')
 let s:is_cygwin = has('win32unix')
-let s:is_macunix = has('macunix')
+let s:is_macunix = !s:is_mswin && (has('mac') || has('macunix') || has('gui_macvim') || system('uname') =~? '^darwin')
 lockvar s:is_unix
 lockvar s:is_mswin
 lockvar s:is_cygwin
