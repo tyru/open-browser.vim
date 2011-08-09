@@ -30,7 +30,7 @@ elseif g:__openbrowser_platform.mswin
         " NOTE: On MS Windows, 'start' command is not executable.
         " NOTE: If &shellslash == 1,
         " `shellescape(uri)` uses single quotes not double quote.
-        return {'cmd.exe': 'cmd /c start "openbrowser.vim" "{uri}"'}
+        return {'cmd.exe': 'cmd /c start rundll32 url.dll,FileProtocolHandler {uri}'}
     endfunction
 elseif g:__openbrowser_platform.unix
     function! s:get_default_open_commands()
