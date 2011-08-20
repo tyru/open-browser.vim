@@ -328,6 +328,8 @@ function! s:seems_uri(uri) "{{{
     \   && uri.host() =~# '\.'
 endfunction "}}}
 
+" - If a:uri looks like file path, add "file:///"
+" - Apply settings of g:openbrowser_fix_schemes, g:openbrowser_fix_hosts, g:openbrowser_fix_paths
 function! s:convert_uri(uri) "{{{
     if s:seems_path(a:uri)
         " a:uri is File path. Converts a:uri to `file://` URI.
