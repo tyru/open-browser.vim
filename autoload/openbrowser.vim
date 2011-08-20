@@ -313,11 +313,75 @@ function! openbrowser#_keymapping_smart_search(mode) "{{{
 endfunction "}}}
 
 
+" Returns true if a:str has a character
+" which &isfname does not have.
+" Returns false otherwise.
+"
+" 'isfname' syntax:
+" Isfname: Range | Range "," Isfname
+" Range: Char | Digit | (Char | Digit) "-" (Char | Digit)
+" Char: e.g.: "@"
+" Digit: e.g.: "64"
+function! s:is_invalid_fname(str) "{{{
+    let isfname_map = s:get_isfname_map()
+    for c in split(a:str, '\zs')
+        if !get(isfname_map, c)
+            return 1
+        endif
+    endfor
+    return 0
+endfunction "}}}
+" Cache variables for s:get_isfname_map()
+let s:prev_isfname = -1
+let s:isfname_map = {}
+function! s:get_isfname_map() "{{{
+    if s:prev_isfname !=# &isfname
+        let isfname_list = s:split_isfname_option_to_list(&isfname, -1)
+        if isfname_list is -1
+            " Failed to parse &isfname ,
+            " does not touch s:isfname_map, s:prev_isfname .
+            echohl WarningMsg
+            echomsg "open-browser: Failed to parse &isfname"
+            echohl None
+            return {}    " fallback
+        endif
+        for c in isfname_list
+            let s:isfname_map[c] = 1
+        endfor
+        let s:prev_isfname = &isfname
+    endif
+    return s:isfname_map
+endfunction "}}}
+" This function is applicable for 'isfname', 'iskeyword', 'isprint', and so on.
+" See :help 'isfname' for the syntax.
+function! s:split_isfname_option_to_list(option, error) "{{{
+    let chars = []
+    for range in split(&isfname, ',')
+        let m = matchlist(range, '^\([^-]\+\)-\([^-]\+\)$')
+        if !empty(m)    " Range
+            let [left, right] = m[1:2]
+            let chars += map(range(
+            \   (left  =~# '^\d\+$' ? left+0  : char2nr(left)),
+            \   (right =~# '^\d\+$' ? right+0 : char2nr(right)),
+            \), 'nr2char(v:val)')
+        elseif range =~# '^\d\+$'    " Digit
+            let chars += [nr2char(range)]
+        elseif len(range) ==# 1    " Char
+            let chars += [range]
+        else
+            return a:error    " Failed to parse
+        endif
+    endfor
+    return chars
+endfunction "}}}
 
 function! s:seems_path(path) "{{{
-    return
-    \   stridx(a:path, 'file://') ==# 0
-    \   || getftype(a:path) =~# '^\(file\|dir\|link\)$'
+    " - file:// prefixed string
+    " - Existed path
+    " - Has no invalid filename character (seeing &fname)
+    return stridx(a:path, 'file://') ==# 0
+    \   || getftype(a:path) !=# ''
+    \   || !s:is_invalid_fname(a:path)
 endfunction "}}}
 
 function! s:seems_uri(uri) "{{{
