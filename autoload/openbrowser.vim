@@ -316,12 +316,13 @@ endfunction "}}}
 
 
 function! s:seems_path(path) "{{{
+    " - Has no invalid filename character (seeing &fname)
+    " and, either
     " - file:// prefixed string
     " - Existed path
-    " - Has no invalid filename character (seeing &fname)
-    return stridx(a:path, 'file://') ==# 0
-    \   || getftype(a:path) !=# ''
-    \   || a:path =~# '^\f\+$'
+    return (stridx(a:path, 'file://') ==# 0
+    \       || getftype(a:path) !=# '')
+    \   && a:path =~# '^\f\+$'
 endfunction "}}}
 
 function! s:seems_uri(uri) "{{{
