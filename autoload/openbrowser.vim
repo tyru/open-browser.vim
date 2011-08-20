@@ -376,11 +376,18 @@ endfunction "}}}
 
 function! s:get_url_on_cursor() "{{{
     let save_iskeyword = &iskeyword
-    let &l:iskeyword = g:openbrowser_iskeyword
+    " Avoid rebuilding of `chartab`.
+    " (declared in globals.h, rebuilt by did_set_string_option() in option.c)
+    if &iskeyword !=# g:openbrowser_iskeyword
+        let &iskeyword = g:openbrowser_iskeyword
+    endif
     try
         return expand('<cword>')
     finally
-        let &l:iskeyword = save_iskeyword
+        " Avoid rebuilding of `chartab`.
+        if &iskeyword !=# save_iskeyword
+            let &iskeyword = save_iskeyword
+        endif
     endtry
 endfunction "}}}
 
