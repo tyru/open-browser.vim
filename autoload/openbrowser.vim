@@ -335,7 +335,7 @@ endfunction "}}}
 " - If a:uri looks like file path, add "file:///"
 " - Apply settings of g:openbrowser_fix_schemes, g:openbrowser_fix_hosts, g:openbrowser_fix_paths
 function! s:convert_uri(uri) "{{{
-    if s:seems_path(a:uri)
+    if s:seems_path(a:uri)    " File path
         " a:uri is File path. Converts a:uri to `file://` URI.
         if stridx(a:uri, 'file://') ==# 0
             return a:uri
@@ -347,9 +347,7 @@ function! s:convert_uri(uri) "{{{
         finally
             let &l:shellslash = save_shellslash
         endtry
-    endif
-
-    if s:seems_uri(a:uri)
+    elseif s:seems_uri(a:uri)    " URI
         let ERROR = []
         let obj = urilib#new_from_uri_like_string(a:uri, ERROR)
         if obj isnot ERROR
@@ -358,16 +356,8 @@ function! s:convert_uri(uri) "{{{
             call obj.path  (get(g:openbrowser_fix_paths, obj.path(), obj.path()))
             return obj.to_string()
         endif
+        " Fall through
     endif
-
-    " Neither
-    " - File path
-    " - |urilib| has been installed and |urilib| determine a:uri is URI
-
-    " ...But openbrowser should try to open!
-    " Because a:uri might be URI like "file://...".
-    " In this case, this is not file path and
-    " |urilib| might not have been installed :(.
     return a:uri
 endfunction "}}}
 
