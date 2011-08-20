@@ -195,6 +195,8 @@ endfunction "}}}
 " :OpenBrowserSmartSearch
 function! openbrowser#smart_search(query, ...) "{{{
     if s:seems_uri(a:query)
+    \   || (g:openbrowser_open_filepath_in_vim
+    \       && s:seems_path(a:query))
         return openbrowser#open(a:query)
     else
         let engine = a:0 ? a:1 : g:openbrowser_default_search
