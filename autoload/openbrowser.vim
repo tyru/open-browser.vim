@@ -46,7 +46,9 @@ elseif g:__openbrowser_platform.unix
     endfunction
 endif
 
-unlet g:__openbrowser_platform
+" Do not remove g:__openbrowser_platform for debug.
+" unlet g:__openbrowser_platform
+
 " }}}
 
 " Global Variables {{{
