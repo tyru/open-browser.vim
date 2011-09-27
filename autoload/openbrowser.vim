@@ -143,8 +143,9 @@ function! openbrowser#open(uri) "{{{
     if a:uri =~# '^\s*$'
         return
     endif
-    if g:openbrowser_open_filepath_in_vim && s:seems_path(a:uri)
-        execute g:openbrowser_open_vim_command a:uri
+    if s:get_var('openbrowser_open_filepath_in_vim')
+    \   && s:seems_path(a:uri)
+        execute s:get_var('openbrowser_open_vim_command') a:uri
         return
     endif
 
@@ -152,16 +153,17 @@ function! openbrowser#open(uri) "{{{
     redraw
     echo "opening '" . uri . "' ..."
 
-    for browser in g:openbrowser_open_commands
+    for browser in s:get_var('openbrowser_open_commands')
         if !executable(browser)
             continue
         endif
-        if !has_key(g:openbrowser_open_rules, browser)
+        let open_rules = s:get_var('openbrowser_open_rules')
+        if !has_key(open_rules, browser)
             continue
         endif
 
         let cmdline = s:expand_keyword(
-        \   g:openbrowser_open_rules[browser],
+        \   open_rules[browser],
         \   {'browser': browser, 'uri': uri}
         \)
         call system(cmdline)
@@ -181,8 +183,11 @@ endfunction "}}}
 
 " :OpenBrowserSearch
 function! openbrowser#search(query, ...) "{{{
-    let engine = a:0 ? a:1 : g:openbrowser_default_search
-    if !has_key(g:openbrowser_search_engines, engine)
+    let engine = a:0 ? a:1 :
+    \   s:get_var('openbrowser_default_search')
+    let search_engines =
+    \   s:get_var('openbrowser_search_engines')
+    if !has_key(search_engines, engine)
         echohl WarningMsg
         echomsg "Unknown search engine '" . engine . "'."
         echohl None
@@ -190,19 +195,21 @@ function! openbrowser#search(query, ...) "{{{
     endif
 
     call openbrowser#open(
-    \   s:expand_keyword(g:openbrowser_search_engines[engine], {'query': urilib#uri_escape(a:query)})
+    \   s:expand_keyword(search_engines[engine], {'query': urilib#uri_escape(a:query)})
     \)
 endfunction "}}}
 
 " :OpenBrowserSmartSearch
 function! openbrowser#smart_search(query, ...) "{{{
     if s:seems_uri(a:query)
-    \   || (g:openbrowser_open_filepath_in_vim
+    \   || (s:get_var('openbrowser_open_filepath_in_vim')
     \       && s:seems_path(a:query))
         return openbrowser#open(a:query)
     else
-        let engine = a:0 ? a:1 : g:openbrowser_default_search
-        return openbrowser#search(a:query, engine)
+        return openbrowser#search(
+        \   a:query,
+        \   (a:0 ? a:1 : s:get_var('openbrowser_default_search'))
+        \)
     endif
 endfunction "}}}
 
@@ -260,7 +267,7 @@ function! openbrowser#_cmd_complete(unused1, cmdline, unused2) "{{{
     let cmdline = substitute(a:cmdline, excmd, '', '')
 
     let engine_options = map(
-    \   sort(keys(g:openbrowser_search_engines)),
+    \   sort(keys(s:get_var('openbrowser_search_engines'))),
     \   '"-" . v:val'
     \)
     if cmdline ==# '' || cmdline ==# '-'
@@ -354,9 +361,14 @@ function! s:convert_uri(uri) "{{{
         let ERROR = []
         let obj = urilib#new_from_uri_like_string(a:uri, ERROR)
         if obj isnot ERROR
-            call obj.scheme(get(g:openbrowser_fix_schemes, obj.scheme(), obj.scheme()))
-            call obj.host  (get(g:openbrowser_fix_hosts, obj.host(), obj.host()))
-            call obj.path  (get(g:openbrowser_fix_paths, obj.path(), obj.path()))
+            " Fix scheme, host, path.
+            " e.g.: "ttp" => "http"
+            for where in ['scheme', 'host', 'path']
+                let fix = s:get_var('openbrowser_fix_'.where.'s')
+                if has_key(fix, obj[where]())
+                    call obj[where](fix[obj[where]()])
+                endif
+            endfor
             return obj.to_string()
         endif
         " Fall through
@@ -452,6 +464,16 @@ function! s:expand_keyword(str, options)  " {{{
     endif
   endwhile
   return result
+endfunction "}}}
+
+function! s:get_var(varname) "{{{
+    for ns in [b:, w:, t:, g:]
+        if has_key(ns, a:varname)
+            return ns[a:varname]
+        endif
+    endfor
+    throw 'openbrowser: internal error: '
+    \   . "s:get_var() couldn't find variable '".a:varname."'."
 endfunction "}}}
 
 " }}}
