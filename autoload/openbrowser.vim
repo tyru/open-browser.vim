@@ -365,8 +365,9 @@ function! s:convert_uri(uri) "{{{
             " e.g.: "ttp" => "http"
             for where in ['scheme', 'host', 'path']
                 let fix = s:get_var('openbrowser_fix_'.where.'s')
-                if has_key(fix, obj[where]())
-                    call obj[where](fix[obj[where]()])
+                let value = obj[where]()
+                if has_key(fix, value)
+                    call call(obj[where], [fix[value]])
                 endif
             endfor
             return obj.to_string()
