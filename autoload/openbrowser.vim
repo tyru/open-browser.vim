@@ -353,7 +353,12 @@ function! s:convert_uri(uri) "{{{
         let save_shellslash = &shellslash
         let &l:shellslash = 1
         try
-            return 'file:///' . fnamemodify(a:uri, ':p')
+            let uri = fnamemodify(a:uri, ':p')
+            if g:__openbrowser_platform.cygwin
+                return uri
+            else
+                return 'file:///' . uri
+            endif
         finally
             let &l:shellslash = save_shellslash
         endtry
