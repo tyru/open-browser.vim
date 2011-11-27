@@ -2,7 +2,7 @@
 
 Author:
   tyru <tyru.exe@gmail.com>
-Version: 0.0.5
+Version: 0.0.6
 License: Under the same license as Vim itself (see :help license)
 
 ==============================================================================
@@ -332,6 +332,11 @@ backward compatibility.
 - :OpenBrowserSmartSearch: allow {search-engine} option
   like :OpenBrowserSearch
 - Minor bug fixes
+
+0.0.6:
+- Allow b:option, w:option, t:option not only g:option.
+- Fix Mac OS X environment detection.
+- Fix the problem that open-browser.vim does not work on cygwin.
 
 }}}
 ==============================================================================
