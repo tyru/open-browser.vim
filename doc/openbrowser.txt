@@ -2,7 +2,7 @@
 
 Author:
   tyru <tyru.exe@gmail.com>
-Version: 0.0.6
+Version: 0.0.6a
 License: Under the same license as Vim itself (see :help license)
 
 ==============================================================================
@@ -337,6 +337,14 @@ backward compatibility.
 - Allow b:option, w:option, t:option not only g:option.
 - Fix Mac OS X environment detection.
 - Fix the problem that open-browser.vim does not work on cygwin.
+
+0.0.6a:
+- Sorry, I forgot to note that
+  cygwin problem was fixed by toooooooby's patch.
+  Thanks toooooooby.
+- Sorry, I forgot to note that
+  Mac OS X environment detection problem was reported by Chomo.
+  Thanks Chomo.
 
 }}}
 ==============================================================================
