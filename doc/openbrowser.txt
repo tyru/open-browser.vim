@@ -14,6 +14,7 @@ Interface			|openbrowser-interface|
   Variables			|openbrowser-variables|
   Commands			|openbrowser-commands|
   Functions			|openbrowser-functions|
+Avaliable Syntax in Options		|openbrowser-option-syntax|
 Platform dependent values		|openbrowser-platform-dependent|
 Changelog			|openbrowser-changelog|
 
@@ -241,6 +242,33 @@ openbrowser#smart_search({query} [, {search-engine}])			*openbrowser#smart_searc
 	|g:openbrowser_default_search| is used instead.
 
 }}}
+}}}
+==============================================================================
+AVAILABLE SYNTAX IN OPTIONS		*openbrowser-option-syntax* {{{
+
+This syntax was ported by |quickrun|.
+But some feature was disabled intentionally for open-browser.vim.
+
+open-browser.vim only recognizes these strings:
+- {vim expression}
+- escape character (\).
+
+If query is "var_dump".
+
+	"http://php.net/{query}" => "http://php.net/var_dump"
+
+If you would like "{" to stop the behavior,
+you can prepend escape character to "{".
+
+	"http://php.net/\{query}" => "http://php.net/{query}"
+
+
+In addition, |quickrun| syntax can recognizes these strings:
+- $ENV_NAME
+- &option_name
+- @register
+See :help |quickrun-syntax-option| for details.
+
 }}}
 ==============================================================================
 PLATFORM DEPENDENT VALUES			*openbrowser-platform-dependent* {{{
