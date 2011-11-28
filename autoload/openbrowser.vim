@@ -123,6 +123,14 @@ let s:default = {
 \   'verycd': 'http://www.verycd.com/search/entries/{query}',
 \   'php': 'http://php.net/{query}',
 \   'cpan': 'http://search.cpan.org/search?query={query}',
+\   'alc': 'http://eow.alc.co.jp/{query}/UTF-8/',
+\   'twitter-search': 'http://twitter.com/search/{query}',
+\   'twitter-user': 'http://twitter.com/{query}',
+\   'google-code': 'http://code.google.com/intl/en/query/#q={query}',
+\   'verycd': 'http://www.verycd.com/search/entries/{query}',
+\   'vim': 'http://www.google.com/cse?cx=partner-pub-3005259998294962%3Abvyni59kjr1&ie=ISO-8859-1&q={query}&sa=Search&siteurl=www.vim.org%2F#gsc.tab=0&gsc.q={query}&gsc.page=1',
+\   'wikipedia': 'http://en.wikipedia.org/wiki/Special:Search?search={query}',
+\   'yahoo': 'http://search.yahoo.com/search?p={query}',
 \}
 if exists('g:openbrowser_search_engines')
     call extend(g:openbrowser_search_engines, s:default, 'keep')
