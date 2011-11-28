@@ -289,13 +289,7 @@ function! openbrowser#_cmd_complete(unused1, cmdline, unused2) "{{{
 
     " Inputting search engine.
     " Find out which engine.
-    for option in engine_options
-        if stridx(option, cmdline) == 0
-            return [option]
-        endif
-    endfor
-
-    return []
+    return filter(engine_options, 'stridx(v:val, cmdline) is 0')
 endfunction "}}}
 
 " :OpenBrowserSmartSearch
