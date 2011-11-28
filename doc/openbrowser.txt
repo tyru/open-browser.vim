@@ -15,7 +15,6 @@ Interface			|openbrowser-interface|
   Commands			|openbrowser-commands|
   Functions			|openbrowser-functions|
 Avaliable Syntax in Options		|openbrowser-option-syntax|
-Platform dependent values		|openbrowser-platform-dependent|
 Changelog			|openbrowser-changelog|
 
 
@@ -91,11 +90,30 @@ VARIABLES					*openbrowser-variables* {{{
 
 g:openbrowser_open_commands			*g:openbrowser_open_commands*
 								(default: Platform dependent)
-	See |openbrowser-platform-dependent|.
+	Default value is platform dependant.
+	Cygwin: ["cygstart"]
+	Mac OS X: ["open"]
+	MS Windows: ["start"]
+	Unix like environment: ['xdg-open', 'x-www-browser', 'firefox', 'w3m']
+
+	Note that "start" is not external program,
+	it is cmd.exe builtin command.
+	But you don't have to care it is not executable,
+	because open-browser knows "start" is builtin command.
 
 g:openbrowser_open_rules			*g:openbrowser_open_rules*
 								(default: Platform dependent)
-	See |openbrowser-platform-dependent|.
+	Default value is platform dependant.
+	Cygwin: {"cygstart": "{browser} {shellescape(uri)}"}
+	Mac OS X: {"open": "{browser} {shellescape(uri)}"}
+	MS Windows: {"start": "&shell &shellcmdflag {browser} {uri}"}
+	Unix like environment: >
+	{
+	\   'xdg-open':      '{browser} {shellescape(uri)}',
+	\   'x-www-browser': '{browser} {shellescape(uri)}',
+	\   'firefox':       '{browser} {shellescape(uri)}',
+	\   'w3m':           '{browser} {shellescape(uri)}',
+	\}
 
 g:openbrowser_fix_schemes			*g:openbrowser_fix_schemes*
 								(default: {"ttp": "http"})
@@ -271,50 +289,6 @@ See :help |quickrun-syntax-option| for details.
 
 }}}
 ==============================================================================
-PLATFORM DEPENDENT VALUES			*openbrowser-platform-dependent* {{{
-
-Cygwin:
-	Match if: `has("win32unix")` is true.
-
-	g:openbrowser_open_commands g:openbrowser_open_rules ~
-	["cygstart"]				{"cygstart": "{browser} {shellescape(uri)}"}
-
-Mac OS X:
-	Match if: `has("macunix")` is true.
-
-	g:openbrowser_open_commands g:openbrowser_open_rules ~
-	["open"]					{"open": "{browser} {shellescape(uri)}"}
-
-MS Windows:
-	Match if: `has("win16") || has("win32") || has("win64")` is true.
-
-	Note that "start" is not external program,
-	it is cmd.exe builtin command.
-	But you don't have to care it is not executable,
-	because open-browser knows "start" is builtin command.
-
-	g:openbrowser_open_commands g:openbrowser_open_rules ~
-	["start"]					{"start": "&shell &shellcmdflag {browser} {uri}"}
-
-Unix like environment:
-	Match if:
-	it does not match above any environment,
-	and `has("unix")` is true,
-	This is your platform.
-
-	|g:openbrowser_open_commands|
-	['xdg-open', 'x-www-browser', 'firefox', 'w3m']
-
-	|g:openbrowser_open_rules| >
-	{
-	\   'xdg-open':      '{browser} {shellescape(uri)}',
-	\   'x-www-browser': '{browser} {shellescape(uri)}',
-	\   'firefox':       '{browser} {shellescape(uri)}',
-	\   'w3m':           '{browser} {shellescape(uri)}',
-	\}
-<
-
-}}}
 ==============================================================================
 CHANGELOG							*openbrowser-changelog* {{{
 
