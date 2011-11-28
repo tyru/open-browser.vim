@@ -121,7 +121,7 @@ let s:default = {
 \   'google': 'http://google.com/search?q={query}',
 \   'google-code': 'http://code.google.com/intl/en/query/#q={query}',
 \   'php': 'http://php.net/{query}',
-\   'python': 'http://docs.python.org/dev/search.html?q={query}&check_keywords=yes&area=defa',
+\   'python': 'http://docs.python.org/dev/search.html?q={query}&check_keywords=yes&area=default',
 \   'twitter-search': 'http://twitter.com/search/{query}',
 \   'twitter-user': 'http://twitter.com/{query}',
 \   'verycd': 'http://www.verycd.com/search/entries/{query}',
