@@ -99,16 +99,25 @@ g:openbrowser_open_commands			*g:openbrowser_open_commands*
 g:openbrowser_open_rules			*g:openbrowser_open_rules*
 								(default: Platform dependent)
 	Default value is platform dependant.
-	Cygwin: {"cygstart": "{browser} {shellescape(uri)}"}
-	Mac OS X: {"open": "{browser} {shellescape(uri)}"}
-	MS Windows: {"cmd.exe": "cmd /c start rundll32 url.dll,FileProtocolHandler {uri}"}
-	Unix like environment: >
-	{
-	\   'xdg-open':      '{browser} {shellescape(uri)}',
-	\   'x-www-browser': '{browser} {shellescape(uri)}',
-	\   'firefox':       '{browser} {shellescape(uri)}',
-	\   'w3m':           '{browser} {shellescape(uri)}',
-	\}
+		Cygwin: {"cygstart": "{browser} {shellescape(uri)}"}
+		Mac OS X: {"open": "{browser} {shellescape(uri)}"}
+		MS Windows: {"cmd.exe": "cmd /c start rundll32 url.dll,FileProtocolHandler {uri}"}
+		Unix like environment: >
+		{
+		\   'xdg-open':      '{browser} {shellescape(uri)}',
+		\   'x-www-browser': '{browser} {shellescape(uri)}',
+		\   'firefox':       '{browser} {shellescape(uri)}',
+		\   'w3m':           '{browser} {shellescape(uri)}',
+		\}
+<
+	Avaliable variables (see |openbrowser-option-syntax| for details)
+		browser:
+			|g:openbrowser_open_commands| is assigned in order.
+			If the browser is not executable or failed
+			to open with the browser, try next browser
+			in |g:openbrowser_open_commands|.
+		uri:
+			URI specified by openbrowser Ex commands.
 
 g:openbrowser_fix_schemes			*g:openbrowser_fix_schemes*
 								(default: {"ttp": "http"})
@@ -175,13 +184,8 @@ g:openbrowser_default_search		*g:openbrowser_default_search*
 
 g:openbrowser_search_engines		*g:openbrowser_search_engines*
 								(default: See below)
-	Default value is: >
-    let g:openbrowser_search_engines = {
-    \   'google': 'http://google.com/search?q={query}',
-    \   'yahoo': 'http://search.yahoo.com/search?p={query}',
-    \}
-<
-	As default, supported search engines are only Google and Yahoo.
+	Default value is very long.
+	See autoload/openbrowser.vim.
 	(You can e-mail me to add more search engines :)
 
 	You can add favorite search engines like: >
@@ -189,6 +193,10 @@ g:openbrowser_search_engines		*g:openbrowser_search_engines*
     \   'favorite': 'http://example.com/search?q={query}',
     \}
 <	{query} will be replaced with given query.
+
+	Avaliable variables (see |openbrowser-option-syntax| for details)
+		query:
+			Query specified by openbrowser Ex commands.
 
 					*g:openbrowser_open_filepath_in_vim*
 g:openbrowser_open_filepath_in_vim
@@ -275,6 +283,8 @@ you can prepend escape character to "{".
 
 	"http://php.net/\{query}" => "http://php.net/{query}"
 
+See |g:openbrowser_open_rules| and |g:openbrowser_search_engines|
+for available variables.
 
 In addition, |quickrun| syntax can recognizes these strings:
 - $ENV_NAME
