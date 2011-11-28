@@ -13,14 +13,14 @@ if g:__openbrowser_platform.cygwin
         return ['cygstart']
     endfunction
     function! s:get_default_open_rules()
-        return {'cygstart': '{browser} {shellescape(uri)} \&'}
+        return {'cygstart': '{browser} {shellescape(uri)} &'}
     endfunction
 elseif g:__openbrowser_platform.macunix
     function! s:get_default_open_commands()
         return ['open']
     endfunction
     function! s:get_default_open_rules()
-        return {'open': '{browser} {shellescape(uri)} \&'}
+        return {'open': '{browser} {shellescape(uri)} &'}
     endfunction
 elseif g:__openbrowser_platform.mswin
     function! s:get_default_open_commands()
@@ -38,10 +38,10 @@ elseif g:__openbrowser_platform.unix
     endfunction
     function! s:get_default_open_rules()
         return {
-        \   'xdg-open':      '{browser} {shellescape(uri)} \&',
-        \   'x-www-browser': '{browser} {shellescape(uri)} \&',
-        \   'firefox':       '{browser} {shellescape(uri)} \&',
-        \   'w3m':           '{browser} {shellescape(uri)} \&',
+        \   'xdg-open':      '{browser} {shellescape(uri)} &',
+        \   'x-www-browser': '{browser} {shellescape(uri)} &',
+        \   'firefox':       '{browser} {shellescape(uri)} &',
+        \   'w3m':           '{browser} {shellescape(uri)} &',
         \}
     endfunction
 endif
@@ -113,12 +113,12 @@ endif
 let s:default = {
 \   'google': 'http://google.com/search?q={query}',
 \   'yahoo': 'http://search.yahoo.com/search?p={query}',
-\   'python': 'http://docs.python.org/dev/search.html?q={query}\&check_keywords=yes\&area=defa',
+\   'python': 'http://docs.python.org/dev/search.html?q={query}&check_keywords=yes&area=defa',
 \   'wikipedia': 'http://en.wikipedia.org/wiki/Special:Search?search={query}',
 \   'duckduckgo': 'http://duckduckgo.com/?q={query}',
 \   'blekko': 'http://blekko.com/ws/+{query}',
 \   'askubuntu': 'http://askubuntu.com/search?q={query}',
-\   'baidu': 'http://www.baidu.com/s?wd={query}\&rsv_bp=0\&rsv_spt=3\&inputT=2478',
+\   'baidu': 'http://www.baidu.com/s?wd={query}&rsv_bp=0&rsv_spt=3&inputT=2478',
 \   'github': 'http://github.com/search?q={query}',
 \   'verycd': 'http://www.verycd.com/search/entries/{query}',
 \}
@@ -423,61 +423,64 @@ endfunction "}}}
 " This function is from quickrun.vim (http://github.com/thinca/vim-quickrun)
 " Original function is `s:Runner.expand()`.
 "
-" Expand the keyword.
+" NOTE: Original version recognize more keywords.
+" This function is speciallized for open-browser.vim
 " - @register @{register}
 " - &option &{option}
 " - $ENV_NAME ${ENV_NAME}
+"
+" Expand the keywords.
 " - {expr}
+"
 " Escape by \ if you does not want to expand.
+" - "\{keyword}" => "{keyword}", not expression `keyword`.
+"   it does not expand vim variable `keyword`.
 function! s:expand_keyword(str, options)  " {{{
-  if type(a:str) != type('')
-    return ''
-  endif
-  let i = 0
-  let rest = a:str
-  let result = ''
-
-  " Assign these variables for eval().
-  for [name, val] in items(a:options)
-      " unlockvar l:
-      " let l:[name] = val
-      execute 'let' name '=' string(val)
-  endfor
-
-  while 1
-    let f = match(rest, '\\\?[@&${]')
-    if f < 0
-      let result .= rest
-      break
+    if type(a:str) != type('') || type(a:options) != type({})
+        echoerr 's:expand_keyword(): invalid arguments. (a:str = '.string(a:str).', a:options = '.string(a:options).')'
+        return ''
     endif
+    let rest = a:str
+    let result = ''
 
-    if f != 0
-      let result .= rest[: f - 1]
-      let rest = rest[f :]
-    endif
+    " Assign these variables for eval().
+    for [name, val] in items(a:options)
+        " unlockvar l:
+        " let l:[name] = val
+        execute 'let' name '=' string(val)
+    endfor
 
-    if rest[0] == '\'
-      let result .= rest[1]
-      let rest = rest[2 :]
-    else
-      if rest =~ '^[@&$]{'
-        let rest = rest[1] . rest[0] . rest[2 :]
-      endif
-      if rest[0] == '@'
-        let e = 2
-        let expr = rest[0 : 1]
-      elseif rest =~ '^[&$]'
-        let e = matchend(rest, '.\w\+')
-        let expr = rest[: e - 1]
-      else  " rest =~ '^{'
-        let e = matchend(rest, '\\\@<!}')
-        let expr = substitute(rest[1 : e - 2], '\\}', '}', 'g')
-      endif
-      let result .= eval(expr)
-      let rest = rest[e :]
-    endif
-  endwhile
-  return result
+    while 1
+        let f = match(rest, '\\\?[{]')
+
+        " No more special characters. end parsing.
+        if f < 0
+            let result .= rest
+            break
+        endif
+
+        " Skip ordinary string.
+        if f != 0
+            let result .= rest[: f - 1]
+            let rest = rest[f :]
+        endif
+
+        " Process special string.
+        if rest[0] == '\'
+            let result .= rest[1]
+            let rest = rest[2 :]
+        elseif rest[0] == '{'
+            let e = matchend(rest, '\\\@<!}')
+            let expr = substitute(rest[1 : e - 2], '\\}', '}', 'g')
+            let result .= eval(expr)
+            let rest = rest[e :]
+        else
+            echohl WarningMsg
+            echomsg 'parse error: rest = '.rest.', result = '.result
+            echohl None
+        endif
+    endwhile
+    return result
 endfunction "}}}
 
 function! s:get_var(varname) "{{{
