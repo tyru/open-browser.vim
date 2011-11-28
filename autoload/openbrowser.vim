@@ -177,7 +177,7 @@ function! openbrowser#open(uri) "{{{
             continue
         endif
 
-        let cmdline = s:expand_keyword(
+        let cmdline = s:expand_keywords(
         \   open_rules[browser],
         \   {'browser': browser, 'uri': uri}
         \)
@@ -210,7 +210,7 @@ function! openbrowser#search(query, ...) "{{{
     endif
 
     call openbrowser#open(
-    \   s:expand_keyword(search_engines[engine], {'query': urilib#uri_escape(a:query)})
+    \   s:expand_keywords(search_engines[engine], {'query': urilib#uri_escape(a:query)})
     \)
 endfunction "}}}
 
@@ -430,9 +430,9 @@ endfunction "}}}
 " Escape by \ if you does not want to expand.
 " - "\{keyword}" => "{keyword}", not expression `keyword`.
 "   it does not expand vim variable `keyword`.
-function! s:expand_keyword(str, options)  " {{{
+function! s:expand_keywords(str, options)  " {{{
     if type(a:str) != type('') || type(a:options) != type({})
-        echoerr 's:expand_keyword(): invalid arguments. (a:str = '.string(a:str).', a:options = '.string(a:options).')'
+        echoerr 's:expand_keywords(): invalid arguments. (a:str = '.string(a:str).', a:options = '.string(a:options).')'
         return ''
     endif
     let rest = a:str
