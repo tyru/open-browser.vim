@@ -121,6 +121,8 @@ let s:default = {
 \   'baidu': 'http://www.baidu.com/s?wd={query}&rsv_bp=0&rsv_spt=3&inputT=2478',
 \   'github': 'http://github.com/search?q={query}',
 \   'verycd': 'http://www.verycd.com/search/entries/{query}',
+\   'php': 'http://php.net/{query}',
+\   'cpan': 'http://search.cpan.org/search?query={query}',
 \}
 if exists('g:openbrowser_search_engines')
     call extend(g:openbrowser_search_engines, s:default, 'keep')
