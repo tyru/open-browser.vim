@@ -250,14 +250,8 @@ function! s:parse_and_delegate(excmd, parse, delegate, cmdline) "{{{
     return call(a:delegate, args)
 endfunction "}}}
 function! s:parse_cmdline(cmdline) "{{{
-    if a:cmdline =~# '^-\w\+\s\+'
-        let m = matchlist(a:cmdline, '^-\(\w\+\)\s\+\(.*\)')
-        if empty(m)
-            throw 'parse error'
-        endif
-        return m[1:2]
-    endif
-    return [s:NONE, a:cmdline]
+    let m = matchlist(a:cmdline, '^-\(\S\+\)\s\+\(.*\)')
+    return !empty(m) ? m[1:2] : [s:NONE, a:cmdline]
 endfunction "}}}
 
 " :OpenBrowserSearch
