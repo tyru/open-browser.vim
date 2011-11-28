@@ -93,20 +93,15 @@ g:openbrowser_open_commands			*g:openbrowser_open_commands*
 	Default value is platform dependant.
 	Cygwin: ["cygstart"]
 	Mac OS X: ["open"]
-	MS Windows: ["start"]
+	MS Windows: ["cmd.exe"]
 	Unix like environment: ['xdg-open', 'x-www-browser', 'firefox', 'w3m']
-
-	Note that "start" is not external program,
-	it is cmd.exe builtin command.
-	But you don't have to care it is not executable,
-	because open-browser knows "start" is builtin command.
 
 g:openbrowser_open_rules			*g:openbrowser_open_rules*
 								(default: Platform dependent)
 	Default value is platform dependant.
 	Cygwin: {"cygstart": "{browser} {shellescape(uri)}"}
 	Mac OS X: {"open": "{browser} {shellescape(uri)}"}
-	MS Windows: {"start": "&shell &shellcmdflag {browser} {uri}"}
+	MS Windows: {"cmd.exe": "cmd /c start rundll32 url.dll,FileProtocolHandler {uri}"}
 	Unix like environment: >
 	{
 	\   'xdg-open':      '{browser} {shellescape(uri)}',
