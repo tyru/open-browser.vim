@@ -113,6 +113,14 @@ endif
 let s:default = {
 \   'google': 'http://google.com/search?q={query}',
 \   'yahoo': 'http://search.yahoo.com/search?p={query}',
+\   'python': 'http://docs.python.org/dev/search.html?q={query}\&check_keywords=yes\&area=defa',
+\   'wikipedia': 'http://en.wikipedia.org/wiki/Special:Search?search={query}',
+\   'duckduckgo': 'http://duckduckgo.com/?q={query}',
+\   'blekko': 'http://blekko.com/ws/+{query}',
+\   'askubuntu': 'http://askubuntu.com/search?q={query}',
+\   'baidu': 'http://www.baidu.com/s?wd={query}\&rsv_bp=0\&rsv_spt=3\&inputT=2478',
+\   'github': 'http://github.com/search?q={query}',
+\   'verycd': 'http://www.verycd.com/search/entries/{query}',
 \}
 if exists('g:openbrowser_search_engines')
     call extend(g:openbrowser_search_engines, s:default, 'keep')
