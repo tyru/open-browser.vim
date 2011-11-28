@@ -58,7 +58,7 @@ Usage:
 
 }}}
 ==============================================================================
-INTERFACE				*openbrowser-interface* {{{
+INTERFACE							*openbrowser-interface* {{{
 ------------------------------------------------------------------------------
 KEYMAPPINGS					*openbrowser-keymappings* {{{
 
@@ -243,7 +243,7 @@ openbrowser#smart_search({query} [, {search-engine}])			*openbrowser#smart_searc
 }}}
 }}}
 ==============================================================================
-PLATFORM DEPENDENT VALUES		*openbrowser-platform-dependent* {{{
+PLATFORM DEPENDENT VALUES			*openbrowser-platform-dependent* {{{
 
 Cygwin:
 	Match if: `has("win32unix")` is true.
@@ -288,7 +288,7 @@ Unix like environment:
 
 }}}
 ==============================================================================
-CHANGELOG						*openbrowser-changelog* {{{
+CHANGELOG							*openbrowser-changelog* {{{
 
 0.0.0:
 - Initial upload
