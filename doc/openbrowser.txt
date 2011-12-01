@@ -375,8 +375,8 @@ backward compatibility.
   it returned only first matched search engine.
 - Fix bug: if the key contains "-" in g:openbrowser_search_engines,
   it does not work.
-- Change s:expand_keyword() notation. It recognizes only {vim expression}.
-  (see :help openbrowser-option-notation for details)
+- Change s:expand_keyword() syntax. It recognizes only {vim expression}.
+  (see :help openbrowser-option-syntax for details)
   - Change default value of g:openbrowser_open_rules
   - Change default value of g:openbrowser_search_engines
 
