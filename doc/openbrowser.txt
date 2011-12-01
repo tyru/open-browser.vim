@@ -2,7 +2,7 @@
 
 Author:
   tyru <tyru.exe@gmail.com>
-Version: 0.0.6a
+Version: 0.0.7
 License: Under the same license as Vim itself (see :help license)
 
 ==============================================================================
@@ -352,6 +352,33 @@ backward compatibility.
 - Sorry, I forgot to note that
   Mac OS X environment detection problem was reported by Chomo.
   Thanks Chomo.
+
+0.0.7:
+- Support some search engines (alphabetically)
+  Most search engines were suggested by stardiviner, thanks!
+  - Ask Ubuntu
+  - Baidu
+  - Blekko
+  - CPAN (search.cpan.org)
+  - DuckDuckGo
+  - GitHub
+  - Google Code (en)
+  - PHP (www.php.net)
+  - Python (docs.python.org)
+  - SPACE ALC
+  - Twitter Search
+  - Twitter (user)
+  - VeryCD
+  - Wikipedia (en)
+  - vim.org
+- Fix bug: command-line completion did not return all matched search engines,
+  it returned only first matched search engine.
+- Fix bug: if the key contains "-" in g:openbrowser_search_engines,
+  it does not work.
+- Change s:expand_keyword() syntax. It recognizes only {vim expression}.
+  (see :help openbrowser-option-syntax for details)
+  - Change default value of g:openbrowser_open_rules
+  - Change default value of g:openbrowser_search_engines
 
 }}}
 ==============================================================================
