@@ -76,6 +76,7 @@ if exists('g:openbrowser_isfname')
 endif
 if !exists('g:openbrowser_iskeyword')
     " Getting only URI from <cword>.
+    " NOTE: Removed valid URL characters "(", ")".
     let g:openbrowser_iskeyword = join(
     \   range(char2nr('A'), char2nr('Z'))
     \   + range(char2nr('a'), char2nr('z'))
@@ -100,8 +101,6 @@ if !exists('g:openbrowser_iskeyword')
     \   ']',
     \   '!',
     \   "'",
-    \   "(",
-    \   ")",
     \   "*",
     \   "~",
     \], ',')
