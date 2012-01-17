@@ -145,6 +145,14 @@ function! s:uri_fragment(...) dict "{{{
     return self.__fragment
 endfunction "}}}
 
+function! s:uri_query(...) dict "{{{
+    if a:0
+        " TODO
+        throw 'urilib: uri.query(value) does not support yet.'
+    endif
+    return self.__query
+endfunction "}}}
+
 function! s:uri_to_iri() dict "{{{
     " Same as uri.to_string(), but do unescape for self.__path.
     return printf(
@@ -174,6 +182,7 @@ let s:uri = {
 \   '__host': '',
 \   '__port': '',
 \   '__path': '',
+\   '__query': '',
 \   '__fragment': '',
 \
 \   'scheme': s:local_func('uri_scheme'),
@@ -181,6 +190,7 @@ let s:uri = {
 \   'path': s:local_func('uri_path'),
 \   'opaque': s:local_func('uri_opaque'),
 \   'fragment': s:local_func('uri_fragment'),
+\   'query': s:local_func('query'),
 \   'to_iri': s:local_func('uri_to_iri'),
 \   'to_string': s:local_func('uri_to_string'),
 \}
@@ -188,7 +198,7 @@ let s:uri = {
 
 
 function! s:new(str) "{{{
-    let [scheme, host, port, path, fragment] = s:split_uri(a:str)
+    let [scheme, host, port, path, query, fragment] = s:split_uri(a:str)
     call s:validate_scheme(scheme)
     " TODO: Support punycode
     " let host = ...
@@ -196,6 +206,7 @@ function! s:new(str) "{{{
     call s:validate_port(port)
     let path = join(map(split(path, '/'), 'urilib#uri_escape(v:val)'), '/')
     call s:validate_path(path)
+    call s:validate_query(query)
     call s:validate_fragment(fragment)
 
     let obj = deepcopy(s:uri)
@@ -203,6 +214,7 @@ function! s:new(str) "{{{
     call obj.host(host)
     call obj.port(port)
     call obj.path(path)
+    call obj.query(query)
     call obj.fragment(fragment)
     return obj
 endfunction "}}}
@@ -210,6 +222,14 @@ endfunction "}}}
 function! s:is_urilib_exception(str) "{{{
     return a:str =~# '^uri parse error:'
 endfunction "}}}
+
+
+" Patterns for URI syntax
+" cf. http://tools.ietf.org/html/rfc3986#appendix-A
+let s:UNRESERVED  = '[[:alpha:][:digit:]._~-]'
+let s:PCT_ENCODED = '%[0-9a-fA-F][0-9a-fA-F]'
+let s:SUB_DELIMS  = '[!$&''()*+,;=]'
+
 
 " Parsing URI
 function! s:split_uri(str) "{{{
@@ -221,9 +241,11 @@ function! s:split_uri(str) "{{{
 
     if rest == ''
         let path = ''
+        let query = ''
         let fragment = ''
     else
         let [path    , rest] = s:eat_path(rest)
+        let [query   , rest] = s:eat_query(rest)
         let [fragment, rest] = s:eat_fragment(rest)
     endif
 
@@ -232,7 +254,7 @@ function! s:split_uri(str) "{{{
         throw 'uri parse error: unnecessary string at the end.'
     endif
 
-    return [scheme, host, port, path, fragment]
+    return [scheme, host, port, path, query, fragment]
 endfunction "}}}
 function! s:eat_em(str, pat, ...) "{{{
     let m = matchlist(a:str, a:pat)
@@ -271,6 +293,12 @@ function! s:eat_path(str) "{{{
 endfunction "}}}
 function! s:is_path(path) "{{{
     return a:path !~# '[^\x00-\xff]'
+endfunction "}}}
+function! s:eat_query(str) "{{{
+    return s:eat_em(a:str, '^?\(\%('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\|:\|@\)*\)'.'\C')
+endfunction "}}}
+function! s:is_query(query) "{{{
+    return a:query !~# '[^\x00-\xff]'
 endfunction "}}}
 function! s:eat_fragment(str) "{{{
     return s:eat_em(a:str, '^#\(.*\)'.'\C', '')
