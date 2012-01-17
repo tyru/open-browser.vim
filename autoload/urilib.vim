@@ -137,7 +137,7 @@ endfunction "}}}
 function! s:uri_fragment(...) dict "{{{
     if a:0
         " NOTE: self.__fragment must not have "#" as prefix.
-        let fragment = substitute(a:1, '^#\+', '', '')
+        let fragment = substitute(a:1, '^#', '', '')
         if s:is_fragment(fragment)
             let self.__fragment = fragment
         endif
