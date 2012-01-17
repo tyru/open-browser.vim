@@ -162,8 +162,11 @@ function! openbrowser#open(uri) "{{{
         execute s:get_var('openbrowser_open_vim_command') a:uri
         return
     endif
+    let uri = s:convert_uri(a:uri, s:NONE)
+    if uri is s:NONE
+        return
+    endif
 
-    let uri = s:convert_uri(a:uri)
     redraw
     echo "opening '" . uri . "' ..."
 
@@ -345,7 +348,7 @@ endfunction "}}}
 
 " - If a:uri looks like file path, add "file:///"
 " - Apply settings of g:openbrowser_fix_schemes, g:openbrowser_fix_hosts, g:openbrowser_fix_paths
-function! s:convert_uri(uri) "{{{
+function! s:convert_uri(uri, else) "{{{
     if s:seems_path(a:uri)    " File path
         " a:uri is File path. Converts a:uri to `file://` URI.
         if stridx(a:uri, 'file://') ==# 0
@@ -378,9 +381,10 @@ function! s:convert_uri(uri) "{{{
             endfor
             return obj.to_string()
         endif
-        " Fall through
+    else
+        " Error
+        return a:else
     endif
-    return a:uri
 endfunction "}}}
 
 " Get selected text in visual mode.
