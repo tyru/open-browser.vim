@@ -150,6 +150,11 @@ let s:uri = {
 
 function! s:new(str) "{{{
     let [scheme, host, path, fragment] = s:split_uri(a:str)
+    call s:validate_scheme(scheme)
+    call s:validate_host(host)
+    call s:validate_path(path)
+    call s:validate_fragment(fragment)
+
     let obj = deepcopy(s:uri)
     call obj.scheme(scheme)
     call obj.host(host)
@@ -167,21 +172,15 @@ function! s:split_uri(str) "{{{
     let rest = a:str
 
     let [scheme, rest] = s:eat_scheme(rest)
-    call s:validate_scheme(scheme)
-
-    let [host, rest] = s:eat_host(rest)
-    call s:validate_host(host)
+    let [host, rest]   = s:eat_host(rest)
 
     if rest == ''
-        " URI allows no slash after host? Is it correct?
         let path = ''
         let fragment = ''
     else
         let [path    , rest] = s:eat_path(rest)
         let [fragment, rest] = s:eat_fragment(rest)
     endif
-    call s:validate_path(path)
-    call s:validate_fragment(fragment)
 
     let rest = substitute(rest, '^\s\+', '', '')
     if rest != ''
