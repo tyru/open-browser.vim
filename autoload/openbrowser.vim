@@ -191,7 +191,7 @@ function! openbrowser#open(uri) "{{{
             let fix = s:get_var('openbrowser_fix_'.where.'s')
             let value = obj[where]()
             if has_key(fix, value)
-                call call(obj[where], [fix[value]])
+                call call(obj[where], [fix[value]], obj)
             endif
         endfor
         let uri = obj.to_string()
