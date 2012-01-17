@@ -231,13 +231,6 @@ function! s:is_urilib_exception(str) "{{{
 endfunction "}}}
 
 
-" Patterns for URI syntax
-" cf. http://tools.ietf.org/html/rfc3986#appendix-A
-let s:UNRESERVED  = '[[:alpha:][:digit:]._~-]'
-let s:PCT_ENCODED = '%[0-9a-fA-F][0-9a-fA-F]'
-let s:SUB_DELIMS  = '[!$&''()*+,;=]'
-let s:PCHAR = '\%('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\|[:@]\)'
-
 
 " Parsing URI
 function! s:split_uri(str) "{{{
@@ -303,46 +296,43 @@ function! s:eat_em(str, pat) "{{{
     let rest = strpart(a:str, strlen(match))
     return [want, rest]
 endfunction "}}}
-function! s:eat_scheme(str) "{{{
-    return s:eat_em(a:str, '^\([:alpha:]\%([[:alpha:][:digit:]+.-]\)*\)')
-endfunction "}}}
-function! s:eat_host(str) "{{{
+
+
+" Patterns for URI syntax {{{
+"
+" cf. http://tools.ietf.org/html/rfc3986#appendix-A
+
+let s:UNRESERVED  = '[[:alpha:][:digit:]._~-]'
+let s:PCT_ENCODED = '%[0-9a-fA-F][0-9a-fA-F]'
+let s:SUB_DELIMS  = '[!$&''()*+,;=]'
+let s:PCHAR = '\%('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\|[:@]\)'
+
+let s:RX_SCHEME = '^\([:alpha:]\%([[:alpha:][:digit:]+.-]\)*\)'
     " TODO: IPv6
-    " let h16 = ''
-    " let ls32 = ''
-    " let IPv6ADDRESS = ''
-    let IPvFUTURE = 'v[0-9a-fA-F]\.\%('.s:UNRESERVED.'\|'.s:SUB_DELIMS.'\|:\)\+'
-    "let IP_LITERAL = '\[\%('.IPv6ADDRESS.'\|'.IPvFUTURE.'\)\]'
-    let IP_LITERAL = '\[\%('.IPvFUTURE.'\)\]'
+    " let s:H16 = ''
+    " let s:LS32 = ''
+    " let s:IPv6ADDRESS = ''
+    let s:IPvFUTURE = 'v[0-9a-fA-F]\.\%('.s:UNRESERVED.'\|'.s:SUB_DELIMS.'\|:\)\+'
+    "let s:IP_LITERAL = '\[\%('.s:IPv6ADDRESS.'\|'.s:IPvFUTURE.'\)\]'
+    let s:IP_LITERAL = '\[\%('.s:IPvFUTURE.'\)\]'
     " 0-9 or 10-99 or 100-199 or 200-249 or 250-255
-    let DEC_OCTET = '\%([:digit:]\|[\x31-\x39][:digit:]\|1[:digit:][:digit:]\|2[\x30-\x34][:digit:]\|25[\x30-\x35]\)'
-    let IPv4ADDRESS = DEC_OCTET.'\.'.DEC_OCTET.'\.'.DEC_OCTET.'\.'.DEC_OCTET
-    let REG_NAME = '\('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\)*'
-    let HOST = '\('.IP_LITERAL.'\|'.IPv4ADDRESS.'\|'.REG_NAME.'\)'
-    return s:eat_em(a:str, '^'.HOST)
-endfunction "}}}
-function! s:eat_port(str) "{{{
-    return s:eat_em(a:str, '^\(\d*\)')
-endfunction "}}}
-function! s:eat_path(str) "{{{
-    let SEGMENT = s:PCHAR.'*'
-    let SEGMENT_NZ = s:PCHAR.'\+'
-    let PATH_ABEMPTY = '\%(/'.SEGMENT.'\)'
-    let PATH_ABSOLUTE = '/\%('.SEGMENT_NZ.'\%(/'.SEGMENT.'\)*\)\?'
-    let PATH_ROOTLESS = SEGMENT_NZ.'\%(/'.SEGMENT.'\)*'
-    let PATH_EMPTY = ''
+    let s:DEC_OCTET = '\%([:digit:]\|[\x31-\x39][:digit:]\|1[:digit:][:digit:]\|2[\x30-\x34][:digit:]\|25[\x30-\x35]\)'
+    let s:IPv4ADDRESS = s:DEC_OCTET.'\.'.s:DEC_OCTET.'\.'.s:DEC_OCTET.'\.'.s:DEC_OCTET
+    let s:REG_NAME = '\('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\)*'
+let s:RX_HOST = '^\('.s:IP_LITERAL.'\|'.s:IPv4ADDRESS.'\|'.s:REG_NAME.'\)'
+let s:RX_PORT = '^\(\d*\)'
+    let s:SEGMENT = s:PCHAR.'*'
+    let s:SEGMENT_NZ = s:PCHAR.'\+'
+    let s:PATH_ABEMPTY = '\%(/'.s:SEGMENT.'\)'
+    let s:PATH_ABSOLUTE = '/\%('.s:SEGMENT_NZ.'\%(/'.s:SEGMENT.'\)*\)\?'
+    let s:PATH_ROOTLESS = s:SEGMENT_NZ.'\%(/'.s:SEGMENT.'\)*'
+    let s:PATH_EMPTY = ''
     " NOTE: PATH is different from 'path' refered in RFC3986 Appendix A.
     " This pattern is for the string after 'authority' in 'hier-part'
-    let PATH = '\('.PATH_ABEMPTY.'\|'.PATH_ABSOLUTE.'\|'.PATH_ROOTLESS.'\|'.PATH_EMPTY.'\)'
-    return s:eat_em(a:str, '^'.PATH)
-endfunction "}}}
-function! s:eat_query(str) "{{{
-    return s:eat_em(a:str, '^\(\%('.s:PCHAR.'\|[/?]\)*\)')
-endfunction "}}}
-function! s:eat_fragment(str) "{{{
-    return s:eat_em(a:str, '^\(\%('.s:PCHAR.'\|[/?]\)*\)')
-endfunction "}}}
-
+let s:RX_PATH = '^\('.s:PATH_ABEMPTY.'\|'.s:PATH_ABSOLUTE.'\|'.s:PATH_ROOTLESS.'\|'.s:PATH_EMPTY.'\)'
+let s:RX_QUERY = '^\(\%('.s:PCHAR.'\|[/?]\)*\)'
+let s:RX_FRAGMENT = s:RX_QUERY
+" }}}
 
 " FIXME: make error messages user-friendly.
 let s:FUNCTION_DESCS = {
@@ -360,6 +350,18 @@ let s:FUNCTION_DESCS = {
 \   'fragment': 'uri parse error: all characters'
 \             . ' in fragment must be [\x00-\xff].',
 \}
+
+" Create s:eat_*() functions.
+function! s:create_eat_functions()
+    for where in keys(s:FUNCTION_DESCS)
+        execute join([
+        \   'function! s:eat_'.where.'(str)',
+        \       'return s:eat_em(a:str, s:RX_'.toupper(where).')',
+        \   'endfunction',
+        \], "\n")
+    endfor
+endfunction
+call s:create_eat_functions()
 
 " Create s:is_*() functions.
 function! s:has_error(func, args)
