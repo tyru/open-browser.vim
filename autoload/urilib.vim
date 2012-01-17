@@ -159,6 +159,8 @@ let s:uri = {
 function! s:new(str) "{{{
     let [scheme, host, path, fragment] = s:split_uri(a:str)
     call s:validate_scheme(scheme)
+    " TODO: Support punycode
+    " let host = ...
     call s:validate_host(host)
     let path = join(map(split(path, '/'), 'urilib#uri_escape(v:val)'), '/')
     call s:validate_path(path)
@@ -225,7 +227,6 @@ function! s:eat_host(str) "{{{
     return s:eat_em(a:str, '^\/\/\(\/*[^/]\+\)'.'\C')
 endfunction "}}}
 function! s:validate_host(host) "{{{
-    " FIXME
     if a:host =~# '[^\x00-\xff]'
         throw 'uri parse error: all characters'
         \   . ' in host must be [\x00-\xff].'
