@@ -12,9 +12,11 @@ let s:save_cpo = &cpo
 set cpo&vim
 " }}}
 
-
 let g:urilib#version = str2nr(printf('%02d%02d%03d', 0, 1, 0))
 
+
+
+" Autoload Functions {{{
 
 function! urilib#load() "{{{
     " dummy function to load this script
@@ -30,6 +32,10 @@ function! s:sandbox_call(fn, args, nothrow, NothrowValue) "{{{
             throw substitute(v:exception, '^Vim([^()]\+):', '', '')
         endif
     endtry
+endfunction "}}}
+
+function! s:is_urilib_exception(str) "{{{
+    return a:str =~# '^uri parse error:'
 endfunction "}}}
 
 function! urilib#new(uri, ...) "{{{
@@ -82,15 +88,31 @@ function! urilib#uri_unescape(str)
   return ret
 endfunction
 
+" }}}
 
-" s:uri {{{
+" URI Object {{{
 
-function! s:local_func(name) "{{{
-    let sid = matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_local_func$')
-    return function('<SNR>' . sid . '_' . a:name)
+function! s:new(str) "{{{
+    let [scheme, host, port, path, query, fragment] = s:split_uri(a:str)
+    call s:validate_scheme(scheme)
+    " TODO: Support punycode
+    " let host = ...
+    call s:validate_host(host)
+    call s:validate_port(port)
+    let path = join(map(split(path, '/'), 'urilib#uri_escape(v:val)'), '/')
+    call s:validate_path(path)
+    call s:validate_query(query)
+    call s:validate_fragment(fragment)
+
+    let obj = deepcopy(s:uri)
+    call obj.scheme(scheme)
+    call obj.host(host)
+    call obj.port(port)
+    call obj.path(path)
+    call obj.query(query)
+    call obj.fragment(fragment)
+    return obj
 endfunction "}}}
-
-
 
 function! s:uri_scheme(...) dict "{{{
     if a:0 && s:is_scheme(a:1)
@@ -183,6 +205,12 @@ function! s:uri_to_string() dict "{{{
 endfunction "}}}
 
 
+
+function! s:local_func(name) "{{{
+    let sid = matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_local_func$')
+    return function('<SNR>' . sid . '_' . a:name)
+endfunction "}}}
+
 let s:uri = {
 \   '__scheme': '',
 \   '__host': '',
@@ -203,36 +231,8 @@ let s:uri = {
 \}
 " }}}
 
+" Parsing Functions {{{
 
-function! s:new(str) "{{{
-    let [scheme, host, port, path, query, fragment] = s:split_uri(a:str)
-    call s:validate_scheme(scheme)
-    " TODO: Support punycode
-    " let host = ...
-    call s:validate_host(host)
-    call s:validate_port(port)
-    let path = join(map(split(path, '/'), 'urilib#uri_escape(v:val)'), '/')
-    call s:validate_path(path)
-    call s:validate_query(query)
-    call s:validate_fragment(fragment)
-
-    let obj = deepcopy(s:uri)
-    call obj.scheme(scheme)
-    call obj.host(host)
-    call obj.port(port)
-    call obj.path(path)
-    call obj.query(query)
-    call obj.fragment(fragment)
-    return obj
-endfunction "}}}
-
-function! s:is_urilib_exception(str) "{{{
-    return a:str =~# '^uri parse error:'
-endfunction "}}}
-
-
-
-" Parsing URI
 function! s:split_uri(str) "{{{
     let rest = a:str
 
@@ -397,6 +397,7 @@ function! s:create_validate_functions()
 endfunction
 call s:create_validate_functions()
 
+" }}}
 
 
 
