@@ -125,7 +125,8 @@ let s:default = {
 \   'twitter-user': 'http://twitter.com/{query}',
 \   'verycd': 'http://www.verycd.com/search/entries/{query}',
 \   'vim': 'http://www.google.com/cse?cx=partner-pub-3005259998294962%3Abvyni59kjr1&ie=ISO-8859-1&q={query}&sa=Search&siteurl=www.vim.org%2F#gsc.tab=0&gsc.q={query}&gsc.page=1',
-\   'wikipedia': 'http://en.wikipedia.org/wiki/Special:Search?search={query}',
+\   'wikipedia': 'http://en.wikipedia.org/wiki/{query}',
+\   'wikipedia-ja': 'http://ja.wikipedia.org/wiki/{query}',
 \   'yahoo': 'http://search.yahoo.com/search?p={query}',
 \}
 if exists('g:openbrowser_search_engines')
