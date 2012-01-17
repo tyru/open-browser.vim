@@ -13,7 +13,7 @@ set cpo&vim
 " }}}
 
 
-let g:urilib#version = str2nr(printf('%02d%02d%03d', 0, 0, 6))
+let g:urilib#version = str2nr(printf('%02d%02d%03d', 0, 1, 0))
 
 
 function! urilib#load() "{{{
@@ -159,22 +159,24 @@ endfunction "}}}
 function! s:uri_to_iri() dict "{{{
     " Same as uri.to_string(), but do unescape for self.__path.
     return printf(
-    \   '%s://%s%s/%s%s',
+    \   '%s://%s%s/%s%s%s',
     \   self.__scheme,
     \   self.__host,
     \   (self.__port !=# '' ? ':' . self.__port : ''),
     \   urilib#uri_unescape(self.__path),
+    \   (self.__query != '' ? '?' . self.__query : ''),
     \   (self.__fragment != '' ? '#' . self.__fragment : ''),
     \)
 endfunction "}}}
 
 function! s:uri_to_string() dict "{{{
     return printf(
-    \   '%s://%s%s/%s%s',
+    \   '%s://%s%s/%s%s%s',
     \   self.__scheme,
     \   self.__host,
     \   (self.__port !=# '' ? ':' . self.__port : ''),
     \   self.__path,
+    \   (self.__query != '' ? '?' . self.__query : ''),
     \   (self.__fragment != '' ? '#' . self.__fragment : ''),
     \)
 endfunction "}}}
