@@ -41,6 +41,7 @@ endfunction "}}}
 
 function! urilib#new_from_uri_like_string(str, ...) "{{{
     let str = a:str
+    " TODO: use scheme regexp.
     if str !~# '^[a-z]\+://'    " no scheme.
         let str = 'http://' . str
     endif
