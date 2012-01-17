@@ -329,13 +329,17 @@ function! openbrowser#_keymapping_smart_search(mode) "{{{
 endfunction "}}}
 
 
-function! s:seems_path(path) "{{{
-    " - Has no invalid filename character (seeing &fname)
+function! s:seems_path(uri) "{{{
+    " - Has no invalid filename character (seeing &isfname)
     " and, either
-    " - file:// prefixed string
-    " - Existed path
-    return (stridx(a:path, 'file://') is 0 && a:path[7:] =~# '^\f\+$')
-    \   || (getftype(a:path) !=# ''        && a:path     =~# '^\f\+$')
+    " - file:// prefixed string and existed file path
+    " - Existed file path
+    if stridx(a:uri, 'file://') is 0
+        let path = substitute(a:uri, '^file://', '', '')
+    else
+        let path = a:uri
+    endif
+    return getftype(path) !=# ''
 endfunction "}}}
 
 function! s:seems_uri(uri) "{{{
