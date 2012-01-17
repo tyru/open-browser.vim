@@ -331,9 +331,8 @@ function! s:seems_path(path) "{{{
     " and, either
     " - file:// prefixed string
     " - Existed path
-    return (stridx(a:path, 'file://') ==# 0
-    \       || getftype(a:path) !=# '')
-    \   && a:path =~# '^\f\+$'
+    return (stridx(a:path, 'file://') is 0 && a:path[7:] =~# '^\f\+$')
+    \   || (getftype(a:path) !=# ''        && a:path     =~# '^\f\+$')
 endfunction "}}}
 
 function! s:seems_uri(uri) "{{{
