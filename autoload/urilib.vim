@@ -92,24 +92,21 @@ endfunction "}}}
 
 
 function! s:uri_scheme(...) dict "{{{
-    if a:0
-        call s:validate_scheme(a:1)
+    if a:0 && s:is_scheme(a:1)
         let self.__scheme = a:1
     endif
     return self.__scheme
 endfunction "}}}
 
 function! s:uri_host(...) dict "{{{
-    if a:0
-        call s:validate_host(a:1)
+    if a:0 && s:is_host(a:1)
         let self.__host = a:1
     endif
     return self.__host
 endfunction "}}}
 
 function! s:uri_port(...) dict "{{{
-    if a:0
-        call s:validate_port(a:1)
+    if a:0 && s:is_port(a:1)
         let self.__port = a:1
     endif
     return self.__port
@@ -119,8 +116,9 @@ function! s:uri_path(...) dict "{{{
     if a:0
         " NOTE: self.__path must not have "/" as prefix.
         let path = substitute(a:1, '^/\+', '', '')
-        call s:validate_path(path)
-        let self.__path = path
+        if s:is_path(path)
+            let self.__path = path
+        endif
     endif
     return "/" . self.__path
 endfunction "}}}
@@ -140,8 +138,9 @@ function! s:uri_fragment(...) dict "{{{
     if a:0
         " NOTE: self.__fragment must not have "#" as prefix.
         let fragment = substitute(a:1, '^#\+', '', '')
-        call s:validate_fragment(fragment)
-        let self.__fragment = fragment
+        if s:is_fragment(fragment)
+            let self.__fragment = fragment
+        endif
     endif
     return self.__fragment
 endfunction "}}}
