@@ -238,52 +238,58 @@ endfunction "}}}
 function! s:eat_scheme(str) "{{{
     return s:eat_em(a:str, '^\(\w\+\):'.'\C')
 endfunction "}}}
-function! s:validate_scheme(scheme) "{{{
-    if a:scheme !~# '^[a-z]\+$'
-        throw 'uri parse error: all characters'
-        \   . ' in scheme must be [a-z].'
-    endif
+function! s:is_scheme(scheme) "{{{
+    return a:scheme =~# '^[a-z]\+$'
 endfunction "}}}
 function! s:eat_host(str) "{{{
     " '\/*' for file:// scheme. it has 3 slashes.
     return s:eat_em(a:str, '^\/\/\(\/*[^:/]\+\)'.'\C')
 endfunction "}}}
-function! s:validate_host(host) "{{{
-    if a:host =~# '[^\x00-\xff]'
-        throw 'uri parse error: all characters'
-        \   . ' in host must be [\x00-\xff].'
-    endif
+function! s:is_host(host) "{{{
+    return a:host !~# '[^\x00-\xff]'
 endfunction "}}}
 function! s:eat_port(str) "{{{
     return s:eat_em(a:str, '^:\(\d\+\)'.'\C')
 endfunction "}}}
-function! s:validate_port(port) "{{{
-    if !(a:port =~# '^\d\+$' && 0+a:port ># 0)
-        throw 'uri parse error: all characters'
-        \   . ' in port must be digit and the number'
-        \   . ' is greater than 0.'
-    endif
+function! s:is_port(port) "{{{
+    return a:port =~# '^\d\+$' && 0+a:port ># 0
 endfunction "}}}
 function! s:eat_path(str) "{{{
     return s:eat_em(a:str, '^\(\/[^#]*\)'.'\C')
 endfunction "}}}
-function! s:validate_path(path) "{{{
-    " FIXME
-    if a:path =~# '[^\x00-\xff]'
-        throw 'uri parse error: all characters'
-        \   . ' in path must be [\x00-\xff].'
-    endif
+function! s:is_path(path) "{{{
+    return a:path !~# '[^\x00-\xff]'
 endfunction "}}}
 function! s:eat_fragment(str) "{{{
     return s:eat_em(a:str, '^#\(.*\)'.'\C', '')
 endfunction "}}}
-function! s:validate_fragment(fragment) "{{{
-    " FIXME
-    if a:fragment =~# '[^\x00-\xff]'
-        throw 'uri parse error: all characters'
-        \   . ' in fragment must be [\x00-\xff].'
-    endif
+function! s:is_fragment(fragment) "{{{
+    return a:fragment !~# '[^\x00-\xff]'
 endfunction "}}}
+
+" Create s:validate_*() functions.
+for [s:where, s:msg] in items({
+\   'scheme': 'uri parse error: all characters'
+\           . ' in scheme must be [a-z].'
+\   'host': 'uri parse error: all characters'
+\         . ' in host must be [\x00-\xff].'
+\   'port': 'uri parse error: all characters'
+\         . ' in port must be digit and the number'
+\         . ' is greater than 0.'
+\   'path': 'uri parse error: all characters'
+\         . ' in path must be [\x00-\xff].'
+\   'fragment': 'uri parse error: all characters'
+\             . ' in fragment must be [\x00-\xff].'
+\}
+    execute join([
+    \   'function! s:validate_'.where.'(str)',
+    \       'if !s:is_'.where.'(a:str)',
+    \           'throw '.string(s:msg),
+    \       'endif',
+    \   'endfunction',
+    \], "\n")
+endfor
+unlet s:where s:msg
 
 
 
