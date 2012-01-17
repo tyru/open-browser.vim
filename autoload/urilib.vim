@@ -147,8 +147,11 @@ endfunction "}}}
 
 function! s:uri_query(...) dict "{{{
     if a:0
-        " TODO
-        throw 'urilib: uri.query(value) does not support yet.'
+        " NOTE: self.__query must not have "?" as prefix.
+        let query = substitute(a:1, '^?', '', '')
+        if s:is_query(query)
+            let self.__query = query
+        endif
     endif
     return self.__query
 endfunction "}}}
