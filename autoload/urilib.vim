@@ -99,7 +99,7 @@ endfunction "}}}
 
 function! s:uri_path(...) dict "{{{
     if a:0
-        " NOTE: self.__path must not have "/" prefix.
+        " NOTE: self.__path must not have "/" as prefix.
         let self.__path = substitute(a:1, '^/\+', '', '')
     endif
     return "/" . self.__path
@@ -114,7 +114,7 @@ endfunction "}}}
 
 function! s:uri_fragment(...) dict "{{{
     if a:0
-        " NOTE: self.__path must not have "#" prefix.
+        " NOTE: self.__fragment must not have "#" as prefix.
         let self.__fragment = substitute(a:1, '^#\+', '', '')
     endif
     return self.__fragment
@@ -239,7 +239,7 @@ function! s:validate_fragment(fragment) "{{{
     " FIXME
     if a:fragment =~# '[^\x00-\xff]'
         throw 'uri parse error: all characters'
-        \   . ' in path must be [\x00-\xff].'
+        \   . ' in fragment must be [\x00-\xff].'
     endif
 endfunction "}}}
 
