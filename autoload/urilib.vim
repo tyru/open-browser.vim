@@ -73,6 +73,14 @@ function! urilib#uri_escape(str) "{{{
     return escaped
 endfunction "}}}
 
+" from Vital.Web.Http.unescape()
+function! urilib#uri_unescape(str)
+  let ret = a:str
+  let ret = substitute(ret, '+', ' ', 'g')
+  let ret = substitute(ret, '%\(\x\x\)', '\=nr2char("0x".submatch(1))', 'g')
+  return ret
+endfunction
+
 
 " s:uri {{{
 
