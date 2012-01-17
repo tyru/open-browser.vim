@@ -105,6 +105,13 @@ function! s:uri_host(...) dict "{{{
     return self.__host
 endfunction "}}}
 
+function! s:uri_port(...) dict "{{{
+    if a:0
+        let self.__port = a:1
+    endif
+    return self.__port
+endfunction "}}}
+
 function! s:uri_path(...) dict "{{{
     if a:0
         " NOTE: self.__path must not have "/" as prefix.
@@ -118,7 +125,10 @@ function! s:uri_opaque(...) dict "{{{
         " TODO
         throw 'urilib: uri.opaque(value) does not support yet.'
     endif
-    return printf('//%s/%s', self.__host, self.__path)
+    return printf('//%s%s/%s',
+    \           self.__host,
+    \           (self.__port !=# '' ? ':' . self.__port : ''),
+    \           self.__path)
 endfunction "}}}
 
 function! s:uri_fragment(...) dict "{{{
@@ -131,9 +141,10 @@ endfunction "}}}
 
 function! s:uri_to_string() dict "{{{
     return printf(
-    \   '%s://%s/%s%s',
+    \   '%s://%s%s/%s%s',
     \   self.__scheme,
     \   self.__host,
+    \   (self.__port !=# '' ? ':' . self.__port : ''),
     \   self.__path,
     \   (self.__fragment != '' ? '#' . self.__fragment : ''),
     \)
@@ -143,6 +154,7 @@ endfunction "}}}
 let s:uri = {
 \   '__scheme': '',
 \   '__host': '',
+\   '__port': '',
 \   '__path': '',
 \   '__fragment': '',
 \
@@ -157,11 +169,12 @@ let s:uri = {
 
 
 function! s:new(str) "{{{
-    let [scheme, host, path, fragment] = s:split_uri(a:str)
+    let [scheme, host, port, path, fragment] = s:split_uri(a:str)
     call s:validate_scheme(scheme)
     " TODO: Support punycode
     " let host = ...
     call s:validate_host(host)
+    call s:validate_port(port)
     let path = join(map(split(path, '/'), 'urilib#uri_escape(v:val)'), '/')
     call s:validate_path(path)
     call s:validate_fragment(fragment)
@@ -169,6 +182,7 @@ function! s:new(str) "{{{
     let obj = deepcopy(s:uri)
     call obj.scheme(scheme)
     call obj.host(host)
+    call obj.port(port)
     call obj.path(path)
     call obj.fragment(fragment)
     return obj
@@ -184,6 +198,7 @@ function! s:split_uri(str) "{{{
 
     let [scheme, rest] = s:eat_scheme(rest)
     let [host, rest]   = s:eat_host(rest)
+    let [port, rest]   = s:eat_port(rest)
 
     if rest == ''
         let path = ''
@@ -198,7 +213,7 @@ function! s:split_uri(str) "{{{
         throw 'uri parse error: unnecessary string at the end.'
     endif
 
-    return [scheme, host, path, fragment]
+    return [scheme, host, port, path, fragment]
 endfunction "}}}
 function! s:eat_em(str, pat, ...) "{{{
     let m = matchlist(a:str, a:pat)
@@ -224,12 +239,22 @@ function! s:validate_scheme(scheme) "{{{
 endfunction "}}}
 function! s:eat_host(str) "{{{
     " '\/*' for file:// scheme. it has 3 slashes.
-    return s:eat_em(a:str, '^\/\/\(\/*[^/]\+\)'.'\C')
+    return s:eat_em(a:str, '^\/\/\(\/*[^:/]\+\)'.'\C')
 endfunction "}}}
 function! s:validate_host(host) "{{{
     if a:host =~# '[^\x00-\xff]'
         throw 'uri parse error: all characters'
         \   . ' in host must be [\x00-\xff].'
+    endif
+endfunction "}}}
+function! s:eat_port(str) "{{{
+    return s:eat_em(a:str, '^:\(\d\+\)'.'\C')
+endfunction "}}}
+function! s:validate_port(port) "{{{
+    if !(a:port =~# '^\d\+$' && 0+a:port ># 0)
+        throw 'uri parse error: all characters'
+        \   . ' in port must be digit and the number'
+        \   . ' is greater than 0.'
     endif
 endfunction "}}}
 function! s:eat_path(str) "{{{
