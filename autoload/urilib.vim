@@ -152,6 +152,7 @@ function! s:new(str) "{{{
     let [scheme, host, path, fragment] = s:split_uri(a:str)
     call s:validate_scheme(scheme)
     call s:validate_host(host)
+    let path = join(map(split(path, '/'), 'urilib#uri_escape(v:val)'), '/')
     call s:validate_path(path)
     call s:validate_fragment(fragment)
 
