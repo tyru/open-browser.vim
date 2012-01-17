@@ -64,7 +64,7 @@ endfunction "}}}
 function! urilib#uri_escape(str) "{{{
     let escaped = ''
     for i in range(strlen(a:str))
-        if a:str[i] =~# '^[A-Za-z0-9\-\._~"]$'
+        if a:str[i] =~# '^[A-Za-z0-9._~"-]$'
             let escaped .= a:str[i]
         else
             let escaped .= printf("%%%02X", char2nr(a:str[i]))
