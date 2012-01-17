@@ -154,48 +154,52 @@ endfunction "}}}
 
 " :OpenBrowser
 function! openbrowser#open(uri) "{{{
-    if a:uri =~# '^\s*$'
+    let uri = a:uri
+    if uri =~# '^\s*$'
+        " Error
         return
-    endif
-    if s:get_var('openbrowser_open_filepath_in_vim')
-    \   && s:seems_path(a:uri)
-        execute s:get_var('openbrowser_open_vim_command') a:uri
-        return
-    endif
-    let uri = s:convert_uri(a:uri, s:NONE)
-    if uri is s:NONE
-        return
-    endif
-
-    redraw
-    echo "opening '" . uri . "' ..."
-
-    for browser in s:get_var('openbrowser_open_commands')
-        if !executable(browser)
-            continue
+    elseif s:seems_path(uri)    " Existed file path or 'file://'
+        " Convert to full path.
+        if stridx(uri, 'file://') is 0    " file://
+            let fullpath = substitute(uri, '^file://', '', '')
+        elseif uri[0] ==# '/'    " full path
+            let fullpath = uri
+        else    " relative path
+            let fullpath = s:convert_to_fullpath(uri)
         endif
-        let open_rules = s:get_var('openbrowser_open_rules')
-        if !has_key(open_rules, browser)
-            continue
+        if s:get_var('openbrowser_open_filepath_in_vim')
+            let command = s:get_var('openbrowser_open_vim_command')
+            execute command fullpath
+        else
+            " Convert to file:// string.
+            " NOTE: cygwin cannot treat file:// URI,
+            " pass a string as fullpath.
+            if !g:__openbrowser_platform.cygwin
+                let fullpath = 'file://' . fullpath
+            endif
+            call s:open_browser(fullpath)
         endif
-
-        let cmdline = s:expand_keywords(
-        \   open_rules[browser],
-        \   {'browser': browser, 'uri': uri}
-        \)
-        call system(cmdline)
-        " No need to check v:shell_error
-        " because browser is spawned in background process
-        " so can't check its return value.
-        redraw
-        echo "opening '" . uri . "' ... done! (" . browser . ")"
+    elseif s:seems_uri(uri)    " other URI
+        let obj = urilib#new_from_uri_like_string(uri, s:NONE)
+        if obj is s:NONE
+            " Error
+            return
+        endif
+        " Fix scheme, host, path.
+        " e.g.: "ttp" => "http"
+        for where in ['scheme', 'host', 'path']
+            let fix = s:get_var('openbrowser_fix_'.where.'s')
+            let value = obj[where]()
+            if has_key(fix, value)
+                call call(obj[where], [fix[value]])
+            endif
+        endfor
+        let uri = obj.to_string()
+        call s:open_browser(uri)
+    else
+        " Error
         return
-    endfor
-
-    echohl WarningMsg
-    redraw
-    echomsg "open-browser doesn't know how to open '" . uri . "'."
-    echohl None
+    endif
 endfunction "}}}
 
 " :OpenBrowserSearch
@@ -350,53 +354,49 @@ function! s:seems_uri(uri) "{{{
     \   && uri.host() =~# '\.'
 endfunction "}}}
 
-" - If a:uri looks like file path, add "file:///"
-" - Apply settings of g:openbrowser_fix_schemes, g:openbrowser_fix_hosts, g:openbrowser_fix_paths
-function! s:convert_uri(uri, else) "{{{
-    if s:seems_path(a:uri)    " File path
-        " a:uri is File path. Converts a:uri to `file://` URI.
-        if stridx(a:uri, 'file://') ==# 0
-            return s:normalize_file_uri(a:uri)
-        endif
-        let save_shellslash = &shellslash
-        let &l:shellslash = 1
-        try
-            let uri = fnamemodify(a:uri, ':p')
-            if g:__openbrowser_platform.cygwin
-                return uri
-            else
-                return s:normalize_file_uri(uri)
-            endif
-        finally
-            let &l:shellslash = save_shellslash
-        endtry
-    elseif s:seems_uri(a:uri)    " URI
-        let ERROR = []
-        let obj = urilib#new_from_uri_like_string(a:uri, ERROR)
-        if obj isnot ERROR
-            " Fix scheme, host, path.
-            " e.g.: "ttp" => "http"
-            for where in ['scheme', 'host', 'path']
-                let fix = s:get_var('openbrowser_fix_'.where.'s')
-                let value = obj[where]()
-                if has_key(fix, value)
-                    call call(obj[where], [fix[value]])
-                endif
-            endfor
-            return obj.to_string()
-        endif
-    else
-        " Error
-        return a:else
-    endif
+function! s:convert_to_fullpath(path) "{{{
+    let save_shellslash = &shellslash
+    let &l:shellslash = 1
+    try
+        let path = fnamemodify(a:path, ':p')
+    finally
+        let &l:shellslash = save_shellslash
+    endtry
 endfunction "}}}
 
-function! s:normalize_file_uri(uri)
+function! s:open_browser(uri) "{{{
     let uri = a:uri
-    let uri = substitute(uri, '^file://', '', '')
-    let uri = 'file://' . (uri[0] !=# '/' ? '/' : '') . uri
-    return uri
-endfunction
+
+    redraw
+    echo "opening '" . uri . "' ..."
+
+    for browser in s:get_var('openbrowser_open_commands')
+        if !executable(browser)
+            continue
+        endif
+        let open_rules = s:get_var('openbrowser_open_rules')
+        if !has_key(open_rules, browser)
+            continue
+        endif
+
+        let cmdline = s:expand_keywords(
+        \   open_rules[browser],
+        \   {'browser': browser, 'uri': uri}
+        \)
+        call system(cmdline)
+        " No need to check v:shell_error
+        " because browser is spawned in background process
+        " so can't check its return value.
+        redraw
+        echo "opening '" . uri . "' ... done! (" . browser . ")"
+        return
+    endfor
+
+    echohl WarningMsg
+    redraw
+    echomsg "open-browser doesn't know how to open '" . uri . "'."
+    echohl None
+endfunction "}}}
 
 " Get selected text in visual mode.
 function! s:get_selected_text() "{{{
