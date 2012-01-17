@@ -159,22 +159,24 @@ endfunction "}}}
 function! s:uri_to_iri() dict "{{{
     " Same as uri.to_string(), but do unescape for self.__path.
     return printf(
-    \   '%s://%s%s/%s%s',
+    \   '%s://%s%s/%s%s%s',
     \   self.__scheme,
     \   self.__host,
     \   (self.__port !=# '' ? ':' . self.__port : ''),
     \   urilib#uri_unescape(self.__path),
+    \   (self.__query != '' ? '?' . self.__query : ''),
     \   (self.__fragment != '' ? '#' . self.__fragment : ''),
     \)
 endfunction "}}}
 
 function! s:uri_to_string() dict "{{{
     return printf(
-    \   '%s://%s%s/%s%s',
+    \   '%s://%s%s/%s%s%s',
     \   self.__scheme,
     \   self.__host,
     \   (self.__port !=# '' ? ':' . self.__port : ''),
     \   self.__path,
+    \   (self.__query != '' ? '?' . self.__query : ''),
     \   (self.__fragment != '' ? '#' . self.__fragment : ''),
     \)
 endfunction "}}}
