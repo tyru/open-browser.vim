@@ -233,26 +233,55 @@ endfunction "}}}
 let s:UNRESERVED  = '[[:alpha:][:digit:]._~-]'
 let s:PCT_ENCODED = '%[0-9a-fA-F][0-9a-fA-F]'
 let s:SUB_DELIMS  = '[!$&''()*+,;=]'
+let s:PCHAR = '\%('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\|[:@]\)'
 
 
 " Parsing URI
 function! s:split_uri(str) "{{{
     let rest = a:str
 
-    let [scheme, rest] = s:eat_scheme(rest)
-    let [host,   rest] = s:eat_host(rest)
-    let [port,   rest] = s:eat_port(rest)
+    " URI = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
+    " hier-part = "//" authority path-abempty
+    "           / path-absolute
+    "           / path-rootless
+    "           / path-empty
+    " authority = [ userinfo "@" ] host [ ":" port ]
 
-    if rest == ''
-        let path = ''
-        let query = ''
-        let fragment = ''
+    " scheme
+    let [scheme, rest] = s:eat_scheme(rest)
+
+    let [_, rest] = s:eat_em(rest, '^://')
+
+    " TODO: userinfo
+
+    " host
+    let [host, rest] = s:eat_host(rest)
+
+    " port
+    if rest[0] ==# ':'
+        let [port, rest] = s:eat_port(rest[1:])
     else
-        let [path    , rest] = s:eat_path(rest)
-        let [query   , rest] = s:eat_query(rest)
-        let [fragment, rest] = s:eat_fragment(rest)
+        let port = ''
     endif
 
+    " path (string after authority in hier-part)
+    let [path, rest] = s:eat_path(rest)
+
+    " query
+    if rest[0] ==# '?'
+        let [query, rest] = s:eat_query(rest[1:])
+    else
+        let query = ''
+    endif
+
+    " fragment
+    if rest[0] ==# '#'
+        let [fragment, rest] = s:eat_fragment(rest[1:])
+    else
+        let fragment = ''
+    endif
+
+    " Ignore trailing whitespaces?
     let rest = substitute(rest, '^\s\+', '', '')
     if rest != ''
         throw 'uri parse error: unnecessary string at the end.'
@@ -260,80 +289,108 @@ function! s:split_uri(str) "{{{
 
     return [scheme, host, port, path, query, fragment]
 endfunction "}}}
-function! s:eat_em(str, pat, ...) "{{{
-    let m = matchlist(a:str, a:pat)
+function! s:eat_em(str, pat) "{{{
+    let pat = a:pat.'\C'
+    let m = matchlist(a:str, pat)
     if empty(m)
-        if a:0
-            return [a:1, a:str]
-        else
-            throw 'uri parse error: ' . printf("can't parse '%s' with '%s'.", a:str, a:pat)
-        endif
+        throw 'uri parse error: '
+        \   . printf("can't parse '%s' with '%s'.", a:str, pat)
     endif
     let [match, want] = m[0:1]
     let rest = strpart(a:str, strlen(match))
     return [want, rest]
 endfunction "}}}
 function! s:eat_scheme(str) "{{{
-    return s:eat_em(a:str, '^\(\w\+\):'.'\C')
-endfunction "}}}
-function! s:is_scheme(scheme) "{{{
-    return a:scheme =~# '^[a-z]\+$'
+    return s:eat_em(a:str, '^\([:alpha:]\%([[:alpha:][:digit:]+.-]\)*\)')
 endfunction "}}}
 function! s:eat_host(str) "{{{
-    " '\/*' for file:// scheme. it has 3 slashes.
-    return s:eat_em(a:str, '^\/\/\(\/*[^:/]\+\)'.'\C')
-endfunction "}}}
-function! s:is_host(host) "{{{
-    return a:host !~# '[^\x00-\xff]'
+    " TODO: IPv6
+    " let h16 = ''
+    " let ls32 = ''
+    " let IPv6ADDRESS = ''
+    let IPvFUTURE = 'v[0-9a-fA-F]\.\%('.s:UNRESERVED.'\|'.s:SUB_DELIMS.'\|:\)\+'
+    "let IP_LITERAL = '\[\%('.IPv6ADDRESS.'\|'.IPvFUTURE.'\)\]'
+    let IP_LITERAL = '\[\%('.IPvFUTURE.'\)\]'
+    " 0-9 or 10-99 or 100-199 or 200-249 or 250-255
+    let DEC_OCTET = '\%([:digit:]\|[\x31-\x39][:digit:]\|1[:digit:][:digit:]\|2[\x30-\x34][:digit:]\|25[\x30-\x35]\)'
+    let IPv4ADDRESS = DEC_OCTET.'\.'.DEC_OCTET.'\.'.DEC_OCTET.'\.'.DEC_OCTET
+    let REG_NAME = '\('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\)*'
+    let HOST = '\('.IP_LITERAL.'\|'.IPv4ADDRESS.'\|'.REG_NAME.'\)'
+    return s:eat_em(a:str, '^'.HOST)
 endfunction "}}}
 function! s:eat_port(str) "{{{
-    return s:eat_em(a:str, '^:\(\d\+\)'.'\C')
-endfunction "}}}
-function! s:is_port(port) "{{{
-    return a:port =~# '^\d\+$' && 0+a:port ># 0
+    return s:eat_em(a:str, '^\(\d*\)')
 endfunction "}}}
 function! s:eat_path(str) "{{{
-    return s:eat_em(a:str, '^\(\/[^#]*\)'.'\C')
-endfunction "}}}
-function! s:is_path(path) "{{{
-    return a:path !~# '[^\x00-\xff]'
+    let SEGMENT = s:PCHAR.'*'
+    let SEGMENT_NZ = s:PCHAR.'\+'
+    let PATH_ABEMPTY = '\%(/'.SEGMENT.'\)'
+    let PATH_ABSOLUTE = '/\%('.SEGMENT_NZ.'\%(/'.SEGMENT.'\)*\)\?'
+    let PATH_ROOTLESS = SEGMENT_NZ.'\%(/'.SEGMENT.'\)*'
+    let PATH_EMPTY = ''
+    " NOTE: PATH is different from 'path' refered in RFC3986 Appendix A.
+    " This pattern is for the string after 'authority' in 'hier-part'
+    let PATH = '\('.PATH_ABEMPTY.'\|'.PATH_ABSOLUTE.'\|'.PATH_ROOTLESS.'\|'.PATH_EMPTY.'\)'
+    return s:eat_em(a:str, '^'.PATH)
 endfunction "}}}
 function! s:eat_query(str) "{{{
-    return s:eat_em(a:str, '^?\(\%('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\|:\|@\)*\)'.'\C')
-endfunction "}}}
-function! s:is_query(query) "{{{
-    return a:query !~# '[^\x00-\xff]'
+    return s:eat_em(a:str, '^\(\%('.s:PCHAR.'\|[/?]\)*\)')
 endfunction "}}}
 function! s:eat_fragment(str) "{{{
-    return s:eat_em(a:str, '^#\(.*\)'.'\C', '')
-endfunction "}}}
-function! s:is_fragment(fragment) "{{{
-    return a:fragment !~# '[^\x00-\xff]'
+    return s:eat_em(a:str, '^\(\%('.s:PCHAR.'\|[/?]\)*\)')
 endfunction "}}}
 
-" Create s:validate_*() functions.
-for [s:where, s:msg] in items({
+
+" FIXME: make error messages user-friendly.
+let s:FUNCTION_DESCS = {
 \   'scheme': 'uri parse error: all characters'
-\           . ' in scheme must be [a-z].'
+\           . ' in scheme must be [a-z].',
 \   'host': 'uri parse error: all characters'
-\         . ' in host must be [\x00-\xff].'
+\         . ' in host must be [\x00-\xff].',
 \   'port': 'uri parse error: all characters'
 \         . ' in port must be digit and the number'
-\         . ' is greater than 0.'
+\         . ' is greater than 0.',
 \   'path': 'uri parse error: all characters'
-\         . ' in path must be [\x00-\xff].'
+\         . ' in path must be [\x00-\xff].',
+\   'query': 'uri parse error: all characters'
+\         . ' in query must be [\x00-\xff].',
 \   'fragment': 'uri parse error: all characters'
-\             . ' in fragment must be [\x00-\xff].'
+\             . ' in fragment must be [\x00-\xff].',
 \}
-    execute join([
-    \   'function! s:validate_'.where.'(str)',
-    \       'if !s:is_'.where.'(a:str)',
-    \           'throw '.string(s:msg),
-    \       'endif',
-    \   'endfunction',
-    \], "\n")
-endfor
-unlet s:where s:msg
+
+" Create s:is_*() functions.
+function! s:has_error(func, args)
+    try
+        call call(a:func, a:args)
+        return 0
+    catch
+        return 1
+    endtry
+endfunction
+function! s:create_check_functions()
+    for where in keys(s:FUNCTION_DESCS)
+        execute join([
+        \   'function! s:is_'.where.'(str)',
+        \       'return !s:has_error("s:eat_'.where.'", [a:str])',
+        \   'endfunction',
+        \], "\n")
+    endfor
+endfunction
+call s:create_check_functions()
+
+" Create s:validate_*() functions.
+function! s:create_validate_functions()
+    for [where, msg] in items(s:FUNCTION_DESCS)
+        execute join([
+        \   'function! s:validate_'.where.'(str)',
+        \       'if !s:is_'.where.'(a:str)',
+        \           'throw '.string(msg),
+        \       'endif',
+        \   'endfunction',
+        \], "\n")
+    endfor
+endfunction
+call s:create_validate_functions()
 
 
 
