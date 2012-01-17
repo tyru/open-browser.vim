@@ -352,7 +352,7 @@ function! s:convert_uri(uri, else) "{{{
     if s:seems_path(a:uri)    " File path
         " a:uri is File path. Converts a:uri to `file://` URI.
         if stridx(a:uri, 'file://') ==# 0
-            return a:uri
+            return s:normalize_file_uri(a:uri)
         endif
         let save_shellslash = &shellslash
         let &l:shellslash = 1
@@ -361,7 +361,7 @@ function! s:convert_uri(uri, else) "{{{
             if g:__openbrowser_platform.cygwin
                 return uri
             else
-                return 'file:///' . uri
+                return s:normalize_file_uri(uri)
             endif
         finally
             let &l:shellslash = save_shellslash
@@ -386,6 +386,13 @@ function! s:convert_uri(uri, else) "{{{
         return a:else
     endif
 endfunction "}}}
+
+function! s:normalize_file_uri(uri)
+    let uri = a:uri
+    let uri = substitute(uri, '^file://', '', '')
+    let uri = 'file://' . (uri[0] !=# '/' ? '/' : '') . uri
+    return uri
+endfunction
 
 " Get selected text in visual mode.
 function! s:get_selected_text() "{{{
