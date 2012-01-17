@@ -108,6 +108,7 @@ endfunction "}}}
 function! s:uri_opaque(...) dict "{{{
     if a:0
         " TODO
+        throw 'urilib: uri.opaque(value) does not support yet.'
     endif
     return printf('//%s/%s', self.__host, self.__path)
 endfunction "}}}
