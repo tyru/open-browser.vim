@@ -56,7 +56,7 @@ endfunction "}}}
 
 " Ex command
 command!
-\   -nargs=+ -complete=file
+\   -nargs=+
 \   OpenBrowser
 \   call openbrowser#open(<q-args>)
 command!
