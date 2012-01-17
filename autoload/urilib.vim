@@ -145,6 +145,18 @@ function! s:uri_fragment(...) dict "{{{
     return self.__fragment
 endfunction "}}}
 
+function! s:uri_to_iri() dict "{{{
+    " Same as uri.to_string(), but do unescape for self.__path.
+    return printf(
+    \   '%s://%s%s/%s%s',
+    \   self.__scheme,
+    \   self.__host,
+    \   (self.__port !=# '' ? ':' . self.__port : ''),
+    \   urilib#uri_unescape(self.__path),
+    \   (self.__fragment != '' ? '#' . self.__fragment : ''),
+    \)
+endfunction "}}}
+
 function! s:uri_to_string() dict "{{{
     return printf(
     \   '%s://%s%s/%s%s',
@@ -169,6 +181,7 @@ let s:uri = {
 \   'path': s:local_func('uri_path'),
 \   'opaque': s:local_func('uri_opaque'),
 \   'fragment': s:local_func('uri_fragment'),
+\   'to_iri': s:local_func('uri_to_iri'),
 \   'to_string': s:local_func('uri_to_string'),
 \}
 " }}}
