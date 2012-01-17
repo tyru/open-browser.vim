@@ -235,6 +235,7 @@ endfunction "}}}
 " Implementations {{{
 
 let s:NONE = []
+lockvar s:NONE
 
 
 
