@@ -204,8 +204,8 @@ function! s:split_uri(str) "{{{
     let rest = a:str
 
     let [scheme, rest] = s:eat_scheme(rest)
-    let [host, rest]   = s:eat_host(rest)
-    let [port, rest]   = s:eat_port(rest)
+    let [host,   rest] = s:eat_host(rest)
+    let [port,   rest] = s:eat_port(rest)
 
     if rest == ''
         let path = ''
