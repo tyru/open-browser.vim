@@ -190,10 +190,11 @@ let s:uri = {
 \
 \   'scheme': s:local_func('uri_scheme'),
 \   'host': s:local_func('uri_host'),
+\   'port': s:local_func('uri_port'),
 \   'path': s:local_func('uri_path'),
 \   'opaque': s:local_func('uri_opaque'),
+\   'query': s:local_func('uri_query'),
 \   'fragment': s:local_func('uri_fragment'),
-\   'query': s:local_func('query'),
 \   'to_iri': s:local_func('uri_to_iri'),
 \   'to_string': s:local_func('uri_to_string'),
 \}
