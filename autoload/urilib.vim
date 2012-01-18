@@ -92,24 +92,20 @@ endfunction
 " URI Object {{{
 
 function! s:new(str) "{{{
-    let [scheme, host, port, path, query, fragment] = s:split_uri(a:str)
-    call s:validate_scheme(scheme)
+    let result = s:parse_uri(a:str)
+    let result.path = join(
+    \   map(split(result.path, '/'), 'urilib#uri_escape(v:val)'),
+    \   '/'
+    \)
     " TODO: Support punycode
-    " let host = ...
-    call s:validate_host(host)
-    call s:validate_port(port)
-    let path = join(map(split(path, '/'), 'urilib#uri_escape(v:val)'), '/')
-    call s:validate_path(path)
-    call s:validate_query(query)
-    call s:validate_fragment(fragment)
+    " let result.host = ...
 
     let obj = deepcopy(s:uri)
-    call obj.scheme(scheme)
-    call obj.host(host)
-    call obj.port(port)
-    call obj.path(path)
-    call obj.query(query)
-    call obj.fragment(fragment)
+    for [where, value] in items(result)
+        call s:validate_{where}(value)         " Validate the value.
+        call call(obj[where], [value], obj)    " Set the value.
+    endfor
+
     return obj
 endfunction "}}}
 
@@ -232,7 +228,7 @@ let s:uri = {
 
 " Parsing Functions {{{
 
-function! s:split_uri(str) "{{{
+function! s:parse_uri(str) "{{{
     let rest = a:str
 
     " URI = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
@@ -282,7 +278,14 @@ function! s:split_uri(str) "{{{
         throw 'uri parse error: unnecessary string at the end.'
     endif
 
-    return [scheme, host, port, path, query, fragment]
+    return {
+    \   'scheme': scheme,
+    \   'host': host,
+    \   'port': port,
+    \   'path': path,
+    \   'query': query,
+    \   'fragment': fragment,
+    \}
 endfunction "}}}
 function! s:eat_em(str, pat) "{{{
     let pat = a:pat.'\C'
