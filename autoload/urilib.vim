@@ -311,6 +311,7 @@ let s:SUB_DELIMS  = '[!$&''()*+,;=]'
 let s:PCHAR = '\%('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\|[:@]\)'
 
 let s:RX_SCHEME = '^\([:alpha:]\%([[:alpha:][:digit:]+.-]\)*\)'
+" s:RX_HOST {{{
     " TODO: IPv6
     " let s:H16 = ''
     " let s:LS32 = ''
@@ -323,7 +324,9 @@ let s:RX_SCHEME = '^\([:alpha:]\%([[:alpha:][:digit:]+.-]\)*\)'
     let s:IPv4ADDRESS = s:DEC_OCTET.'\.'.s:DEC_OCTET.'\.'.s:DEC_OCTET.'\.'.s:DEC_OCTET
     let s:REG_NAME = '\('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\)*'
 let s:RX_HOST = '^\('.s:IP_LITERAL.'\|'.s:IPv4ADDRESS.'\|'.s:REG_NAME.'\)'
+" }}}
 let s:RX_PORT = '^\(\d*\)'
+" s:RX_PATH {{{
     let s:SEGMENT = s:PCHAR.'*'
     let s:SEGMENT_NZ = s:PCHAR.'\+'
     let s:PATH_ABEMPTY = '\%(/'.s:SEGMENT.'\)'
@@ -333,6 +336,7 @@ let s:RX_PORT = '^\(\d*\)'
     " NOTE: PATH is different from 'path' refered in RFC3986 Appendix A.
     " This pattern is for the string after 'authority' in 'hier-part'
 let s:RX_PATH = '^\('.s:PATH_ABEMPTY.'\|'.s:PATH_ABSOLUTE.'\|'.s:PATH_ROOTLESS.'\|'.s:PATH_EMPTY.'\)'
+" }}}
 let s:RX_QUERY = '^\(\%('.s:PCHAR.'\|[/?]\)*\)'
 let s:RX_FRAGMENT = s:RX_QUERY
 " }}}
