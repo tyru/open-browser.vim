@@ -310,7 +310,7 @@ let s:PCT_ENCODED = '%[0-9a-fA-F][0-9a-fA-F]'
 let s:SUB_DELIMS  = '[!$&''()*+,;=]'
 let s:PCHAR = '\%('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\|[:@]\)'
 
-let s:RX_SCHEME = '^\([:alpha:]\%([[:alpha:][:digit:]+.-]\)*\)'
+let s:RX_SCHEME = '^\(\a\%([[:alpha:][:digit:]+.-]\)*\)'
 " s:RX_HOST {{{
     " TODO: IPv6
     " let s:H16 = ''
@@ -320,7 +320,7 @@ let s:RX_SCHEME = '^\([:alpha:]\%([[:alpha:][:digit:]+.-]\)*\)'
     "let s:IP_LITERAL = '\[\%('.s:IPv6ADDRESS.'\|'.s:IPvFUTURE.'\)\]'
     let s:IP_LITERAL = '\[\%('.s:IPvFUTURE.'\)\]'
     " 0-9 or 10-99 or 100-199 or 200-249 or 250-255
-    let s:DEC_OCTET = '\%([:digit:]\|[\x31-\x39][:digit:]\|1[:digit:][:digit:]\|2[\x30-\x34][:digit:]\|25[\x30-\x35]\)'
+    let s:DEC_OCTET = '\%(\d\|[\x31-\x39]\d\|1\d\d\|2[\x30-\x34]\d\|25[\x30-\x35]\)'
     let s:IPv4ADDRESS = s:DEC_OCTET.'\.'.s:DEC_OCTET.'\.'.s:DEC_OCTET.'\.'.s:DEC_OCTET
     let s:REG_NAME = '\%('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\)*'
 let s:RX_HOST = '^\('.s:IP_LITERAL.'\|'.s:IPv4ADDRESS.'\|'.s:REG_NAME.'\)'
