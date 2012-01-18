@@ -304,46 +304,22 @@ endfunction "}}}
 
 " Patterns for URI syntax {{{
 "
-" URL syntax
-" - http://tools.ietf.org/html/rfc1738#section-2.1
-" - http://tools.ietf.org/html/rfc1738#section-5
-" URI syntax
-" - http://tools.ietf.org/html/rfc3986#appendix-A
+" The main parts of URLs
+"   http://tools.ietf.org/html/rfc1738#section-2.1
+" BNF for specific URL schemes
+"   http://tools.ietf.org/html/rfc1738#section-5
+" Collected ABNF for URI
+"   http://tools.ietf.org/html/rfc3986#appendix-A
+" Parsing a URI Reference with a Regular Expression
+" NOTE: Using this regexp pattern in urilib.vim
+"   http://tools.ietf.org/html/rfc3986#appendix-B
 
-let s:UNRESERVED  = '[[:alpha:][:digit:]._~-]'
-let s:PCT_ENCODED = '%[0-9a-fA-F][0-9a-fA-F]'
-let s:SUB_DELIMS  = '[!$&''()*+,;=]'
-let s:PCHAR = '\%('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\|[:@]\)'
-
-let s:RX_SCHEME = '^\(\a\%([[:alpha:][:digit:]+.-]\)*\)'
-" s:RX_HOST {{{
-    " TODO: IPv6
-    " let s:H16 = ''
-    " let s:LS32 = ''
-    " let s:IPv6ADDRESS = ''
-    let s:IPvFUTURE = 'v[0-9a-fA-F]\.\%('.s:UNRESERVED.'\|'.s:SUB_DELIMS.'\|:\)\+'
-    "let s:IP_LITERAL = '\[\%('.s:IPv6ADDRESS.'\|'.s:IPvFUTURE.'\)\]'
-    let s:IP_LITERAL = '\[\%('.s:IPvFUTURE.'\)\]'
-    " 0-9 or 10-99 or 100-199 or 200-249 or 250-255
-    let s:DEC_OCTET = '\%(\d\|[\x31-\x39]\d\|1\d\d\|2[\x30-\x34]\d\|25[\x30-\x35]\)'
-    let s:IPv4ADDRESS = s:DEC_OCTET.'\.'.s:DEC_OCTET.'\.'.s:DEC_OCTET.'\.'.s:DEC_OCTET
-    let s:REG_NAME = '\%('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\)*'
-let s:RX_HOST = '^\('.s:IP_LITERAL.'\|'.s:IPv4ADDRESS.'\|'.s:REG_NAME.'\)'
-" }}}
-let s:RX_PORT = '^\(\d*\)'
-" s:RX_PATH {{{
-    let s:SEGMENT = s:PCHAR.'*'
-    let s:SEGMENT_NZ = s:PCHAR.'\+'
-    let s:PATH_ABEMPTY = '\%(/'.s:SEGMENT.'\)'
-    let s:PATH_ABSOLUTE = '/\%('.s:SEGMENT_NZ.'\%(/'.s:SEGMENT.'\)*\)\?'
-    let s:PATH_ROOTLESS = s:SEGMENT_NZ.'\%(/'.s:SEGMENT.'\)*'
-    let s:PATH_EMPTY = ''
-    " NOTE: PATH is different from 'path' refered in RFC3986 Appendix A.
-    " This pattern is for the string after 'authority' in 'hier-part'
-let s:RX_PATH = '^\('.s:PATH_ABEMPTY.'\|'.s:PATH_ABSOLUTE.'\|'.s:PATH_ROOTLESS.'\|'.s:PATH_EMPTY.'\)'
-" }}}
-let s:RX_QUERY = '^\(\%('.s:PCHAR.'\|[/?]\)*\)'
-let s:RX_FRAGMENT = s:RX_QUERY
+let s:RX_SCHEME   = '^\([^:/?#]\+\)'
+let s:RX_HOST     = '^\([^/?#]*\)'
+let s:RX_PORT     = '^\(\d*\)'
+let s:RX_PATH     = '^\([^?#]*\)'
+let s:RX_QUERY    = '^\([^#]*\)'
+let s:RX_FRAGMENT = '^\(.*\)'
 " }}}
 
 " FIXME: make error messages user-friendly.
