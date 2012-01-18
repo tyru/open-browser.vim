@@ -231,6 +231,10 @@ let s:uri = {
 function! s:parse_uri(str) "{{{
     let rest = a:str
 
+    " Ignore leading/trailing whitespaces.
+    let rest = substitute(rest, '^\s\+', '', '')
+    let rest = substitute(rest, '\s\+$', '', '')
+
     " URI = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
     " hier-part = "//" authority path-abempty
     "           / path-absolute
@@ -272,8 +276,6 @@ function! s:parse_uri(str) "{{{
         let fragment = ''
     endif
 
-    " Ignore trailing whitespaces?
-    let rest = substitute(rest, '^\s\+', '', '')
     if rest != ''
         throw 'uri parse error: unnecessary string at the end.'
     endif
