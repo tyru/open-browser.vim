@@ -94,7 +94,7 @@ endfunction
 function! s:new(str) "{{{
     let result = s:parse_uri(a:str)
     let result.path = join(
-    \   map(split(result.path, '/'), 'urilib#uri_escape(v:val)'),
+    \   map(split(result.path, '/', 1), 'urilib#uri_escape(v:val)'),
     \   '/'
     \)
     " TODO: Support punycode
