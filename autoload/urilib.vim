@@ -12,9 +12,11 @@ let s:save_cpo = &cpo
 set cpo&vim
 " }}}
 
-
 let g:urilib#version = str2nr(printf('%02d%02d%03d', 0, 1, 0))
 
+
+
+" Autoload Functions {{{
 
 function! urilib#load() "{{{
     " dummy function to load this script
@@ -32,6 +34,10 @@ function! s:sandbox_call(fn, args, nothrow, NothrowValue) "{{{
     endtry
 endfunction "}}}
 
+function! s:is_urilib_exception(str) "{{{
+    return a:str =~# '^uri parse error:'
+endfunction "}}}
+
 function! urilib#new(uri, ...) "{{{
     let nothrow = a:0 != 0
     let NothrowValue = a:0 ? a:1 : 'unused'
@@ -41,7 +47,7 @@ endfunction "}}}
 
 function! urilib#new_from_uri_like_string(str, ...) "{{{
     let str = a:str
-    if str !~# '^[a-z]\+://'    " no scheme.
+    if str !~# s:RX_SCHEME    " no scheme.
         let str = 'http://' . str
     endif
 
@@ -81,15 +87,27 @@ function! urilib#uri_unescape(str)
   return ret
 endfunction
 
+" }}}
 
-" s:uri {{{
+" URI Object {{{
 
-function! s:local_func(name) "{{{
-    let sid = matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_local_func$')
-    return function('<SNR>' . sid . '_' . a:name)
+function! s:new(str) "{{{
+    let result = s:parse_uri(a:str)
+    let result.path = join(
+    \   map(split(result.path, '/', 1), 'urilib#uri_escape(v:val)'),
+    \   '/'
+    \)
+    " TODO: Support punycode
+    " let result.host = ...
+
+    let obj = deepcopy(s:uri)
+    for [where, value] in items(result)
+        call s:validate_{where}(value)         " Validate the value.
+        call call(obj[where], [value], obj)    " Set the value.
+    endfor
+
+    return obj
 endfunction "}}}
-
-
 
 function! s:uri_scheme(...) dict "{{{
     if a:0 && s:is_scheme(a:1)
@@ -182,6 +200,12 @@ function! s:uri_to_string() dict "{{{
 endfunction "}}}
 
 
+
+function! s:local_func(name) "{{{
+    let sid = matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_local_func$')
+    return function('<SNR>' . sid . '_' . a:name)
+endfunction "}}}
+
 let s:uri = {
 \   '__scheme': '',
 \   '__host': '',
@@ -202,45 +226,14 @@ let s:uri = {
 \}
 " }}}
 
+" Parsing Functions {{{
 
-function! s:new(str) "{{{
-    let [scheme, host, port, path, query, fragment] = s:split_uri(a:str)
-    call s:validate_scheme(scheme)
-    " TODO: Support punycode
-    " let host = ...
-    call s:validate_host(host)
-    call s:validate_port(port)
-    let path = join(map(split(path, '/'), 'urilib#uri_escape(v:val)'), '/')
-    call s:validate_path(path)
-    call s:validate_query(query)
-    call s:validate_fragment(fragment)
-
-    let obj = deepcopy(s:uri)
-    call obj.scheme(scheme)
-    call obj.host(host)
-    call obj.port(port)
-    call obj.path(path)
-    call obj.query(query)
-    call obj.fragment(fragment)
-    return obj
-endfunction "}}}
-
-function! s:is_urilib_exception(str) "{{{
-    return a:str =~# '^uri parse error:'
-endfunction "}}}
-
-
-" Patterns for URI syntax
-" cf. http://tools.ietf.org/html/rfc3986#appendix-A
-let s:UNRESERVED  = '[[:alpha:][:digit:]._~-]'
-let s:PCT_ENCODED = '%[0-9a-fA-F][0-9a-fA-F]'
-let s:SUB_DELIMS  = '[!$&''()*+,;=]'
-let s:PCHAR = '\%('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\|[:@]\)'
-
-
-" Parsing URI
-function! s:split_uri(str) "{{{
+function! s:parse_uri(str) "{{{
     let rest = a:str
+
+    " Ignore leading/trailing whitespaces.
+    let rest = substitute(rest, '^\s\+', '', '')
+    let rest = substitute(rest, '\s\+$', '', '')
 
     " URI = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
     " hier-part = "//" authority path-abempty
@@ -283,13 +276,18 @@ function! s:split_uri(str) "{{{
         let fragment = ''
     endif
 
-    " Ignore trailing whitespaces?
-    let rest = substitute(rest, '^\s\+', '', '')
     if rest != ''
         throw 'uri parse error: unnecessary string at the end.'
     endif
 
-    return [scheme, host, port, path, query, fragment]
+    return {
+    \   'scheme': scheme,
+    \   'host': host,
+    \   'port': port,
+    \   'path': path,
+    \   'query': query,
+    \   'fragment': fragment,
+    \}
 endfunction "}}}
 function! s:eat_em(str, pat) "{{{
     let pat = a:pat.'\C'
@@ -302,46 +300,27 @@ function! s:eat_em(str, pat) "{{{
     let rest = strpart(a:str, strlen(match))
     return [want, rest]
 endfunction "}}}
-function! s:eat_scheme(str) "{{{
-    return s:eat_em(a:str, '^\([:alpha:]\%([[:alpha:][:digit:]+.-]\)*\)')
-endfunction "}}}
-function! s:eat_host(str) "{{{
-    " TODO: IPv6
-    " let h16 = ''
-    " let ls32 = ''
-    " let IPv6ADDRESS = ''
-    let IPvFUTURE = 'v[0-9a-fA-F]\.\%('.s:UNRESERVED.'\|'.s:SUB_DELIMS.'\|:\)\+'
-    "let IP_LITERAL = '\[\%('.IPv6ADDRESS.'\|'.IPvFUTURE.'\)\]'
-    let IP_LITERAL = '\[\%('.IPvFUTURE.'\)\]'
-    " 0-9 or 10-99 or 100-199 or 200-249 or 250-255
-    let DEC_OCTET = '\%([:digit:]\|[\x31-\x39][:digit:]\|1[:digit:][:digit:]\|2[\x30-\x34][:digit:]\|25[\x30-\x35]\)'
-    let IPv4ADDRESS = DEC_OCTET.'\.'.DEC_OCTET.'\.'.DEC_OCTET.'\.'.DEC_OCTET
-    let REG_NAME = '\('.s:UNRESERVED.'\|'.s:PCT_ENCODED.'\|'.s:SUB_DELIMS.'\)*'
-    let HOST = '\('.IP_LITERAL.'\|'.IPv4ADDRESS.'\|'.REG_NAME.'\)'
-    return s:eat_em(a:str, '^'.HOST)
-endfunction "}}}
-function! s:eat_port(str) "{{{
-    return s:eat_em(a:str, '^\(\d*\)')
-endfunction "}}}
-function! s:eat_path(str) "{{{
-    let SEGMENT = s:PCHAR.'*'
-    let SEGMENT_NZ = s:PCHAR.'\+'
-    let PATH_ABEMPTY = '\%(/'.SEGMENT.'\)'
-    let PATH_ABSOLUTE = '/\%('.SEGMENT_NZ.'\%(/'.SEGMENT.'\)*\)\?'
-    let PATH_ROOTLESS = SEGMENT_NZ.'\%(/'.SEGMENT.'\)*'
-    let PATH_EMPTY = ''
-    " NOTE: PATH is different from 'path' refered in RFC3986 Appendix A.
-    " This pattern is for the string after 'authority' in 'hier-part'
-    let PATH = '\('.PATH_ABEMPTY.'\|'.PATH_ABSOLUTE.'\|'.PATH_ROOTLESS.'\|'.PATH_EMPTY.'\)'
-    return s:eat_em(a:str, '^'.PATH)
-endfunction "}}}
-function! s:eat_query(str) "{{{
-    return s:eat_em(a:str, '^\(\%('.s:PCHAR.'\|[/?]\)*\)')
-endfunction "}}}
-function! s:eat_fragment(str) "{{{
-    return s:eat_em(a:str, '^\(\%('.s:PCHAR.'\|[/?]\)*\)')
-endfunction "}}}
 
+
+" Patterns for URI syntax {{{
+"
+" The main parts of URLs
+"   http://tools.ietf.org/html/rfc1738#section-2.1
+" BNF for specific URL schemes
+"   http://tools.ietf.org/html/rfc1738#section-5
+" Collected ABNF for URI
+"   http://tools.ietf.org/html/rfc3986#appendix-A
+" Parsing a URI Reference with a Regular Expression
+" NOTE: Using this regexp pattern in urilib.vim
+"   http://tools.ietf.org/html/rfc3986#appendix-B
+
+let s:RX_SCHEME   = '^\([^:/?#]\+\)'
+let s:RX_HOST     = '^\([^/?#]*\)'
+let s:RX_PORT     = '^\(\d*\)'
+let s:RX_PATH     = '^\([^?#]*\)'
+let s:RX_QUERY    = '^\([^#]*\)'
+let s:RX_FRAGMENT = '^\(.*\)'
+" }}}
 
 " FIXME: make error messages user-friendly.
 let s:FUNCTION_DESCS = {
@@ -359,6 +338,18 @@ let s:FUNCTION_DESCS = {
 \   'fragment': 'uri parse error: all characters'
 \             . ' in fragment must be [\x00-\xff].',
 \}
+
+" Create s:eat_*() functions.
+function! s:create_eat_functions()
+    for where in keys(s:FUNCTION_DESCS)
+        execute join([
+        \   'function! s:eat_'.where.'(str)',
+        \       'return s:eat_em(a:str, s:RX_'.toupper(where).')',
+        \   'endfunction',
+        \], "\n")
+    endfor
+endfunction
+call s:create_eat_functions()
 
 " Create s:is_*() functions.
 function! s:has_error(func, args)
@@ -394,6 +385,7 @@ function! s:create_validate_functions()
 endfunction
 call s:create_validate_functions()
 
+" }}}
 
 
 
