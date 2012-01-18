@@ -299,7 +299,11 @@ endfunction "}}}
 
 " Patterns for URI syntax {{{
 "
-" cf. http://tools.ietf.org/html/rfc3986#appendix-A
+" URL syntax
+" - http://tools.ietf.org/html/rfc1738#section-2.1
+" - http://tools.ietf.org/html/rfc1738#section-5
+" URI syntax
+" - http://tools.ietf.org/html/rfc3986#appendix-A
 
 let s:UNRESERVED  = '[[:alpha:][:digit:]._~-]'
 let s:PCT_ENCODED = '%[0-9a-fA-F][0-9a-fA-F]'
