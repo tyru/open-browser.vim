@@ -359,7 +359,7 @@ function! s:convert_to_fullpath(path) "{{{
     let save_shellslash = &shellslash
     let &l:shellslash = 1
     try
-        let path = fnamemodify(a:path, ':p')
+        return fnamemodify(a:path, ':p')
     finally
         let &l:shellslash = save_shellslash
     endtry
