@@ -9,40 +9,27 @@ set cpo&vim
 
 " Default values of global variables. "{{{
 if g:__openbrowser_platform.cygwin
-    function! s:get_default_open_commands()
-        return ['cygstart']
-    endfunction
-    function! s:get_default_open_rules()
-        return {'cygstart': '{browser} {shellescape(uri)} &'}
+    function! s:get_default_browser_commands()
+        return [['cygstart', '{browser} {shellescape(uri)} &']]
     endfunction
 elseif g:__openbrowser_platform.macunix
-    function! s:get_default_open_commands()
-        return ['open']
-    endfunction
-    function! s:get_default_open_rules()
-        return {'open': '{browser} {shellescape(uri)} &'}
+    function! s:get_default_browser_commands()
+        return [['open', '{browser} {shellescape(uri)} &']]
     endfunction
 elseif g:__openbrowser_platform.mswin
-    function! s:get_default_open_commands()
-        return ['rundll32']
-    endfunction
-    function! s:get_default_open_rules()
-        " NOTE: On MS Windows, 'start' command is not executable.
+    function! s:get_default_browser_commands()
         " NOTE: If &shellslash == 1,
         " `shellescape(uri)` uses single quotes not double quote.
-        return {'rundll32': 'rundll32 url.dll,FileProtocolHandler {uri}'}
+        return [['rundll32', 'rundll32 url.dll,FileProtocolHandler {uri}']]
     endfunction
 elseif g:__openbrowser_platform.unix
-    function! s:get_default_open_commands()
-        return ['xdg-open', 'x-www-browser', 'firefox', 'w3m']
-    endfunction
-    function! s:get_default_open_rules()
-        return {
-        \   'xdg-open':      '{browser} {shellescape(uri)} &',
-        \   'x-www-browser': '{browser} {shellescape(uri)} &',
-        \   'firefox':       '{browser} {shellescape(uri)} &',
-        \   'w3m':           '{browser} {shellescape(uri)} &',
-        \}
+    function! s:get_default_browser_commands()
+        return [
+        \   ['xdg-open',      '{browser} {shellescape(uri)} &'],
+        \   ['x-www-browser', '{browser} {shellescape(uri)} &'],
+        \   ['firefox',       '{browser} {shellescape(uri)} &'],
+        \   ['w3m',           '{browser} {shellescape(uri)} &'],
+        \]
     endfunction
 endif
 
@@ -52,11 +39,14 @@ endif
 " }}}
 
 " Global Variables {{{
-if !exists('g:openbrowser_open_commands')
-    let g:openbrowser_open_commands = s:get_default_open_commands()
+if exists('g:openbrowser_open_commands')
+    " TODO: Backward compatibility
 endif
-if !exists('g:openbrowser_open_rules')
-    let g:openbrowser_open_rules = s:get_default_open_rules()
+if exists('g:openbrowser_open_rules')
+    " TODO: Backward compatibility
+endif
+if !exists('g:openbrowser_browser_commands')
+    let g:openbrowser_browser_commands = s:get_default_browser_commands()
 endif
 if !exists('g:openbrowser_fix_schemes')
     let g:openbrowser_fix_schemes = {
@@ -377,17 +367,13 @@ function! s:open_browser(uri) "{{{
     redraw
     echo "opening '" . uri . "' ..."
 
-    for browser in s:get_var('openbrowser_open_commands')
+    for [browser, cmdline] in s:get_var('openbrowser_browser_commands')
         if !executable(browser)
-            continue
-        endif
-        let open_rules = s:get_var('openbrowser_open_rules')
-        if !has_key(open_rules, browser)
             continue
         endif
 
         let cmdline = s:expand_keywords(
-        \   open_rules[browser],
+        \   cmdline
         \   {'browser': browser, 'uri': uri}
         \)
         call s:system(cmdline)
