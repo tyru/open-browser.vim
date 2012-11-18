@@ -159,7 +159,10 @@ function! openbrowser#open(uri) "{{{
     if uri =~# '^\s*$'
         " Error
         return
-    elseif s:seems_path(uri)    " Existed file path or 'file://'
+    endif
+
+    let query_type = s:detect_query_type(uri, s:Q_OPEN)
+    if query_type ==# s:QT_FILEPATH    " Existed file path or 'file://'
         " Convert to full path.
         if stridx(uri, 'file://') is 0    " file://
             let fullpath = substitute(uri, '^file://', '', '')
@@ -180,7 +183,7 @@ function! openbrowser#open(uri) "{{{
             endif
             call s:open_browser(fullpath)
         endif
-    elseif s:seems_uri(uri)    " other URI
+    elseif query_type ==# s:QT_URI    " other URI
         let obj = urilib#new_from_uri_like_string(uri, s:NONE)
         if obj is s:NONE
             " Error
@@ -223,9 +226,10 @@ endfunction "}}}
 
 " :OpenBrowserSmartSearch
 function! openbrowser#smart_search(query, ...) "{{{
-    if s:seems_uri(a:query)
-    \   || (s:get_var('openbrowser_open_filepath_in_vim')
-    \       && s:seems_path(a:query))
+    let query_type = s:detect_query_type(a:query, s:Q_SMART_SEARCH)
+    if query_type ==# s:QT_URI ||
+    \  s:get_var('openbrowser_open_filepath_in_vim') &&
+    \  query_type ==# s:QT_FILEPATH
         return openbrowser#open(a:query)
     else
         return openbrowser#search(
@@ -241,6 +245,17 @@ endfunction "}}}
 
 let s:NONE = []
 lockvar s:NONE
+
+" See s:detect_query_type()
+let [
+\   s:QT_URI,
+\   s:QT_FILEPATH,
+\   s:QT_UNKNOWN
+\] = range(3)
+let [
+\   s:Q_OPEN,
+\   s:Q_SMART_SEARCH
+\] = range(2)
 
 
 
@@ -353,6 +368,37 @@ function! s:seems_uri(uri) "{{{
     return uri isnot s:NONE
     \   && uri.scheme() !=# ''
     \   && uri.host() =~# '\.'
+endfunction "}}}
+
+function! s:detect_query_type(query, callee) "{{{
+    let seems = {
+    \   'uri': 0,
+    \   'filepath': 0,
+    \}
+
+    if s:seems_uri(a:query)
+        let seems.uri = 1
+    endif
+    if s:seems_path(a:query)
+        let seems.filepath = 1
+    endif
+
+    if a:callee ==# s:Q_OPEN
+        " filepath -> uri -> unknown
+        return seems.filepath ? s:QT_FILEPATH :
+        \      seems.uri      ? s:QT_URI :
+        \      s:QT_UNKNOWN
+    elseif a:callee ==# s:Q_SMART_SEARCH
+        " uri -> filepath -> unknown
+        return seems.uri      ? s:QT_URI :
+        \      seems.filepath ? s:QT_FILEPATH :
+        \      s:QT_UNKNOWN
+    else
+        " uri -> filepath -> unknown
+        return seems.filepath ? s:QT_FILEPATH :
+        \      seems.uri      ? s:QT_URI :
+        \      s:QT_UNKNOWN
+    endif
 endfunction "}}}
 
 function! s:convert_to_fullpath(path) "{{{
