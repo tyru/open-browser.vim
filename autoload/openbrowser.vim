@@ -380,6 +380,16 @@ function! s:open_browser(uri) "{{{
             continue
         endif
 
+        " On Windows, URL encode may result in
+        " unexpected expansion by environment variable.
+        " https://www.google.co.jp/search?q=%89%cd%90%ec&ie=sjis
+        " -> https://www.google.co.jp/search?q=%89C:\Vim90%ec&ie=sjis
+        " cf. https://github.com/tyru/open-browser.vim/issues/14
+        if g:__openbrowser_platform.mswin
+            " Avoid crappy escaping hell.
+            let $OPENBROWSER_URI = uri
+            let uri = '^%OPENBROWSER_URI^%'
+        endif
         let cmdline = s:expand_keywords(
         \   open_rules[browser],
         \   {'browser': browser, 'uri': uri}
@@ -389,7 +399,12 @@ function! s:open_browser(uri) "{{{
         " because browser is spawned in background process
         " so can't check its return value.
         redraw
-        echo "opening '" . uri . "' ... done! (" . browser . ")"
+        if g:__openbrowser_platform.mswin
+            echo "opening '" . $OPENBROWSER_URI . "' ... done! (" . browser . ")"
+            let $OPENBROWSER_URI = ''
+        else
+            echo "opening '" . uri . "' ... done! (" . browser . ")"
+        endif
         return
     endfor
 
