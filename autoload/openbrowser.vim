@@ -30,7 +30,7 @@ elseif g:__openbrowser_platform.mswin
         " NOTE: On MS Windows, 'start' command is not executable.
         " NOTE: If &shellslash == 1,
         " `shellescape(uri)` uses single quotes not double quote.
-        return {'cmd.exe': 'cmd /c start rundll32 url.dll,FileProtocolHandler {uri}'}
+        return {'cmd.exe': 'cmd /c start rundll32 url.dll,FileProtocolHandler ^%OPENBROWSER_URI^%'}
     endfunction
 elseif g:__openbrowser_platform.unix
     function! s:get_default_open_commands()
@@ -388,23 +388,23 @@ function! s:open_browser(uri) "{{{
         if g:__openbrowser_platform.mswin
             " Avoid crappy escaping hell.
             let $OPENBROWSER_URI = uri
-            let uri = '^%OPENBROWSER_URI^%'
         endif
         let cmdline = s:expand_keywords(
         \   open_rules[browser],
         \   {'browser': browser, 'uri': uri}
         \)
         call system(cmdline)
+
         " No need to check v:shell_error
         " because browser is spawned in background process
         " so can't check its return value.
-        redraw
+
         if g:__openbrowser_platform.mswin
-            echo "opening '" . $OPENBROWSER_URI . "' ... done! (" . browser . ")"
             let $OPENBROWSER_URI = ''
-        else
-            echo "opening '" . uri . "' ... done! (" . browser . ")"
         endif
+
+        redraw
+        echo "opening '" . uri . "' ... done! (" . browser . ")"
         return
     endfor
 
