@@ -372,16 +372,9 @@ endfunction "}}}
 
 function! s:detect_query_type(query, callee) "{{{
     let seems = {
-    \   'uri': 0,
-    \   'filepath': 0,
+    \   'uri': s:seems_uri(a:query),
+    \   'filepath': s:seems_path(a:query),
     \}
-
-    if s:seems_uri(a:query)
-        let seems.uri = 1
-    endif
-    if s:seems_path(a:query)
-        let seems.filepath = 1
-    endif
 
     if a:callee ==# s:Q_OPEN
         " filepath -> uri -> unknown
