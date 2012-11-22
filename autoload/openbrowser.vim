@@ -30,7 +30,7 @@ elseif g:__openbrowser_platform.mswin
         " NOTE: On MS Windows, 'start' command is not executable.
         " NOTE: If &shellslash == 1,
         " `shellescape(uri)` uses single quotes not double quote.
-        return {'cmd.exe': 'cmd /c start rundll32 url.dll,FileProtocolHandler ^%OPENBROWSER_URI^%'}
+        return {'cmd.exe': 'cmd /c start rundll32 url.dll,FileProtocolHandler {openbrowser#envescape(uri)}'}
     endfunction
 elseif g:__openbrowser_platform.unix
     function! s:get_default_open_commands()
@@ -239,6 +239,18 @@ function! openbrowser#smart_search(query, ...) "{{{
     endif
 endfunction "}}}
 
+" Windows shell escape helper
+function! openbrowser#envescape(uri) "{{{
+    " On Windows, URL encode may result in
+    " unexpected expansion by environment variable.
+    " https://www.google.co.jp/search?q=%89%cd%90%ec&ie=sjis
+    " -> https://www.google.co.jp/search?q=%89C:\Vim90%ec&ie=sjis
+    " cf. https://github.com/tyru/open-browser.vim/issues/14
+    " Avoid crappy escaping hell.
+    let $OPENBROWSER_URI = a:uri
+    return '%^OPENBROWSER_URI%'
+endfunction "}}}
+
 " }}}
 
 " Implementations {{{
@@ -419,15 +431,6 @@ function! s:open_browser(uri) "{{{
             continue
         endif
 
-        " On Windows, URL encode may result in
-        " unexpected expansion by environment variable.
-        " https://www.google.co.jp/search?q=%89%cd%90%ec&ie=sjis
-        " -> https://www.google.co.jp/search?q=%89C:\Vim90%ec&ie=sjis
-        " cf. https://github.com/tyru/open-browser.vim/issues/14
-        if g:__openbrowser_platform.mswin
-            " Avoid crappy escaping hell.
-            let $OPENBROWSER_URI = uri
-        endif
         let cmdline = s:expand_keywords(
         \   open_rules[browser],
         \   {'browser': browser, 'uri': uri}
@@ -438,7 +441,8 @@ function! s:open_browser(uri) "{{{
         " because browser is spawned in background process
         " so can't check its return value.
 
-        if g:__openbrowser_platform.mswin
+        " clean up openbrowser#envescape()
+        if exists('$OPENBROWSER_URI')
             let $OPENBROWSER_URI = ''
         endif
 
