@@ -220,7 +220,7 @@ function! openbrowser#search(query, ...) "{{{
     endif
 
     call openbrowser#open(
-    \   s:expand_keywords(search_engines[engine], {'query': urilib#uri_escape(a:query)})
+    \   s:expand_keywords(search_engines[engine], {'query': a:query})
     \)
 endfunction "}}}
 
