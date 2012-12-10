@@ -158,6 +158,7 @@ function! openbrowser#open(uri) "{{{
         " Error
         return
     endif
+    let uri = expand(uri)
 
     let query_type = s:detect_query_type(uri, s:Q_OPEN)
     if query_type ==# s:QT_FILEPATH    " Existed file path or 'file://'
