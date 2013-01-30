@@ -431,7 +431,7 @@ function! s:open_browser(uri) "{{{
         \   open_rules[browser],
         \   {'browser': browser, 'uri': uri}
         \)
-        call system(cmdline)
+        call s:system(cmdline)
 
         " No need to check v:shell_error
         " because browser is spawned in background process
@@ -554,6 +554,16 @@ function! s:get_var(varname) "{{{
     throw 'openbrowser: internal error: '
     \   . "s:get_var() couldn't find variable '".a:varname."'."
 endfunction "}}}
+
+if globpath(&rtp, 'autoload/vimproc.vim') !=# ''
+    function! s:system(...)
+        return call('vimproc#system', a:000)
+    endfunction
+else
+    function! s:system(...)
+        return call('system', a:000)
+    endfunction
+endif
 
 " }}}
 
