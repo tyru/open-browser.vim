@@ -30,7 +30,7 @@ elseif g:__openbrowser_platform.mswin
         " NOTE: On MS Windows, 'start' command is not executable.
         " NOTE: If &shellslash == 1,
         " `shellescape(uri)` uses single quotes not double quote.
-        return {'cmd.exe': 'cmd /c start rundll32 url.dll,FileProtocolHandler ^%OPENBROWSER_URI^%'}
+        return {'cmd.exe': 'cmd /c start rundll32 url.dll,FileProtocolHandler {openbrowser#shellescape(uri)}'}
     endfunction
 elseif g:__openbrowser_platform.unix
     function! s:get_default_open_commands()
@@ -140,6 +140,12 @@ endif
 if !exists('g:openbrowser_open_vim_command')
     let g:openbrowser_open_vim_command = 'vsplit'
 endif
+
+if !exists('g:openbrowser_use_vimproc')
+    let g:openbrowser_use_vimproc = 1
+endif
+" on MS Windows, invoking cmd.exe via vimproc#system() won't open given URI.
+let s:use_vimproc = g:openbrowser_use_vimproc && !g:__openbrowser_platform.mswin
 " }}}
 
 
@@ -235,6 +241,31 @@ function! openbrowser#smart_search(query, ...) "{{{
         \   (a:0 ? a:1 : s:get_var('openbrowser_default_search'))
         \)
     endif
+endfunction "}}}
+
+" so-called thinca-san escaping ;)
+" http://d.hatena.ne.jp/thinca/20100210/1265813598
+" NOTE: on MS Windows, invoking cmd.exe via vimproc#system() won't open given URI.
+function! openbrowser#shellescape(uri) "{{{
+    let uri = a:uri
+
+    " 1. Escape all special characers (& | < > ( ) ^ " %) with hat (^).
+    "    (Escaping percent (%) keeps hat (^) not to expand)
+    let uri = substitute(uri, '[&|<>()^"%]', '^\0', 'g')
+
+    " 2. Escape successive backslashes (\) before double-quote (") with the same number of backslashes.
+    let uri = substitute(uri, '\\\+\ze"', '\0\0', 'g')
+
+    " 3. Escape all double-quote (") with backslash (\)
+    "    (though _"_ has been already escaped by hat (^) , escape it again.
+    "     thus, double-quote (") becomes backslash + hat + double-quote (\^"))
+    let uri = substitute(uri, '"', '\\\0', 'g')
+
+    " 4. Wrap whole string with hat + double-quote (^").
+    "    (Simply wrapping with _""_ results in _^_ gets invalid)
+    let uri = '^"' . uri . '^"'
+
+    return uri
 endfunction "}}}
 
 " }}}
@@ -554,7 +585,7 @@ function! s:get_var(varname) "{{{
     \   . "s:get_var() couldn't find variable '".a:varname."'."
 endfunction "}}}
 
-if globpath(&rtp, 'autoload/vimproc.vim') !=# ''
+if s:use_vimproc && globpath(&rtp, 'autoload/vimproc.vim') !=# ''
     function! s:system(...)
         return call('vimproc#system', a:000)
     endfunction
