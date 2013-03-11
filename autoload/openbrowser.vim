@@ -24,13 +24,13 @@ elseif g:__openbrowser_platform.macunix
     endfunction
 elseif g:__openbrowser_platform.mswin
     function! s:get_default_open_commands()
-        return ['cmd.exe']
+        return ['rundll32']
     endfunction
     function! s:get_default_open_rules()
         " NOTE: On MS Windows, 'start' command is not executable.
         " NOTE: If &shellslash == 1,
         " `shellescape(uri)` uses single quotes not double quote.
-        return {'cmd.exe': 'cmd /c start rundll32 url.dll,FileProtocolHandler {openbrowser#shellescape(uri)}'}
+        return {'rundll32': 'rundll32 url.dll,FileProtocolHandler {uri}'}
     endfunction
 elseif g:__openbrowser_platform.unix
     function! s:get_default_open_commands()
@@ -591,6 +591,23 @@ endfunction "}}}
 if s:use_vimproc && globpath(&rtp, 'autoload/vimproc.vim') !=# ''
     function! s:system(...)
         return call('vimproc#system', a:000)
+    endfunction
+elseif g:__openbrowser_platform.mswin
+    function! s:system(...)
+        let args = map(copy(a:000), 's:escape_cmdline_special(v:val)')
+        execute '!start' join(args, ' ')
+    endfunction
+
+    " :help cmdline-special
+    " :help expand()
+    function! s:escape_cmdline_special(str)
+        let shellslash = &l:shellslash
+        setlocal noshellslash
+        try
+            return substitute(a:str, '[%#<>]', '\\\0', 'g')
+        finally
+            let &l:shellslash = shellslash
+        endtry
     endfunction
 else
     function! s:system(...)
