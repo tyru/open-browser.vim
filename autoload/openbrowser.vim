@@ -248,23 +248,20 @@ endfunction "}}}
 " NOTE: on MS Windows, invoking cmd.exe via vimproc#system() won't open given URI.
 function! openbrowser#shellescape(uri) "{{{
     let uri = a:uri
-
-    " 1. Escape all special characers (& | < > ( ) ^ " %) with hat (^).
-    "    (Escaping percent (%) keeps hat (^) not to expand)
-    let uri = substitute(uri, '[&|<>()^"%]', '^\0', 'g')
-
-    " 2. Escape successive backslashes (\) before double-quote (") with the same number of backslashes.
-    let uri = substitute(uri, '\\\+\ze"', '\0\0', 'g')
-
-    " 3. Escape all double-quote (") with backslash (\)
-    "    (though _"_ has been already escaped by hat (^) , escape it again.
-    "     thus, double-quote (") becomes backslash + hat + double-quote (\^"))
-    let uri = substitute(uri, '"', '\\\0', 'g')
-
-    " 4. Wrap whole string with hat + double-quote (^").
-    "    (Simply wrapping with _""_ results in _^_ gets invalid)
-    let uri = '^"' . uri . '^"'
-
+    if uri =~# '[&|<>()^"%]'
+        " 1. Escape all special characers (& | < > ( ) ^ " %) with hat (^).
+        "    (Escaping percent (%) keeps hat (^) not to expand)
+        let uri = substitute(uri, '[&|<>()^"%]', '^\0', 'g')
+        " 2. Escape successive backslashes (\) before double-quote (") with the same number of backslashes.
+        let uri = substitute(uri, '\\\+\ze"', '\0\0', 'g')
+        " 3. Escape all double-quote (") with backslash (\)
+        "    (though _"_ has been already escaped by hat (^) , escape it again.
+        "     thus, double-quote (") becomes backslash + hat + double-quote (\^"))
+        let uri = substitute(uri, '"', '\\\0', 'g')
+        " 4. Wrap whole string with hat + double-quote (^").
+        "    (Simply wrapping with _""_ results in _^_ gets invalid)
+        let uri = '^"' . uri . '^"'
+    endif
     return uri
 endfunction "}}}
 
