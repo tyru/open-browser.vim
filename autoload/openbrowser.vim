@@ -141,11 +141,6 @@ if !exists('g:openbrowser_open_vim_command')
     let g:openbrowser_open_vim_command = 'vsplit'
 endif
 
-if !exists('g:openbrowser_use_vimproc')
-    let g:openbrowser_use_vimproc = 1
-endif
-" on MS Windows, invoking cmd.exe via vimproc#system() won't open given URI.
-let s:use_vimproc = g:openbrowser_use_vimproc && !g:__openbrowser_platform.mswin
 " }}}
 
 
@@ -245,7 +240,6 @@ endfunction "}}}
 
 " so-called thinca-san escaping ;)
 " http://d.hatena.ne.jp/thinca/20100210/1265813598
-" NOTE: on MS Windows, invoking cmd.exe via vimproc#system() won't open given URI.
 if g:__openbrowser_platform.mswin
     function! openbrowser#shellescape(uri) "{{{
         let uri = a:uri
@@ -588,11 +582,7 @@ function! s:get_var(varname) "{{{
     \   . "s:get_var() couldn't find variable '".a:varname."'."
 endfunction "}}}
 
-if s:use_vimproc && globpath(&rtp, 'autoload/vimproc.vim') !=# ''
-    function! s:system(...)
-        return call('vimproc#system', a:000)
-    endfunction
-elseif g:__openbrowser_platform.mswin
+if g:__openbrowser_platform.mswin
     function! s:system(...)
         let args = map(copy(a:000), 's:escape_cmdline_special(v:val)')
         execute '!start' join(args, ' ')
