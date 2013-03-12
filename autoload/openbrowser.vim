@@ -497,20 +497,20 @@ function! s:get_selected_text() "{{{
 endfunction "}}}
 
 function! s:get_url_on_cursor() "{{{
-    let save_iskeyword = &iskeyword
-    " Avoid rebuilding of `chartab`.
-    " (declared in globals.h, rebuilt by did_set_string_option() in option.c)
-    if &iskeyword !=# g:openbrowser_iskeyword
-        let &iskeyword = g:openbrowser_iskeyword
+    let line = getline('.')
+    let col = col('.')
+    if line[col-1] !~# '\S'    " cursor is not on URL
+        return ''
     endif
-    try
-        return expand('<cword>')
-    finally
-        " Avoid rebuilding of `chartab`.
-        if &iskeyword !=# save_iskeyword
-            let &iskeyword = save_iskeyword
-        endif
-    endtry
+    " Get continuous non-space string under cursor.
+    let left = col <=# 1 ? '' : getline('.')[: col-2]
+    let right = getline('.')[col-1 :]
+    let nonspstr = matchstr(left, '\S\+$').matchstr(right, '^\S\+')
+    " Extract URL.
+    " via https://github.com/mattn/vim-textobj-url/blob/af1edbe57d4f05c11e571d4cacd30672cdd9d944/autoload/textobj/url.vim#L2
+    let re_url = '\<\(https\?\|ftp\)\>://\a[a-zA-Z0-9_-]*\(\.[a-zA-Z0-9][a-zA-Z0-9_-]*\)*\(:\d+\)\{0,1}\(/[a-zA-Z0-9_/.\-+%#?&=;@$,!''*~]*\)\{0,1}'
+    let url = matchstr(nonspstr, re_url)
+    return url
 endfunction "}}}
 
 " This function is from quickrun.vim (http://github.com/thinca/vim-quickrun)
