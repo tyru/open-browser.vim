@@ -207,6 +207,10 @@ endfunction "}}}
 
 " :OpenBrowserSearch
 function! openbrowser#search(query, ...) "{{{
+    if a:query =~# '^\s*$'
+        return
+    endif
+
     let engine = a:0 ? a:1 :
     \   s:get_var('openbrowser_default_search')
     let search_engines =
