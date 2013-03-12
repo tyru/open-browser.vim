@@ -360,7 +360,7 @@ endfunction "}}}
 " <Plug>(openbrowser-search)
 function! openbrowser#_keymapping_search(mode) "{{{
     if a:mode ==# 'n'
-        return openbrowser#search(expand('<cword>'))
+        return openbrowser#search(s:get_url_on_cursor())
     else
         return openbrowser#search(s:get_selected_text())
     endif
