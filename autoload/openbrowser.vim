@@ -70,41 +70,6 @@ endif
 if !exists('g:openbrowser_fix_paths')
     let g:openbrowser_fix_paths = {}
 endif
-if exists('g:openbrowser_isfname')
-    " Backward compatibility.
-    let g:openbrowser_iskeyword = g:openbrowser_isfname
-endif
-if !exists('g:openbrowser_iskeyword')
-    " Getting only URI from <cword>.
-    " NOTE: Removed valid URL characters "(", ")".
-    let g:openbrowser_iskeyword = join(
-    \   range(char2nr('A'), char2nr('Z'))
-    \   + range(char2nr('a'), char2nr('z'))
-    \   + range(char2nr('0'), char2nr('9'))
-    \   + [
-    \   '_',
-    \   ':',
-    \   '/',
-    \   '.',
-    \   '-',
-    \   '+',
-    \   '%',
-    \   '#',
-    \   '?',
-    \   '&',
-    \   '=',
-    \   ';',
-    \   '@',
-    \   '$',
-    \   ',',
-    \   '[',
-    \   ']',
-    \   '!',
-    \   "'",
-    \   "*",
-    \   "~",
-    \], ',')
-endif
 if !exists('g:openbrowser_default_search')
     let g:openbrowser_default_search = 'google'
 endif
