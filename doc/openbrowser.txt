@@ -175,19 +175,6 @@ g:openbrowser_fix_paths				*g:openbrowser_fix_paths*
 <	It is fixed to: >
 		http://yahoo.com/tyru
 <
-g:openbrowser_isfname				*g:openbrowser_isfname*
-								(default: See |g:openbrowser_iskeyword|)
-	Now this variable is deprecated.
-	Use |g:openbrowser_iskeyword| instead.
-	NOTE: This works like |g:openbrowser_iskeyword|
-	for backward compatibility.
-
-g:openbrowser_iskeyword				*g:openbrowser_iskeyword*
-								(default: Very long.
-								see autoload/openbrowser.vim)
-	|<Plug>(openbrowser-open)| opens <cword> text in normal mode.
-	This variable temporarily changes 'iskeyword' option value at that time.
-
 g:openbrowser_default_search		*g:openbrowser_default_search*
 								(default: "google")
 	Key of Dictionary |g:openbrowser_search_engines|.
