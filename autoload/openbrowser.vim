@@ -74,31 +74,6 @@ if !exists('g:openbrowser_default_search')
     let g:openbrowser_default_search = 'google'
 endif
 
-let g:openbrowser_search_engines = extend(
-\   get(g:, 'openbrowser_search_engines', {}),
-\   {
-\       'alc': 'http://eow.alc.co.jp/{query}/UTF-8/',
-\       'askubuntu': 'http://askubuntu.com/search?q={query}',
-\       'baidu': 'http://www.baidu.com/s?wd={query}&rsv_bp=0&rsv_spt=3&inputT=2478',
-\       'blekko': 'http://blekko.com/ws/+{query}',
-\       'cpan': 'http://search.cpan.org/search?query={query}',
-\       'duckduckgo': 'http://duckduckgo.com/?q={query}',
-\       'github': 'http://github.com/search?q={query}',
-\       'google': 'http://google.com/search?q={query}',
-\       'google-code': 'http://code.google.com/intl/en/query/#q={query}',
-\       'php': 'http://php.net/{query}',
-\       'python': 'http://docs.python.org/dev/search.html?q={query}&check_keywords=yes&area=default',
-\       'twitter-search': 'http://twitter.com/search/{query}',
-\       'twitter-user': 'http://twitter.com/{query}',
-\       'verycd': 'http://www.verycd.com/search/entries/{query}',
-\       'vim': 'http://www.google.com/cse?cx=partner-pub-3005259998294962%3Abvyni59kjr1&ie=ISO-8859-1&q={query}&sa=Search&siteurl=www.vim.org%2F#gsc.tab=0&gsc.q={query}&gsc.page=1',
-\       'wikipedia': 'http://en.wikipedia.org/wiki/{query}',
-\       'wikipedia-ja': 'http://ja.wikipedia.org/wiki/{query}',
-\       'yahoo': 'http://search.yahoo.com/search?p={query}',
-\   },
-\   'keep'
-\)
-
 if !exists('g:openbrowser_open_filepath_in_vim')
     let g:openbrowser_open_filepath_in_vim = 1
 endif
