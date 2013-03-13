@@ -540,17 +540,18 @@ endfunction "}}}
 
 if g:__openbrowser_platform.mswin
     function! s:system(...)
-        let args = map(copy(a:000), 's:escape_cmdline_special(v:val)')
-        execute '!start' join(args, ' ')
-    endfunction
-
-    " :help cmdline-special
-    " :help expand()
-    function! s:escape_cmdline_special(str)
+        " Escape cmdline-special
+        " * :help cmdline-special
+        " * :help expand()
+        let pat = '[%#<>]'
+        let sub = '\\\0'
+        let args = map(copy(a:000), 'substitute(v:val, pat, sub, "g")')
+        " Spawn 'args' with 'noshellslash'
+        " to avoid expansion. (e.g., '\' -> '/')
         let shellslash = &l:shellslash
         setlocal noshellslash
         try
-            return substitute(a:str, '[%#<>]', '\\\0', 'g')
+            execute '!start' join(args, ' ')
         finally
             let &l:shellslash = shellslash
         endtry
