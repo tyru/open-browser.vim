@@ -39,14 +39,41 @@ endif
 " }}}
 
 " Global Variables {{{
-if exists('g:openbrowser_open_commands')
-    " TODO: Backward compatibility
-endif
-if exists('g:openbrowser_open_rules')
-    " TODO: Backward compatibility
-endif
+function! s:valid_commands_and_rules()
+    let open_commands = g:openbrowser_open_commands
+    let open_rules    = g:openbrowser_open_rules
+    if type(open_commands) isnot type([])
+        return 0
+    endif
+    if type(open_rules) isnot type({})
+        return 0
+    endif
+    for cmd in open_commands
+        if !has_key(open_rules, cmd)
+            return 0
+        endif
+    endfor
+    return 1
+endfunction
+function! s:convert_commands_and_rules()
+    let open_commands = g:openbrowser_open_commands
+    let open_rules    = g:openbrowser_open_rules
+    let browser_commands = []
+    for cmd in open_commands
+        call add(browser_commands, [cmd, open_rules[cmd]])
+    endfor
+    return browser_commands
+endfunction
+
 if !exists('g:openbrowser_browser_commands')
-    let g:openbrowser_browser_commands = s:get_default_browser_commands()
+    if exists('g:openbrowser_open_commands')
+    \   && exists('g:openbrowser_open_rules')
+    \   && s:valid_commands_and_rules()
+        " Backward compatibility
+        let g:openbrowser_browser_commands = s:convert_commands_and_rules()
+    else
+        let g:openbrowser_browser_commands = s:get_default_browser_commands()
+    endif
 endif
 if !exists('g:openbrowser_fix_schemes')
     let g:openbrowser_fix_schemes = {
