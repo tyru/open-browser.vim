@@ -37,7 +37,74 @@ let g:__openbrowser_platform = {
 \   'macunix': s:is_macunix,
 \}
 
+
+" Default values of global variables. "{{{
+if g:__openbrowser_platform.cygwin
+    function! s:get_default_open_commands()
+        return ['cygstart']
+    endfunction
+    function! s:get_default_open_rules()
+        return {'cygstart': '{browser} {shellescape(uri)} &'}
+    endfunction
+elseif g:__openbrowser_platform.macunix
+    function! s:get_default_open_commands()
+        return ['open']
+    endfunction
+    function! s:get_default_open_rules()
+        return {'open': '{browser} {shellescape(uri)} &'}
+    endfunction
+elseif g:__openbrowser_platform.mswin
+    function! s:get_default_open_commands()
+        return ['rundll32']
+    endfunction
+    function! s:get_default_open_rules()
+        " NOTE: On MS Windows, 'start' command is not executable.
+        " NOTE: If &shellslash == 1,
+        " `shellescape(uri)` uses single quotes not double quote.
+        return {'rundll32': 'rundll32 url.dll,FileProtocolHandler {uri}'}
+    endfunction
+elseif g:__openbrowser_platform.unix
+    function! s:get_default_open_commands()
+        return ['xdg-open', 'x-www-browser', 'firefox', 'w3m']
+    endfunction
+    function! s:get_default_open_rules()
+        return {
+        \   'xdg-open':      '{browser} {shellescape(uri)} &',
+        \   'x-www-browser': '{browser} {shellescape(uri)} &',
+        \   'firefox':       '{browser} {shellescape(uri)} &',
+        \   'w3m':           '{browser} {shellescape(uri)} &',
+        \}
+    endfunction
+endif
+
+" Do not remove g:__openbrowser_platform for debug.
+" unlet g:__openbrowser_platform
+
+" }}}
+
 " Global Variables {{{
+if !exists('g:openbrowser_open_commands')
+    let g:openbrowser_open_commands = s:get_default_open_commands()
+endif
+if !exists('g:openbrowser_open_rules')
+    let g:openbrowser_open_rules = s:get_default_open_rules()
+endif
+if !exists('g:openbrowser_fix_schemes')
+    let g:openbrowser_fix_schemes = {
+    \   'ttp': 'http',
+    \   'ttps': 'https',
+    \}
+endif
+if !exists('g:openbrowser_fix_hosts')
+    let g:openbrowser_fix_hosts = {}
+endif
+if !exists('g:openbrowser_fix_paths')
+    let g:openbrowser_fix_paths = {}
+endif
+if !exists('g:openbrowser_default_search')
+    let g:openbrowser_default_search = 'google'
+endif
+
 let g:openbrowser_search_engines = extend(
 \   get(g:, 'openbrowser_search_engines', {}),
 \   {
@@ -63,6 +130,12 @@ let g:openbrowser_search_engines = extend(
 \   'keep'
 \)
 
+if !exists('g:openbrowser_open_filepath_in_vim')
+    let g:openbrowser_open_filepath_in_vim = 1
+endif
+if !exists('g:openbrowser_open_vim_command')
+    let g:openbrowser_open_vim_command = 'vsplit'
+endif
 " }}}
 
 
