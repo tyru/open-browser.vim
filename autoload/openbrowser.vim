@@ -275,18 +275,14 @@ function! s:open_browser(uri) "{{{
     redraw
     echo "opening '" . uri . "' ..."
 
-    for browser in s:get_var('openbrowser_open_commands')
-        if !executable(browser)
-            continue
-        endif
-        let open_rules = s:get_var('openbrowser_open_rules')
-        if !has_key(open_rules, browser)
+    for cmd in s:get_var('openbrowser_browser_commands')
+        if !executable(cmd.name)
             continue
         endif
 
         let cmdline = s:expand_keywords(
-        \   open_rules[browser],
-        \   {'browser': browser, 'uri': uri}
+        \   cmd.args,
+        \   {'browser': cmd.args, 'uri': uri}
         \)
         call s:system(cmdline)
 
@@ -295,7 +291,7 @@ function! s:open_browser(uri) "{{{
         " so can't check its return value.
 
         redraw
-        echo "opening '" . uri . "' ... done! (" . browser . ")"
+        echo "opening '" . uri . "' ... done! (" . cmd.name . ")"
         return
     endfor
 
