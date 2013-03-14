@@ -37,6 +37,141 @@ let g:__openbrowser_platform = {
 \   'macunix': s:is_macunix,
 \}
 
+
+" Default values of global variables. "{{{
+if g:__openbrowser_platform.cygwin
+    function! s:get_default_browser_commands()
+        return [
+        \   {'name': 'cygstart',
+        \    'args': '{browser} {shellescape(uri)} &'}
+        \]
+    endfunction
+elseif g:__openbrowser_platform.macunix
+    function! s:get_default_browser_commands()
+        return [
+        \   {'name': 'open',
+        \    'args': '{browser} {shellescape(uri)} &'}
+        \]
+    endfunction
+elseif g:__openbrowser_platform.mswin
+    function! s:get_default_browser_commands()
+        " NOTE: If &shellslash == 1,
+        " `shellescape(uri)` uses single quotes not double quote.
+        return [
+        \   {'name': 'rundll32',
+        \    'args': 'rundll32 url.dll,FileProtocolHandler {uri}'}
+        \]
+    endfunction
+elseif g:__openbrowser_platform.unix
+    function! s:get_default_browser_commands()
+        return [
+        \   {'name': 'xdg-open',
+        \    'args': '{browser} {shellescape(uri)} &'},
+        \   {'name': 'x-www-browser',
+        \    'args': '{browser} {shellescape(uri)} &'},
+        \   {'name': 'firefox',
+        \    'args': '{browser} {shellescape(uri)} &'},
+        \   {'name': 'w3m',
+        \    'args': '{browser} {shellescape(uri)} &'},
+        \]
+    endfunction
+endif
+
+" Do not remove g:__openbrowser_platform for debug.
+" unlet g:__openbrowser_platform
+
+" }}}
+
+" Global Variables {{{
+function! s:valid_commands_and_rules()
+    let open_commands = g:openbrowser_open_commands
+    let open_rules    = g:openbrowser_open_rules
+    if type(open_commands) isnot type([])
+        return 0
+    endif
+    if type(open_rules) isnot type({})
+        return 0
+    endif
+    for cmd in open_commands
+        if !has_key(open_rules, cmd)
+            return 0
+        endif
+    endfor
+    return 1
+endfunction
+function! s:convert_commands_and_rules()
+    let open_commands = g:openbrowser_open_commands
+    let open_rules    = g:openbrowser_open_rules
+    let browser_commands = []
+    for cmd in open_commands
+        call add(browser_commands, [
+        \   {'name': cmd,
+        \    'args': open_rules[cmd]}
+        \])
+    endfor
+    return browser_commands
+endfunction
+
+if !exists('g:openbrowser_browser_commands')
+    if exists('g:openbrowser_open_commands')
+    \   && exists('g:openbrowser_open_rules')
+    \   && s:valid_commands_and_rules()
+        " Backward compatibility
+        let g:openbrowser_browser_commands = s:convert_commands_and_rules()
+    else
+        let g:openbrowser_browser_commands = s:get_default_browser_commands()
+    endif
+endif
+if !exists('g:openbrowser_fix_schemes')
+    let g:openbrowser_fix_schemes = {
+    \   'ttp': 'http',
+    \   'ttps': 'https',
+    \}
+endif
+if !exists('g:openbrowser_fix_hosts')
+    let g:openbrowser_fix_hosts = {}
+endif
+if !exists('g:openbrowser_fix_paths')
+    let g:openbrowser_fix_paths = {}
+endif
+if !exists('g:openbrowser_default_search')
+    let g:openbrowser_default_search = 'google'
+endif
+
+let g:openbrowser_search_engines = extend(
+\   get(g:, 'openbrowser_search_engines', {}),
+\   {
+\       'alc': 'http://eow.alc.co.jp/{query}/UTF-8/',
+\       'askubuntu': 'http://askubuntu.com/search?q={query}',
+\       'baidu': 'http://www.baidu.com/s?wd={query}&rsv_bp=0&rsv_spt=3&inputT=2478',
+\       'blekko': 'http://blekko.com/ws/+{query}',
+\       'cpan': 'http://search.cpan.org/search?query={query}',
+\       'duckduckgo': 'http://duckduckgo.com/?q={query}',
+\       'github': 'http://github.com/search?q={query}',
+\       'google': 'http://google.com/search?q={query}',
+\       'google-code': 'http://code.google.com/intl/en/query/#q={query}',
+\       'php': 'http://php.net/{query}',
+\       'python': 'http://docs.python.org/dev/search.html?q={query}&check_keywords=yes&area=default',
+\       'twitter-search': 'http://twitter.com/search/{query}',
+\       'twitter-user': 'http://twitter.com/{query}',
+\       'verycd': 'http://www.verycd.com/search/entries/{query}',
+\       'vim': 'http://www.google.com/cse?cx=partner-pub-3005259998294962%3Abvyni59kjr1&ie=ISO-8859-1&q={query}&sa=Search&siteurl=www.vim.org%2F#gsc.tab=0&gsc.q={query}&gsc.page=1',
+\       'wikipedia': 'http://en.wikipedia.org/wiki/{query}',
+\       'wikipedia-ja': 'http://ja.wikipedia.org/wiki/{query}',
+\       'yahoo': 'http://search.yahoo.com/search?p={query}',
+\   },
+\   'keep'
+\)
+
+if !exists('g:openbrowser_open_filepath_in_vim')
+    let g:openbrowser_open_filepath_in_vim = 1
+endif
+if !exists('g:openbrowser_open_vim_command')
+    let g:openbrowser_open_vim_command = 'vsplit'
+endif
+" }}}
+
+
 " Interfaces {{{
 
 " For backward compatibility,
