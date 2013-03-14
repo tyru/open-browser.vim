@@ -40,40 +40,40 @@ let g:__openbrowser_platform = {
 
 " Default values of global variables. "{{{
 if g:__openbrowser_platform.cygwin
-    function! s:get_default_open_commands()
-        return ['cygstart']
-    endfunction
-    function! s:get_default_open_rules()
-        return {'cygstart': '{browser} {shellescape(uri)} &'}
+    function! s:get_default_browser_commands()
+        return [
+        \   {'name': 'cygstart',
+        \    'args': '{browser} {shellescape(uri)} &'}
+        \]
     endfunction
 elseif g:__openbrowser_platform.macunix
-    function! s:get_default_open_commands()
-        return ['open']
-    endfunction
-    function! s:get_default_open_rules()
-        return {'open': '{browser} {shellescape(uri)} &'}
+    function! s:get_default_browser_commands()
+        return [
+        \   {'name': 'open',
+        \    'args': '{browser} {shellescape(uri)} &'}
+        \]
     endfunction
 elseif g:__openbrowser_platform.mswin
-    function! s:get_default_open_commands()
-        return ['rundll32']
-    endfunction
-    function! s:get_default_open_rules()
-        " NOTE: On MS Windows, 'start' command is not executable.
+    function! s:get_default_browser_commands()
         " NOTE: If &shellslash == 1,
         " `shellescape(uri)` uses single quotes not double quote.
-        return {'rundll32': 'rundll32 url.dll,FileProtocolHandler {uri}'}
+        return [
+        \   {'name': 'rundll32',
+        \    'args': 'rundll32 url.dll,FileProtocolHandler {uri}'}
+        \]
     endfunction
 elseif g:__openbrowser_platform.unix
-    function! s:get_default_open_commands()
-        return ['xdg-open', 'x-www-browser', 'firefox', 'w3m']
-    endfunction
-    function! s:get_default_open_rules()
-        return {
-        \   'xdg-open':      '{browser} {shellescape(uri)} &',
-        \   'x-www-browser': '{browser} {shellescape(uri)} &',
-        \   'firefox':       '{browser} {shellescape(uri)} &',
-        \   'w3m':           '{browser} {shellescape(uri)} &',
-        \}
+    function! s:get_default_browser_commands()
+        return [
+        \   {'name': 'xdg-open',
+        \    'args': '{browser} {shellescape(uri)} &'},
+        \   {'name': 'x-www-browser',
+        \    'args': '{browser} {shellescape(uri)} &'},
+        \   {'name': 'firefox',
+        \    'args': '{browser} {shellescape(uri)} &'},
+        \   {'name': 'w3m',
+        \    'args': '{browser} {shellescape(uri)} &'},
+        \]
     endfunction
 endif
 
@@ -83,11 +83,44 @@ endif
 " }}}
 
 " Global Variables {{{
-if !exists('g:openbrowser_open_commands')
-    let g:openbrowser_open_commands = s:get_default_open_commands()
-endif
-if !exists('g:openbrowser_open_rules')
-    let g:openbrowser_open_rules = s:get_default_open_rules()
+function! s:valid_commands_and_rules()
+    let open_commands = g:openbrowser_open_commands
+    let open_rules    = g:openbrowser_open_rules
+    if type(open_commands) isnot type([])
+        return 0
+    endif
+    if type(open_rules) isnot type({})
+        return 0
+    endif
+    for cmd in open_commands
+        if !has_key(open_rules, cmd)
+            return 0
+        endif
+    endfor
+    return 1
+endfunction
+function! s:convert_commands_and_rules()
+    let open_commands = g:openbrowser_open_commands
+    let open_rules    = g:openbrowser_open_rules
+    let browser_commands = []
+    for cmd in open_commands
+        call add(browser_commands, [
+        \   {'name': cmd,
+        \    'args': open_rules[cmd]}
+        \])
+    endfor
+    return browser_commands
+endfunction
+
+if !exists('g:openbrowser_browser_commands')
+    if exists('g:openbrowser_open_commands')
+    \   && exists('g:openbrowser_open_rules')
+    \   && s:valid_commands_and_rules()
+        " Backward compatibility
+        let g:openbrowser_browser_commands = s:convert_commands_and_rules()
+    else
+        let g:openbrowser_browser_commands = s:get_default_browser_commands()
+    endif
 endif
 if !exists('g:openbrowser_fix_schemes')
     let g:openbrowser_fix_schemes = {
