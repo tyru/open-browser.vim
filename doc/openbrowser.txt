@@ -100,7 +100,7 @@ v <Plug>(openbrowser-smart-search)	|<Plug>(openbrowser-smart-search)|
 ------------------------------------------------------------------------------
 VARIABLES					*openbrowser-variables* {{{
 
-g:openbrowser_open_commands			*g:openbrowser_open_commands*
+g:openbrowser_browser_commands		*g:openbrowser_browser_commands*
 								(default: Platform dependent)
 	Default value is platform dependant.
 	Cygwin: ["cygstart"]
@@ -108,28 +108,13 @@ g:openbrowser_open_commands			*g:openbrowser_open_commands*
 	MS Windows: ["cmd.exe"]
 	Unix like environment: ['xdg-open', 'x-www-browser', 'firefox', 'w3m']
 
+g:openbrowser_open_commands			*g:openbrowser_open_commands*
 g:openbrowser_open_rules			*g:openbrowser_open_rules*
-								(default: Platform dependent)
-	Default value is platform dependant.
-		Cygwin: {"cygstart": "{browser} {shellescape(uri)}"}
-		Mac OS X: {"open": "{browser} {shellescape(uri)}"}
-		MS Windows: {"cmd.exe": "cmd /c start rundll32 url.dll,FileProtocolHandler {uri}"}
-		Unix like environment: >
-		{
-		\   'xdg-open':      '{browser} {shellescape(uri)}',
-		\   'x-www-browser': '{browser} {shellescape(uri)}',
-		\   'firefox':       '{browser} {shellescape(uri)}',
-		\   'w3m':           '{browser} {shellescape(uri)}',
-		\}
-<
-	Avaliable variables (see |openbrowser-option-syntax| for details)
-		browser:
-			|g:openbrowser_open_commands| is assigned in order.
-			If the browser is not executable or failed
-			to open with the browser, try next browser
-			in |g:openbrowser_open_commands|.
-		uri:
-			URI specified by openbrowser Ex commands.
+	NOTE: Deprecated.
+	(if you have existing setting openbrowser.vim converts them
+	into |g:openbrowser_browser_commands|.
+	but these variable might be going to be removed for the next release)
+	Use |g:openbrowser_browser_commands| instead.
 
 g:openbrowser_fix_schemes			*g:openbrowser_fix_schemes*
 								(default: {"ttp": "http"})
