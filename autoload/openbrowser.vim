@@ -10,25 +10,38 @@ set cpo&vim
 " Default values of global variables. "{{{
 if g:__openbrowser_platform.cygwin
     function! s:get_default_browser_commands()
-        return [['cygstart', '{browser} {shellescape(uri)} &']]
+        return [
+        \   {'name': 'cygstart',
+        \    'args': '{browser} {shellescape(uri)} &'}
+        \]
     endfunction
 elseif g:__openbrowser_platform.macunix
     function! s:get_default_browser_commands()
-        return [['open', '{browser} {shellescape(uri)} &']]
+        return [
+        \   {'name': 'open',
+        \    'args': '{browser} {shellescape(uri)} &'}
+        \]
     endfunction
 elseif g:__openbrowser_platform.mswin
     function! s:get_default_browser_commands()
         " NOTE: If &shellslash == 1,
         " `shellescape(uri)` uses single quotes not double quote.
-        return [['rundll32', 'rundll32 url.dll,FileProtocolHandler {uri}']]
+        return [
+        \   {'name': 'rundll32',
+        \    'args': 'rundll32 url.dll,FileProtocolHandler {uri}'}
+        \]
     endfunction
 elseif g:__openbrowser_platform.unix
     function! s:get_default_browser_commands()
         return [
-        \   ['xdg-open',      '{browser} {shellescape(uri)} &'],
-        \   ['x-www-browser', '{browser} {shellescape(uri)} &'],
-        \   ['firefox',       '{browser} {shellescape(uri)} &'],
-        \   ['w3m',           '{browser} {shellescape(uri)} &'],
+        \   {'name': 'xdg-open',
+        \    'args': '{browser} {shellescape(uri)} &'},
+        \   {'name': 'x-www-browser',
+        \    'args': '{browser} {shellescape(uri)} &'},
+        \   {'name': 'firefox',
+        \    'args': '{browser} {shellescape(uri)} &'},
+        \   {'name': 'w3m',
+        \    'args': '{browser} {shellescape(uri)} &'},
         \]
     endfunction
 endif
@@ -60,7 +73,10 @@ function! s:convert_commands_and_rules()
     let open_rules    = g:openbrowser_open_rules
     let browser_commands = []
     for cmd in open_commands
-        call add(browser_commands, [cmd, open_rules[cmd]])
+        call add(browser_commands, [
+        \   {'name': cmd,
+        \    'args': open_rules[cmd]}
+        \])
     endfor
     return browser_commands
 endfunction
@@ -394,14 +410,14 @@ function! s:open_browser(uri) "{{{
     redraw
     echo "opening '" . uri . "' ..."
 
-    for [browser, cmdline] in s:get_var('openbrowser_browser_commands')
-        if !executable(browser)
+    for cmd in s:get_var('openbrowser_browser_commands')
+        if !executable(cmd.name)
             continue
         endif
 
         let cmdline = s:expand_keywords(
-        \   cmdline,
-        \   {'browser': browser, 'uri': uri}
+        \   cmd.args,
+        \   {'browser': cmd.name, 'uri': uri}
         \)
         call s:system(cmdline)
 
@@ -410,7 +426,7 @@ function! s:open_browser(uri) "{{{
         " so can't check its return value.
 
         redraw
-        echo "opening '" . uri . "' ... done! (" . browser . ")"
+        echo "opening '" . uri . "' ... done! (" . cmd.name . ")"
         return
     endfor
 
