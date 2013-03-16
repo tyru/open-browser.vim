@@ -282,7 +282,7 @@ function! s:open_browser(uri) "{{{
 
         let cmdline = s:expand_keywords(
         \   cmd.args,
-        \   {'browser': cmd.args, 'uri': uri}
+        \   {'browser': cmd.name, 'uri': uri}
         \)
         call s:system(cmdline)
 
