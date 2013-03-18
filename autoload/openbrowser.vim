@@ -6,6 +6,10 @@ let s:save_cpo = &cpo
 set cpo&vim
 " }}}
 
+let s:V = vital#of('open-browser.vim')
+let s:Process = s:V.import('Process')
+unlet s:V
+
 
 " Interfaces {{{
 
@@ -284,7 +288,7 @@ function! s:open_browser(uri) "{{{
         \   cmd.args,
         \   {'browser': cmd.name, 'uri': uri}
         \)
-        call s:system(cmdline)
+        call s:Process.system_bg(cmdline)
 
         " No need to check v:shell_error
         " because browser is spawned in background process
@@ -403,31 +407,6 @@ function! s:get_var(varname) "{{{
     throw 'openbrowser: internal error: '
     \   . "s:get_var() couldn't find variable '".a:varname."'."
 endfunction "}}}
-
-if g:__openbrowser_platform.mswin
-    function! s:system(expr)
-        " Escape cmdline-special and '!'
-        " * :help cmdline-special
-        " * :help expand()
-        " * :help :!
-        let pat = '[%#<>!]'
-        let sub = '\\\0'
-        let expr = substitute(a:expr, pat, sub, "g")
-        " Spawn 'expr' with 'noshellslash'
-        " to avoid expansion. (e.g., '\' -> '/')
-        let shellslash = &l:shellslash
-        setlocal noshellslash
-        try
-            execute '!start' expr
-        finally
-            let &l:shellslash = shellslash
-        endtry
-    endfunction
-else
-    function! s:system(expr)
-        return system(a:expr)
-    endfunction
-endif
 
 " }}}
 
