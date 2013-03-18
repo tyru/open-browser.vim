@@ -406,9 +406,10 @@ endfunction "}}}
 
 if g:__openbrowser_platform.mswin
     function! s:system(expr)
-        " Escape cmdline-special
+        " Escape cmdline-special and '!'
         " * :help cmdline-special
         " * :help expand()
+        " * :help :!
         let pat = '[%#<>!]'
         let sub = '\\\0'
         let expr = substitute(a:expr, pat, sub, "g")
