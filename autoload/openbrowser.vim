@@ -409,7 +409,7 @@ if g:__openbrowser_platform.mswin
         " Escape cmdline-special
         " * :help cmdline-special
         " * :help expand()
-        let pat = '[%#<>]'
+        let pat = '[%#<>!]'
         let sub = '\\\0'
         let expr = substitute(a:expr, pat, sub, "g")
         " Spawn 'expr' with 'noshellslash'
