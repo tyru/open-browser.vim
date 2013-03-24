@@ -325,8 +325,8 @@ function! s:get_url_on_cursor() "{{{
         return ''
     endif
     " Get continuous non-space string under cursor.
-    let left = col <=# 1 ? '' : getline('.')[: col-2]
-    let right = getline('.')[col-1 :]
+    let left = col <=# 1 ? '' : line[: col-2]
+    let right = line[col-1 :]
     let nonspstr = matchstr(left, '\S\+$').matchstr(right, '^\S\+')
     " Extract URL.
     " via https://github.com/mattn/vim-textobj-url/blob/af1edbe57d4f05c11e571d4cacd30672cdd9d944/autoload/textobj/url.vim#L2
