@@ -320,7 +320,7 @@ endfunction "}}}
 
 function! s:get_url_on_cursor() "{{{
     let line = s:getconcealedline('.')
-    let col = col('.')
+    let col = s:getconcealedcol('.')
     if line[col-1] !~# '\S'    " cursor is not on URL
         return ''
     endif
@@ -427,6 +427,32 @@ function! s:getconcealedline(lnum, ...) "{{{
             endif
         else
             let ret .= line[index]
+        endif
+
+        " get next char index.
+        let index += 1
+    endwhile
+
+    return ret
+endfunction "}}}
+
+function! s:getconcealedcol(expr) "{{{
+    let line = getline('.')
+    let index = 0
+    let endidx = col(a:expr)
+
+    let region = -1
+    let ret = 0
+
+    while index < endidx
+        let concealed = synconcealed('.', index + 1)
+        if concealed[0] != 0
+            if region != concealed[2]
+                let region = concealed[2]
+                let ret += len(concealed[1])
+            endif
+        else
+            let ret += 1
         endif
 
         " get next char index.
