@@ -319,7 +319,7 @@ function! s:get_selected_text() "{{{
 endfunction "}}}
 
 function! s:get_url_on_cursor() "{{{
-    let line = getline('.')
+    let line = s:getconcealedline('.')
     let col = col('.')
     if line[col-1] !~# '\S'    " cursor is not on URL
         return ''
@@ -406,6 +406,34 @@ function! s:get_var(varname) "{{{
     endfor
     throw 'openbrowser: internal error: '
     \   . "s:get_var() couldn't find variable '".a:varname."'."
+endfunction "}}}
+
+" From https://github.com/chikatoike/concealedyank.vim
+function! s:getconcealedline(lnum, ...) "{{{
+    let line = getline(a:lnum)
+    let index = get(a:000, 0, 0)
+    let endidx = get(a:000, 1, -1)
+    let endidx = endidx >= 0 ? min([endidx, strlen(line)]) : strlen(line)
+
+    let region = -1
+    let ret = ''
+
+    while index <= endidx
+        let concealed = synconcealed(a:lnum, index + 1)
+        if concealed[0] != 0
+            if region != concealed[2]
+                let region = concealed[2]
+                let ret .= concealed[1]
+            endif
+        else
+            let ret .= line[index]
+        endif
+
+        " get next char index.
+        let index += 1
+    endwhile
+
+    return ret
 endfunction "}}}
 
 " }}}
