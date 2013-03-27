@@ -443,21 +443,24 @@ function! s:getconcealedcol(expr) "{{{
 
     let region = -1
     let ret = 0
+    let isconceal = 0
 
     while index < endidx
         let concealed = synconcealed('.', index + 1)
-        if concealed[0] != 0
-            if region != concealed[2]
-                let region = concealed[2]
-                let ret += len(concealed[1])
-            endif
-        else
+        if concealed[0] == 0
             let ret += 1
         endif
+        let isconceal = concealed[0]
 
         " get next char index.
         let index += 1
     endwhile
+
+    if ret == 0
+      let ret = 1
+    elseif isconceal
+      let ret += 1
+    endif
 
     return ret
 endfunction "}}}
