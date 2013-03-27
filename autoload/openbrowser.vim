@@ -410,6 +410,10 @@ endfunction "}}}
 
 " From https://github.com/chikatoike/concealedyank.vim
 function! s:getconcealedline(lnum, ...) "{{{
+    if !has('conceal')
+        return getline(a:lnum)
+    endif
+
     let line = getline(a:lnum)
     let index = get(a:000, 0, 0)
     let endidx = get(a:000, 1, -1)
@@ -437,6 +441,10 @@ function! s:getconcealedline(lnum, ...) "{{{
 endfunction "}}}
 
 function! s:getconcealedcol(expr) "{{{
+    if !has('conceal')
+        return col(a:expr)
+    endif
+
     let line = getline('.')
     let index = 0
     let endidx = col(a:expr)
