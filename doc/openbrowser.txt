@@ -35,7 +35,7 @@ Thanks			|openbrowser-thanks|
 INTRODUCTION						*openbrowser-introduction* {{{
 
 
-I recommend this setting.
+Recommended Setting:
 >
 	" My setting.
 	let g:netrw_nogx = 1 " disable netrw's gx mapping.
@@ -55,18 +55,26 @@ Usage:
 	nmap map-you-like <Plug>(openbrowser-search)
 	" Search selected word. vmap map-you-like <Plug>(openbrowser-search)
 
-	" If it looks like URI, Open URI under cursor.
-	" Otherwise, Search word under cursor.
+	" If it looks like URI, open an URI under cursor.
+	" Otherwise, search a word under cursor.
 	nmap map-you-like <Plug>(openbrowser-smart-search)
-	" If it looks like URI, Open selected URI.
-	" Otherwise, Search selected word.
+	" If it looks like URI, open selected URI.
+	" Otherwise, search selected word.
 	vmap map-you-like <Plug>(openbrowser-smart-search)
 
-	" In command-line
+	" Open http://google.com/ in a web browser.
 	:OpenBrowser http://google.com/
-	:OpenBrowserSearch ggrks
-	:OpenBrowserSmartSearch http://google.com/
-	:OpenBrowserSmartSearch ggrks
+	" Search the word "vim". (Default search engine is google)
+	:OpenBrowserSearch vim
+	" Search the word "openbrowser" in www.vim.org .
+	:OpenBrowserSearch -vim openbrowser
+	" If it looks like URL, open the URL in a web browser.
+	:OpenBrowserSmartSearch http://www.vim.org/
+	" If it does not look like URL, open the word
+	" in the default search engine.
+	:OpenBrowserSmartSearch emacs download
+	" Also you can specify another search engine.
+	:OpenBrowserSmartSearch -github tyru
 
 
 }}}
