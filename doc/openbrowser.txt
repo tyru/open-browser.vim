@@ -26,7 +26,7 @@ Interface			|openbrowser-interface|
   Variables			|openbrowser-variables|
   Commands			|openbrowser-commands|
   Functions			|openbrowser-functions|
-Avaliable Syntax in Options		|openbrowser-option-syntax|
+Available Syntax in Options		|openbrowser-option-syntax|
 Changelog			|openbrowser-changelog|
 Thanks			|openbrowser-thanks|
 
@@ -187,7 +187,7 @@ g:openbrowser_search_engines		*g:openbrowser_search_engines*
     \}
 <	{query} will be replaced with given query.
 
-	Avaliable variables (see |openbrowser-option-syntax| for details)
+	Available variables (see |openbrowser-option-syntax| for details)
 		query:
 			Query specified by openbrowser Ex commands.
 
