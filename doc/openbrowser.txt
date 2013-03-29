@@ -28,6 +28,7 @@ Interface			|openbrowser-interface|
   Functions			|openbrowser-functions|
 Avaliable Syntax in Options		|openbrowser-option-syntax|
 Changelog			|openbrowser-changelog|
+Thanks			|openbrowser-thanks|
 
 
 ==============================================================================
@@ -363,6 +364,25 @@ backward compatibility.
   (see :help openbrowser-option-syntax for details)
   - Change default value of g:openbrowser_open_rules
   - Change default value of g:openbrowser_search_engines
+
+}}}
+==============================================================================
+THANKS                                                     *openbrowser-thanks* {{{
+
+The below list is the people who gave patch, advice, etc.
+Great thanks for the peoples. (alphabetical order)
+
+* Daniel Hahler (@blueyed)
+* Ingo Karkat (@inkarkat)
+* Kazuhiro YOSHIKAWA (@yoshikaw)
+* Milly (@Milly)
+* Yasuhiro MATSUMOTO (@mattn)
+* Yukihiro Nakadaira (@ynkdir)
+* basyura (@basyura)
+* chikatoike (@chikatoike)
+* itchyny (@itchyny)
+* stardiviner (@stardiviner)
+* toooooooby (@toooooooby)
 
 }}}
 ==============================================================================
