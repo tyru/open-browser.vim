@@ -206,12 +206,12 @@ command!
 
 
 " Key-mapping
-nnoremap <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymapping_open('n')<CR>
-vnoremap <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymapping_open('v')<CR>
-nnoremap <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymapping_search('n')<CR>
-vnoremap <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymapping_search('v')<CR>
-nnoremap <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymapping_smart_search('n')<CR>
-vnoremap <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymapping_smart_search('v')<CR>
+nnoremap <silent> <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymapping_open('n')<CR>
+vnoremap <silent> <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymapping_open('v')<CR>
+nnoremap <silent> <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymapping_search('n')<CR>
+vnoremap <silent> <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymapping_search('v')<CR>
+nnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymapping_smart_search('n')<CR>
+vnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymapping_smart_search('v')<CR>
 
 " }}}
 
