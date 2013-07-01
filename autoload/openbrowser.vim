@@ -142,6 +142,10 @@ endif
 if !exists('g:openbrowser_open_vim_command')
     let g:openbrowser_open_vim_command = 'vsplit'
 endif
+
+if !exists('g:openbrowser_short_message')
+    let g:openbrowser_short_message = 0
+endif
 " }}}
 
 
@@ -369,7 +373,11 @@ function! s:open_browser(uri) "{{{
     let uri = a:uri
 
     redraw
-    echo "opening '" . uri . "' ..."
+    if g:openbrowser_short_message
+      echo "opening ... "
+    else
+      echo "opening '" . uri . "' ..."
+    endif
 
     for browser in s:get_var('openbrowser_open_commands')
         if !executable(browser)
@@ -389,7 +397,11 @@ function! s:open_browser(uri) "{{{
         " because browser is spawned in background process
         " so can't check its return value.
         redraw
-        echo "opening '" . uri . "' ... done! (" . browser . ")"
+        if g:openbrowser_short_message
+          echo "opening ... done!"
+        else
+          echo "opening '" . uri . "' ... done! (" . browser . ")"
+        endif
         return
     endfor
 
