@@ -398,7 +398,7 @@ function! s:open_browser(uri) "{{{
         " so can't check its return value.
         redraw
         if g:openbrowser_short_message
-          echo "opening ... done!"
+          echo "opening ... done! (" . browser . ")"
         else
           echo "opening '" . uri . "' ... done! (" . browser . ")"
         endif
