@@ -277,7 +277,11 @@ function! s:open_browser(uri) "{{{
     let uri = a:uri
 
     redraw
-    echo "opening '" . uri . "' ..."
+    if g:openbrowser_short_message
+      echo "opening ..."
+    else
+      echo "opening '" . uri . "' ..."
+    endif
 
     for cmd in s:get_var('openbrowser_browser_commands')
         if !executable(cmd.name)
@@ -295,7 +299,11 @@ function! s:open_browser(uri) "{{{
         " so can't check its return value.
 
         redraw
-        echo "opening '" . uri . "' ... done! (" . cmd.name . ")"
+        if g:openbrowser_short_message
+          echo "opening ... done! (" . cmd.name . ")"
+        else
+          echo "opening '" . uri . "' ... done! (" . cmd.name . ")"
+        endif
         return
     endfor
 
