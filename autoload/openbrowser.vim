@@ -220,7 +220,7 @@ endfunction "}}}
 " <Plug>(openbrowser-search)
 function! openbrowser#_keymapping_search(mode) "{{{
     if a:mode ==# 'n'
-        return openbrowser#search(s:get_url_on_cursor())
+        return openbrowser#search(expand('<cword>'))
     else
         return openbrowser#search(s:get_selected_text())
     endif
@@ -229,7 +229,8 @@ endfunction "}}}
 " <Plug>(openbrowser-smart-search)
 function! openbrowser#_keymapping_smart_search(mode) "{{{
     if a:mode ==# 'n'
-        return openbrowser#smart_search(s:get_url_on_cursor())
+        let url = s:get_url_on_cursor()
+        return openbrowser#smart_search(url !=# '' ? url : expand('<cword>'))
     else
         return openbrowser#smart_search(s:get_selected_text())
     endif
