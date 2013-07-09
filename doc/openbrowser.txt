@@ -84,9 +84,7 @@ INTERFACE							*openbrowser-interface* {{{
 KEYMAPPINGS					*openbrowser-keymappings* {{{
 
 n <Plug>(openbrowser-open)				|<Plug>(openbrowser-open)|
-	Open current text under cursor with |:OpenBrowser|.
-	You can customize the definition of "text"
-	with |g:openbrowser_iskeyword|.
+	Open current URL under cursor with |:OpenBrowser|.
 
 v <Plug>(openbrowser-open)				|<Plug>(openbrowser-open)|
 	Open selected text with |:OpenBrowser|.
