@@ -83,9 +83,7 @@ function! openbrowser#search(query, ...) "{{{
     let search_engines =
     \   s:get_var('openbrowser_search_engines')
     if !has_key(search_engines, engine)
-        echohl WarningMsg
-        echomsg "Unknown search engine '" . engine . "'."
-        echohl None
+        call s:warn("Unknown search engine '" . engine . "'.")
         return
     endif
 
@@ -151,12 +149,11 @@ function! s:parse_and_delegate(excmd, parse, delegate, cmdline) "{{{
     try
         let [engine, cmdline] = {a:parse}(cmdline)
     catch /^parse error/
-        echohl WarningMsg
-        echomsg 'usage:'
-        \       a:excmd
-        \       '[-{search-engine}]'
-        \       '{query}'
-        echohl None
+        call s:warn(
+        \   a:excmd
+        \   . ' [-{search-engine}]'
+        \   . ' {query}'
+        \)
         return
     endtry
 
@@ -308,9 +305,8 @@ function! s:open_browser(uri) "{{{
         return
     endfor
 
-    echohl WarningMsg
     redraw
-    echomsg "open-browser doesn't know how to open '" . uri . "'."
+    call s:warn("open-browser doesn't know how to open '" . uri . "'.")
     echohl None
 endfunction "}}}
 
@@ -399,9 +395,7 @@ function! s:expand_keywords(str, options)  " {{{
             let result .= eval(expr)
             let rest = rest[e :]
         else
-            echohl WarningMsg
-            echomsg 'parse error: rest = '.rest.', result = '.result
-            echohl None
+            call s:warn('parse error: rest = '.rest.', result = '.result)
         endif
     endwhile
     return result
@@ -480,6 +474,19 @@ function! s:getconcealedcol(expr) "{{{
     endif
 
     return ret
+endfunction "}}}
+
+function! s:warn(msg) "{{{
+    call s:echomsg('WarningMsg', a:msg)
+endfunction "}}}
+
+function! s:echomsg(hl, msg) "{{{
+    execute 'echohl' a:hl
+    try
+        echomsg a:msg
+    finally
+        echohl None
+    endtry
 endfunction "}}}
 
 " }}}
