@@ -208,7 +208,12 @@ endfunction "}}}
 " <Plug>(openbrowser-open)
 function! openbrowser#_keymapping_open(mode) "{{{
     if a:mode ==# 'n'
-        return openbrowser#open(s:get_url_on_cursor())
+        let url = s:get_url_on_cursor()
+        if url ==# ''
+            call s:error("URL is not found under cursor!")
+            return
+        endif
+        return openbrowser#open(url)
     else
         return openbrowser#open(s:get_selected_text())
     endif
@@ -227,7 +232,12 @@ endfunction "}}}
 function! openbrowser#_keymapping_smart_search(mode) "{{{
     if a:mode ==# 'n'
         let url = s:get_url_on_cursor()
-        return openbrowser#smart_search(url !=# '' ? url : expand('<cword>'))
+        let query = (url !=# '' ? url : expand('<cword>'))
+        if query ==# ''
+            call s:error("URL or word is not found under cursor!")
+            return
+        endif
+        return openbrowser#smart_search(query)
     else
         return openbrowser#smart_search(s:get_selected_text())
     endif
@@ -478,6 +488,10 @@ endfunction "}}}
 
 function! s:warn(msg) "{{{
     call s:echomsg('WarningMsg', a:msg)
+endfunction "}}}
+
+function! s:error(msg) "{{{
+    call s:echomsg('ErrorMsg', a:msg)
 endfunction "}}}
 
 function! s:echomsg(hl, msg) "{{{
