@@ -82,15 +82,13 @@ function! s:_import(name, scripts)
 endfunction
 
 function! s:_get_module_path(name)
-  if filereadable(a:name)
+  if s:_is_absolute_path(a:name) && filereadable(a:name)
     return s:_unify_path(a:name)
   endif
   if a:name ==# ''
     let tailpath = printf('autoload/vital/%s.vim', s:self_version)
-  elseif a:name =~# '\v^\u\a*%(\.\u\a*)*$'
+  elseif a:name =~# '\v^\u\w*%(\.\u\w*)*$'
     let target = '/' . substitute(a:name, '\W\+', '/', 'g')
-    let target = substitute(target, '\l\zs\ze\u', '_', 'g') " OrderedSet -> Ordered_Set
-    let target = substitute(target, '[/_]\zs\u', '\l\0', 'g') " Ordered_Set -> ordered_set
     let tailpath = printf('autoload/vital/%s%s.vim', s:self_version, target)
   else
     let tailpath = a:name
@@ -131,6 +129,17 @@ else
   endfunction
 endif
 
+" Copy from System.Filepath
+if has('win16') || has('win32') || has('win64')
+  function! s:_is_absolute_path(path)
+    return a:path =~? '^[a-z]:[/\\]'
+  endfunction
+else
+  function! s:_is_absolute_path(path)
+    return a:path[0] ==# '/'
+  endfunction
+endif
+
 function! s:_build_module(sid)
   if has_key(s:loaded, a:sid)
     return copy(s:loaded[a:sid])
@@ -165,12 +174,12 @@ function! s:_build_module(sid)
 endfunction
 
 function! s:_redir(cmd)
-  let oldverbosefile = &verbosefile
-  set verbosefile=
+  let [save_verbose, save_verbosefile] = [&verbose, &verbosefile]
+  set verbose=0 verbosefile=
   redir => res
     silent! execute a:cmd
   redir END
-  let &verbosefile = oldverbosefile
+  let [&verbose, &verbosefile] = [save_verbose, save_verbosefile]
   return res
 endfunction
 
