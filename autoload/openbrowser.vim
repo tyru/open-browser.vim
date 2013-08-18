@@ -300,7 +300,7 @@ function! s:open_browser(uri) "{{{
         \   cmd.args,
         \   {'browser': cmd.name, 'uri': uri}
         \)
-        call s:Process.system_bg(cmdline)
+        call s:Process.spawn(cmdline)
 
         " No need to check v:shell_error
         " because browser is spawned in background process
