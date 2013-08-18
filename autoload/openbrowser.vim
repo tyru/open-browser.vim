@@ -284,7 +284,7 @@ endfunction "}}}
 function! s:open_browser(uri) "{{{
     let uri = a:uri
 
-    redraw
+    redraw!
     if g:openbrowser_short_message
       echo "opening ..."
     else
@@ -306,7 +306,7 @@ function! s:open_browser(uri) "{{{
         " because browser is spawned in background process
         " so can't check its return value.
 
-        redraw
+        redraw!
         if g:openbrowser_short_message
           echo "opening ... done! (" . cmd.name . ")"
         else
@@ -315,7 +315,7 @@ function! s:open_browser(uri) "{{{
         return
     endfor
 
-    redraw
+    redraw!
     call s:warn("open-browser doesn't know how to open '" . uri . "'.")
     echohl None
 endfunction "}}}
