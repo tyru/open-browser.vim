@@ -43,14 +43,14 @@ if g:__openbrowser_platform.cygwin
     function! s:get_default_browser_commands()
         return [
         \   {'name': 'cygstart',
-        \    'args': '{browser} {shellescape(uri)}'}
+        \    'args': ['{browser}', '{shellescape(uri)}']}
         \]
     endfunction
 elseif g:__openbrowser_platform.macunix
     function! s:get_default_browser_commands()
         return [
         \   {'name': 'open',
-        \    'args': '{browser} {shellescape(uri)}'}
+        \    'args': ['{browser}', '{shellescape(uri)}']}
         \]
     endfunction
 elseif g:__openbrowser_platform.mswin
@@ -66,13 +66,13 @@ elseif g:__openbrowser_platform.unix
     function! s:get_default_browser_commands()
         return [
         \   {'name': 'xdg-open',
-        \    'args': '{browser} {shellescape(uri)}'},
+        \    'args': ['{browser}', '{shellescape(uri)}']},
         \   {'name': 'x-www-browser',
-        \    'args': '{browser} {shellescape(uri)}'},
+        \    'args': ['{browser}', '{shellescape(uri)}']},
         \   {'name': 'firefox',
-        \    'args': '{browser} {shellescape(uri)}'},
+        \    'args': ['{browser}', '{shellescape(uri)}']},
         \   {'name': 'w3m',
-        \    'args': '{browser} {shellescape(uri)}'},
+        \    'args': ['{browser}', '{shellescape(uri)}']},
         \]
     endfunction
 endif

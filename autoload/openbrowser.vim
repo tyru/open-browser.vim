@@ -296,11 +296,19 @@ function! s:open_browser(uri) "{{{
             continue
         endif
 
-        let cmdline = s:expand_keywords(
-        \   cmd.args,
-        \   {'browser': cmd.name, 'uri': uri}
-        \)
-        call s:Process.spawn(cmdline)
+        if type(cmd.args) is type([])
+            let cmdline = map(copy(cmd.args), 's:expand_keywords(
+            \   v:val,
+            \   {"browser": cmd.name, "uri": uri}
+            \)')
+        else
+            let cmdline = s:expand_keywords(
+            \   cmd.args,
+            \   {"browser": cmd.name, "uri": uri}
+            \)
+        endif
+        let special = 1
+        call s:Process.spawn(cmdline, special)
 
         " No need to check v:shell_error
         " because browser is spawned in background process
