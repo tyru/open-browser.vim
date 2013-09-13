@@ -8,6 +8,7 @@ set cpo&vim
 
 let s:V = vital#of('open-browser.vim')
 let s:Process = s:V.import('Process')
+let s:URI = s:V.import('Web.URI')
 unlet s:V
 
 
@@ -50,7 +51,7 @@ function! openbrowser#open(uri) "{{{
             call s:open_browser(fullpath)
         endif
     elseif type.uri    " other URI
-        let obj = urilib#new_from_uri_like_string(uri, s:NONE)
+        let obj = s:URI.new_from_uri_like_string(uri, s:NONE)
         if obj is s:NONE
             " Error
             return
@@ -231,7 +232,7 @@ function! s:seems_path(uri) "{{{
 endfunction "}}}
 
 function! s:seems_uri(uri) "{{{
-    let uri = urilib#new_from_uri_like_string(a:uri, s:NONE)
+    let uri = s:URI.new_from_uri_like_string(a:uri, s:NONE)
     return uri isnot s:NONE
     \   && uri.scheme() !=# ''
     \   && uri.host() =~# '\.'
