@@ -9,6 +9,7 @@ set cpo&vim
 let s:V = vital#of('open-browser.vim')
 let s:Process = s:V.import('Process')
 let s:URI = s:V.import('Web.URI')
+let s:HTTP = s:V.import('Web.HTTP')
 unlet s:V
 
 
@@ -88,9 +89,9 @@ function! openbrowser#search(query, ...) "{{{
         return
     endif
 
-    call openbrowser#open(
-    \   s:expand_keywords(search_engines[engine], {'query': a:query})
-    \)
+    let query = s:HTTP.encodeURIComponent(a:query)
+    let uri = s:expand_keywords(search_engines[engine], {'query': query})
+    call openbrowser#open(uri)
 endfunction "}}}
 
 " :OpenBrowserSmartSearch
