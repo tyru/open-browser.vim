@@ -55,8 +55,6 @@ elseif g:__openbrowser_platform.macunix
     endfunction
 elseif g:__openbrowser_platform.mswin
     function! s:get_default_browser_commands()
-        " NOTE: If &shellslash == 1,
-        " `shellescape(uri)` uses single quotes not double quote.
         return [
         \   {'name': 'rundll32',
         \    'args': 'rundll32 url.dll,FileProtocolHandler {uri}'}
