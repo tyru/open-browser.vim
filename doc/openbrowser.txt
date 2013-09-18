@@ -110,10 +110,32 @@ VARIABLES					*openbrowser-variables* {{{
 g:openbrowser_browser_commands		*g:openbrowser_browser_commands*
 								(default: Platform dependent)
 	Default value is platform dependant.
-	Cygwin: ["cygstart"]
-	Mac OS X: ["open"]
-	MS Windows: ["cmd.exe"]
-	Unix like environment: ['xdg-open', 'x-www-browser', 'firefox', 'w3m']
+	Cygwin:
+		[
+		\ {"name": "cygstart",
+		\  "args": ["{browser}", "{uri}"]}
+		\]
+	Mac OS X:
+		[
+		\ {"name": "open",
+		\  "args": ["{browser}", "{uri}"]}
+		\]
+	MS Windows:
+		[
+		\ {"name": "rundll32",
+		\  "args": "rundll32 url.dll,FileProtocolHandler {uri}"}
+		\]
+	Unix like environment:
+		[
+		\ {"name": "xdg-open",
+		\  "args": ["{browser}", "{uri}"]},
+		\ {"name": "x-www-browser",
+		\  "args": ["{browser}", "{uri}"]},
+		\ {"name": "firefox",
+		\  "args": ["{browser}", "{uri}"]},
+		\ {"name": "w3m",
+		\  "args": ["{browser}", "{uri}"]},
+		\]
 
 g:openbrowser_open_commands			*g:openbrowser_open_commands*
 g:openbrowser_open_rules			*g:openbrowser_open_rules*
