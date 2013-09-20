@@ -102,10 +102,10 @@ function! s:convert_commands_and_rules()
     let open_rules    = g:openbrowser_open_rules
     let browser_commands = []
     for cmd in open_commands
-        call add(browser_commands, [
-        \   {'name': cmd,
-        \    'args': open_rules[cmd]}
-        \])
+        call add(browser_commands,{
+        \ 'name': cmd,
+        \ 'args': open_rules[cmd]
+        \})
     endfor
     return browser_commands
 endfunction
