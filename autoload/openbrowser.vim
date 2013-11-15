@@ -276,7 +276,7 @@ function! s:open_browser(uri) "{{{
             \   v:val,
             \   {"browser": cmd.name, "uri": uri}
             \)')
-            let command = join(map(cmdline, 'shellescape(v:val, 1)'), ' ')
+            let command = join(cmdline, ' ')
         else
             let cmdline = s:expand_keywords(
             \   cmd.args,
