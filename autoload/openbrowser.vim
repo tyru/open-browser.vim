@@ -259,7 +259,7 @@ endfunction "}}}
 function! s:open_browser(uri) "{{{
     let uri = a:uri
 
-    redraw!
+    redraw
     if g:openbrowser_short_message
       echo "opening ..."
     else
@@ -276,20 +276,21 @@ function! s:open_browser(uri) "{{{
             \   v:val,
             \   {"browser": cmd.name, "uri": uri}
             \)')
+            let command = join(map(cmdline, "escape(v:val, '''')"), ' ')
         else
             let cmdline = s:expand_keywords(
             \   cmd.args,
             \   {"browser": cmd.name, "uri": uri}
             \)
+            let command = cmdline
         endif
-        let special = 1
-        call s:Process.spawn(cmdline, special)
+        call s:Process.system(command)
 
         " No need to check v:shell_error
         " because browser is spawned in background process
         " so can't check its return value.
 
-        redraw!
+        redraw
         if g:openbrowser_short_message
           echo "opening ... done! (" . cmd.name . ")"
         else
