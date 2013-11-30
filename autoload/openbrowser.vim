@@ -97,9 +97,7 @@ endfunction "}}}
 " :OpenBrowserSmartSearch
 function! openbrowser#smart_search(query, ...) "{{{
     let type = s:detect_query_type(a:query)
-    if type.uri ||
-    \  s:get_var('openbrowser_open_filepath_in_vim') &&
-    \  type.filepath
+    if type.uri || type.filepath
         return openbrowser#open(a:query)
     else
         return openbrowser#search(
@@ -184,11 +182,15 @@ endfunction "}}}
 function! openbrowser#_keymapping_open(mode) "{{{
     if a:mode ==# 'n'
         let url = s:get_url_on_cursor()
-        if url ==# ''
-            call s:error("URL is not found under cursor!")
+        let filepath = s:get_filepath_on_cursor()
+        if url != ''
+            return openbrowser#open(url)
+        elseif filepath != ''
+            return openbrowser#open(filepath)
+        else
+            call s:error("URL or file path is not found under cursor!")
             return
         endif
-        return openbrowser#open(url)
     else
         return openbrowser#open(s:get_selected_text())
     endif
@@ -207,7 +209,8 @@ endfunction "}}}
 function! openbrowser#_keymapping_smart_search(mode) "{{{
     if a:mode ==# 'n'
         let url = s:get_url_on_cursor()
-        let query = (url !=# '' ? url : expand('<cword>'))
+        let filepath = s:get_filepath_on_cursor()
+        let query = (url !=# '' ? url : filepath !=# '' ? filepath : expand('<cword>'))
         if query ==# ''
             call s:error("URL or word is not found under cursor!")
             return
@@ -332,6 +335,24 @@ function! s:get_url_on_cursor() "{{{
     let re_url = '\(https\?\|ftp\)://[a-zA-Z0-9][a-zA-Z0-9_-]*\(\.[a-zA-Z0-9][a-zA-Z0-9_-]*\)*\(:\d\+\)\?\(/[a-zA-Z0-9_/.+%#?&=;@$,!''*~-]*\)\?'
     let url = matchstr(nonspstr, re_url)
     return url
+endfunction "}}}
+
+function! s:get_filepath_on_cursor() "{{{
+    let line = s:getconcealedline('.')
+    let col = s:getconcealedcol('.')
+    if line[col-1] !~# '\S'    " cursor is not on file path
+        return ''
+    endif
+    " Get continuous non-space string under cursor.
+    let left = col <=# 1 ? '' : line[: col-2]
+    let right = line[col-1 :]
+    let nonspstr = matchstr(left, '\S\+$').matchstr(right, '^\S\+')
+    " Extract file path.
+    if s:seems_path(nonspstr)
+        return nonspstr
+    else
+        return ''
+    endif
 endfunction "}}}
 
 " This function is from quickrun.vim (http://github.com/thinca/vim-quickrun)
