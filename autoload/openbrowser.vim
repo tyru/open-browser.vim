@@ -181,8 +181,8 @@ endfunction "}}}
 " <Plug>(openbrowser-open)
 function! openbrowser#_keymapping_open(mode) "{{{
     if a:mode ==# 'n'
-        let url = s:get_url_on_cursor()
-        let filepath = s:get_filepath_on_cursor()
+        let url = openbrowser#get_url_on_cursor()
+        let filepath = openbrowser#get_filepath_on_cursor()
         if url != ''
             return openbrowser#open(url)
         elseif filepath != ''
@@ -208,8 +208,8 @@ endfunction "}}}
 " <Plug>(openbrowser-smart-search)
 function! openbrowser#_keymapping_smart_search(mode) "{{{
     if a:mode ==# 'n'
-        let url = s:get_url_on_cursor()
-        let filepath = s:get_filepath_on_cursor()
+        let url = openbrowser#get_url_on_cursor()
+        let filepath = openbrowser#get_filepath_on_cursor()
         let query = (url !=# '' ? url : filepath !=# '' ? filepath : expand('<cword>'))
         if query ==# ''
             call s:error("URL or word is not found under cursor!")
@@ -320,7 +320,7 @@ function! s:get_selected_text() "{{{
     endtry
 endfunction "}}}
 
-function! s:get_url_on_cursor() "{{{
+function! openbrowser#get_url_on_cursor() "{{{
     let line = s:getconcealedline('.')
     let col = s:getconcealedcol('.')
     if line[col-1] !~# '\S'    " cursor is not on URL
@@ -337,7 +337,7 @@ function! s:get_url_on_cursor() "{{{
     return url
 endfunction "}}}
 
-function! s:get_filepath_on_cursor() "{{{
+function! openbrowser#get_filepath_on_cursor() "{{{
     let line = s:getconcealedline('.')
     let col = s:getconcealedcol('.')
     if line[col-1] !~# '\S'    " cursor is not on file path
