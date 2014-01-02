@@ -275,18 +275,17 @@ function! s:open_browser(uri) "{{{
         endif
 
         if type(cmd.args) is type([])
-            let cmdline = map(copy(cmd.args), 's:expand_keywords(
+            let command = join(map(copy(cmd.args), 's:expand_keywords(
             \   v:val,
             \   {"browser": cmd.name, "uri": uri}
-            \)')
-            let command = join(map(cmdline, "escape(v:val, '''#')"), ' ')
+            \)'), " ")
         else
-            let cmdline = s:expand_keywords(
+            let command = s:expand_keywords(
             \   cmd.args,
             \   {"browser": cmd.name, "uri": uri}
             \)
-            let command = cmdline
         endif
+        let command = escape(command, '''#')
         call s:Process.system(command)
 
         " No need to check v:shell_error
