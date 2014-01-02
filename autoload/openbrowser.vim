@@ -279,7 +279,7 @@ function! s:open_browser(uri) "{{{
             \   v:val,
             \   {"browser": cmd.name, "uri": uri}
             \)')
-            let command = join(map(cmdline, "escape(v:val, '''')"), ' ')
+            let command = join(map(cmdline, "escape(v:val, '''#')"), ' ')
         else
             let cmdline = s:expand_keywords(
             \   cmd.args,
