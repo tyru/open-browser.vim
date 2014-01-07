@@ -24,18 +24,28 @@ function! s:cons(x, xs)
   return [a:x] + a:xs
 endfunction
 
-" TODO spec
 function! s:conj(xs, x)
   return a:xs + [a:x]
 endfunction
 
 " Removes duplicates from a list.
 function! s:uniq(list, ...)
-  let list = a:0 ? map(copy(a:list), printf('[v:val, %s]', a:1)) : copy(a:list)
+  if a:0
+    return s:uniq_by(a:list, a:1)
+  else
+    echomsg "Vital.Data.List.uniq() with 2 arguments is deprecated! Please use uniq_by() instead, if you still want to use the 2nd argument."
+    return s:uniq_by(a:list, 'v:val')
+  endif
+endfunction
+
+" Removes duplicates from a list.
+" TODO not documented yet
+function! s:uniq_by(list, f)
+  let list = map(copy(a:list), printf('[v:val, %s]', a:f))
   let i = 0
   let seen = {}
   while i < len(list)
-    let key = string(a:0 ? list[i][1] : list[i])
+    let key = string(list[i][1])
     if has_key(seen, key)
       call remove(list, i)
     else
@@ -43,7 +53,7 @@ function! s:uniq(list, ...)
       let i += 1
     endif
   endwhile
-  return a:0 ? map(list, 'v:val[0]') : list
+  return map(list, 'v:val[0]')
 endfunction
 
 function! s:clear(list)
@@ -63,7 +73,7 @@ function! s:concat(list)
   return list
 endfunction
 
-" Flattens a list.
+" Take each elements from lists to a new list.
 function! s:flatten(list, ...)
   let limit = a:0 > 0 ? a:1 : -1
   let list = []
@@ -72,11 +82,10 @@ function! s:flatten(list, ...)
   endif
   let limit -= 1
   for Value in a:list
-    if type(Value) == type([])
-      let list += s:flatten(Value, limit)
-    else
-      call add(list, Value)
-    endif
+    let list +=
+          \ type(Value) == type([]) ?
+          \   s:flatten(Value, limit) :
+          \   [Value]
     unlet! Value
   endfor
   return list
@@ -227,15 +236,7 @@ endfunction
 
 " similar to Haskell's Prelude.foldr
 function! s:foldr(f, init, xs)
-  let memo = a:init
-  for i in reverse(range(0, len(a:xs) - 1))
-    let x = a:xs[i]
-    let expr = substitute(a:f, 'v:val', string(x), 'g')
-    let expr = substitute(expr, 'v:memo', string(memo), 'g')
-    unlet memo
-    let memo = eval(expr)
-  endfor
-  return memo
+  return s:foldl(a:f, a:init, reverse(copy(a:xs)))
 endfunction
 
 " similar to Haskell's Prelude.fold11
