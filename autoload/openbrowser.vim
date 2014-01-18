@@ -10,6 +10,7 @@ let s:V = vital#of('open-browser.vim')
 let s:Process = s:V.import('Process')
 let s:URI = s:V.import('Web.URI')
 let s:HTTP = s:V.import('Web.HTTP')
+let s:Buffer = s:V.import('Vim.Buffer')
 unlet s:V
 
 
@@ -192,7 +193,7 @@ function! openbrowser#_keymapping_open(mode) "{{{
             return
         endif
     else
-        return openbrowser#open(s:get_selected_text())
+        return openbrowser#open(s:Buffer.get_selected_text())
     endif
 endfunction "}}}
 
@@ -201,7 +202,7 @@ function! openbrowser#_keymapping_search(mode) "{{{
     if a:mode ==# 'n'
         return openbrowser#search(expand('<cword>'))
     else
-        return openbrowser#search(s:get_selected_text())
+        return openbrowser#search(s:Buffer.get_selected_text())
     endif
 endfunction "}}}
 
@@ -217,7 +218,7 @@ function! openbrowser#_keymapping_smart_search(mode) "{{{
         endif
         return openbrowser#smart_search(query)
     else
-        return openbrowser#smart_search(s:get_selected_text())
+        return openbrowser#smart_search(s:Buffer.get_selected_text())
     endif
 endfunction "}}}
 
@@ -304,19 +305,6 @@ function! s:open_browser(uri) "{{{
     redraw!
     call s:warn("open-browser doesn't know how to open '" . uri . "'.")
     echohl None
-endfunction "}}}
-
-" Get selected text in visual mode.
-function! s:get_selected_text() "{{{
-    let save_z = getreg('z', 1)
-    let save_z_type = getregtype('z')
-
-    try
-        normal! gv"zy
-        return @z
-    finally
-        call setreg('z', save_z, save_z_type)
-    endtry
 endfunction "}}}
 
 function! openbrowser#get_url_on_cursor() "{{{

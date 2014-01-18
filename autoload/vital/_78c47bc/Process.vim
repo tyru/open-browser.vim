@@ -80,24 +80,40 @@ function! s:has_vimproc()
   return s:exists_vimproc
 endfunction
 
+" * {command} [, {input} [, {timeout}]]
+" * {command} [, {dict}]
+"   {dict} = {
+"     use_vimproc: bool,
+"     input: string,
+"     timeout: bool,
+"   }
 function! s:system(str, ...)
   let command = a:str
-  let input = a:0 >= 1 ? a:1 : ''
   let command = s:iconv(command, &encoding, 'char')
-  let input = s:iconv(input, &encoding, 'char')
-
-  if a:0 == 0
-    let output = s:has_vimproc() ?
-          \ vimproc#system(command) : system(command)
-  elseif a:0 == 1
-    let output = s:has_vimproc() ?
-          \ vimproc#system(command, input) : system(command, input)
-  else
-    " ignores 3rd argument unless you have vimproc.
-    let output = s:has_vimproc() ?
-          \ vimproc#system(command, input, a:2) : system(command, input)
+  let input = ''
+  let use_vimproc = s:has_vimproc()
+  let args = [command]
+  if a:0 ==# 1
+    if type(a:1) is type({})
+      if has_key(a:1, 'use_vimproc')
+        let use_vimproc = a:1.use_vimproc
+      endif
+      if has_key(a:1, 'input')
+        let args += [a:1.input]
+      endif
+      if use_vimproc && has_key(a:1, 'timeout')
+        " ignores timeout unless you have vimproc.
+        let args += [a:1.timeout]
+      endif
+    endif
+  elseif a:0 >= 2
+    let [input; rest] = a:000
+    let input = s:iconv(a:1, &encoding, 'char')
+    let args += [input] + rest
   endif
 
+  let funcname = use_vimproc ? 'vimproc#system' : 'system'
+  let output = call(funcname, args)
   let output = s:iconv(output, 'char', &encoding)
 
   return output

@@ -382,8 +382,9 @@ function! s:path2project_directory(path, ...)
 
   " Search project file.
   if directory == ''
-    for d in ['build.xml', 'prj.el', '.project', 'pom.xml',
-          \ 'Makefile', 'configure', 'Rakefile', 'NAnt.build', 'tags', 'gtags']
+    for d in ['build.xml', 'prj.el', '.project', 'pom.xml', 'package.json',
+          \ 'Makefile', 'configure', 'Rakefile', 'NAnt.build',
+          \ 'P4CONFIG', 'tags', 'gtags']
       let d = findfile(d, s:escape_file_searching(search_directory) . ';')
       if d != ''
         let directory = fnamemodify(d, ':p:h')
