@@ -14,6 +14,10 @@ let s:Buffer = s:V.import('Vim.Buffer')
 unlet s:V
 
 
+" Save/Determine global variable values.
+let s:vimproc_is_installed = globpath(&rtp, 'autoload/vimproc.vim') !=# ''
+
+
 " Interfaces {{{
 
 function! openbrowser#load() "{{{
@@ -287,7 +291,9 @@ function! s:open_browser(uri) "{{{
             \)
         endif
         let command = escape(command, '''#')
-        call s:Process.system(command)
+        call s:Process.system(command, {
+        \   'use_vimproc': (g:openbrowser_use_vimproc && s:vimproc_is_installed)
+        \})
 
         " No need to check v:shell_error
         " because browser is spawned in background process

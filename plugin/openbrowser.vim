@@ -170,6 +170,9 @@ endif
 if !exists('g:openbrowser_short_message')
     let g:openbrowser_short_message = 0
 endif
+if !exists('g:openbrowser_use_vimproc')
+    let g:openbrowser_use_vimproc = 1
+endif
 " }}}
 
 
