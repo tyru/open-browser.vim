@@ -228,7 +228,7 @@ g:openbrowser_open_vim_command
 					*g:openbrowser_short_message*
 g:openbrowser_short_message
 								(default: 0)
-	This changes the message when opening a URL.
+	This value changes the message when opening a URL.
 
 	If this value is non-zero:
 		opening ... done! (%CMD%)
