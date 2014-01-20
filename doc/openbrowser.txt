@@ -225,6 +225,16 @@ g:openbrowser_open_vim_command
 	This value is used for opening looks-like-a-path string.
 	See |g:openbrowser_open_filepath_in_vim| for the details.
 
+					*g:openbrowser_short_message*
+g:openbrowser_short_message
+								(default: 0)
+	This changes the message when opening a URL.
+
+	If this value is non-zero:
+		opening ... done! (%CMD%)
+	Otherwise:
+		opening ... '%URL%' ... done! (%CMD%)
+
 }}}
 ------------------------------------------------------------------------------
 COMMANDS					*openbrowser-commands* {{{
