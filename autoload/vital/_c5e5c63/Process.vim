@@ -88,8 +88,7 @@ endfunction
 "     timeout: bool,
 "   }
 function! s:system(str, ...)
-  let command = a:str
-  let command = s:iconv(command, &encoding, 'char')
+  let command = s:iconv(a:str, &encoding, 'char')
   let input = ''
   let use_vimproc = s:has_vimproc()
   let args = [command]
@@ -99,7 +98,7 @@ function! s:system(str, ...)
         let use_vimproc = a:1.use_vimproc
       endif
       if has_key(a:1, 'input')
-        let args += [a:1.input]
+        let args += [s:iconv(a:1.input, &encoding, 'char')]
       endif
       if use_vimproc && has_key(a:1, 'timeout')
         " ignores timeout unless you have vimproc.
