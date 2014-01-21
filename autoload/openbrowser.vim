@@ -290,12 +290,16 @@ function! s:open_browser(uri) "{{{
             \   {"browser": cmd.name, "uri": uri}
             \)
         endif
-        let command = escape(command, '''#')
-        if g:__openbrowser_platform.mswin
-            let command = substitute(command, '&', '^\0', 'g')
+        let use_vimproc = (g:openbrowser_use_vimproc && s:vimproc_is_installed)
+        if !use_vimproc
+            " Command-line escaping
+            let command = escape(command, '''#')
+            if g:__openbrowser_platform.mswin
+                let command = substitute(command, '&', '^\0', 'g')
+            endif
         endif
         call s:Process.system(command, {
-        \   'use_vimproc': (g:openbrowser_use_vimproc && s:vimproc_is_installed)
+        \   'use_vimproc': use_vimproc
         \})
 
         " No need to check v:shell_error
