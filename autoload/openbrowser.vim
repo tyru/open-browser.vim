@@ -252,7 +252,6 @@ function! s:seems_uri(uri) "{{{
     let uri = s:URI.new_from_uri_like_string(a:uri, s:NONE)
     return uri isnot s:NONE
     \   && uri.scheme() !=# ''
-    \   && uri.host() =~# '\.'
 endfunction "}}}
 
 function! s:detect_query_type(query) "{{{
