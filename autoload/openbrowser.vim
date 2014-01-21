@@ -34,6 +34,7 @@ function! openbrowser#open(uri) "{{{
         return
     endif
 
+    let opened = 0
     let type = s:detect_query_type(uri)
     if type.filepath    " Existed file path or 'file://'
         " Convert to full path.
@@ -45,8 +46,15 @@ function! openbrowser#open(uri) "{{{
             let fullpath = s:convert_to_fullpath(uri)
         endif
         if s:get_var('openbrowser_open_filepath_in_vim')
-            let command = s:get_var('openbrowser_open_vim_command')
-            execute command fullpath
+            try
+                let command = s:get_var('openbrowser_open_vim_command')
+                execute command fullpath
+                let opened = 1
+            catch
+                call s:error('open-browser failed to open in vim...: '
+                \          . 'v:exception = ' . v:exception
+                \          . ', v:throwpoint = ' . v:throwpoint)
+            endtry
         else
             " Convert to file:// string.
             " NOTE: cygwin cannot treat file:// URI,
@@ -54,7 +62,7 @@ function! openbrowser#open(uri) "{{{
             if !g:__openbrowser_platform.cygwin
                 let fullpath = 'file://' . fullpath
             endif
-            call s:open_browser(fullpath)
+            let opened = s:open_browser(fullpath)
         endif
     elseif type.uri    " other URI
         let obj = s:URI.new_from_uri_like_string(uri, s:NONE)
@@ -72,10 +80,10 @@ function! openbrowser#open(uri) "{{{
             endif
         endfor
         let uri = obj.to_string()
-        call s:open_browser(uri)
-    else
-        " Error
-        return
+        let opened = s:open_browser(uri)
+    endif
+    if !opened
+        call s:warn("open-browser doesn't know how to open '" . uri . "'.")
     endif
 endfunction "}}}
 
@@ -312,12 +320,11 @@ function! s:open_browser(uri) "{{{
         else
           echo "opening '" . uri . "' ... done! (" . cmd.name . ")"
         endif
-        return
+        " succeed to open
+        return 1
     endfor
-
-    redraw!
-    call s:warn("open-browser doesn't know how to open '" . uri . "'.")
-    echohl None
+    " failed to open
+    return 0
 endfunction "}}}
 
 function! openbrowser#get_url_on_cursor() "{{{
