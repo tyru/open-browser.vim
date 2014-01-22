@@ -304,7 +304,7 @@ function! s:open_browser(uri) "{{{
             if g:__openbrowser_platform.mswin
                 let command = substitute(command, '&', '^\0', 'g')
             else
-                let command = substitute(command, '&', '\\0', 'g')
+                let command = substitute(command, '&', '\\\0', 'g')
             endif
         endif
         call s:Process.system(command, {
