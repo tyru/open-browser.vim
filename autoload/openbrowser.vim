@@ -120,6 +120,11 @@ function! openbrowser#smart_search(query, ...) "{{{
     endif
 endfunction "}}}
 
+" Escape one argument.
+function! openbrowser#shellescape(...) "{{{
+    return call(s:Process.shellescape, a:000, s:Process)
+endfunction "}}}
+
 " }}}
 
 " Implementations {{{
@@ -286,30 +291,25 @@ function! s:open_browser(uri) "{{{
             continue
         endif
 
-        if type(cmd.args) is type([])
-            let command = join(map(copy(cmd.args), 's:expand_keywords(
+        let args = deepcopy(cmd.args)
+        let use_vimproc = (g:openbrowser_use_vimproc && s:vimproc_is_installed)
+        if type(args) is type([])
+            call map(args, 's:expand_keywords(
             \   v:val,
             \   {"browser": cmd.name, "uri": uri}
-            \)'), " ")
+            \)')
+            call s:Process.system(args, {
+            \   'use_vimproc': use_vimproc
+            \})
         else
             let command = s:expand_keywords(
-            \   cmd.args,
+            \   args,
             \   {"browser": cmd.name, "uri": uri}
             \)
+            call s:Process.system(command, {
+            \   'use_vimproc': use_vimproc
+            \})
         endif
-        let use_vimproc = (g:openbrowser_use_vimproc && s:vimproc_is_installed)
-        if !use_vimproc
-            " Command-line escaping
-            let command = escape(command, '''#')
-            if g:__openbrowser_platform.mswin
-                let command = substitute(command, '&', '^\0', 'g')
-            else
-                let command = escape(command, '&')
-            endif
-        endif
-        call s:Process.system(command, {
-        \   'use_vimproc': use_vimproc
-        \})
 
         " No need to check v:shell_error
         " because browser is spawned in background process

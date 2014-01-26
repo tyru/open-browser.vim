@@ -57,7 +57,7 @@ elseif g:__openbrowser_platform.mswin
     function! s:get_default_browser_commands()
         return [
         \   {'name': 'rundll32',
-        \    'args': 'rundll32 url.dll,FileProtocolHandler {uri}'}
+        \    'args': 'rundll32 url.dll,FileProtocolHandler {openbrowser#shellescape(uri)}'}
         \]
     endfunction
 elseif g:__openbrowser_platform.unix
