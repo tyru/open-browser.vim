@@ -6,7 +6,7 @@ let s:save_cpo = &cpo
 set cpo&vim
 " }}}
 
-" let s:V = vital#of('openbrowser')
+let s:V = vital#of('openbrowser')
 let s:Process = s:V.import('Process')
 let s:URI = s:V.import('Web.URI')
 let s:HTTP = s:V.import('Web.HTTP')
