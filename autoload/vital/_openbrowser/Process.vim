@@ -40,6 +40,7 @@ function! s:spawn(expr, ...)
     elseif type(a:expr) is type("")
       let cmdline = a:expr
       if a:0 && a:1
+        " for :! command
         let cmdline = substitute(cmdline, '\([!%#]\|<[^<>]\+>\)', '\\\1', 'g')
       endif
     else
@@ -88,7 +89,14 @@ endfunction
 "     timeout: bool,
 "   }
 function! s:system(str, ...)
-  let command = s:iconv(a:str, &encoding, 'char')
+  if type(a:str) is type([])
+    let command = join(map(copy(a:str), 's:shellescape(v:val)'), ' ')
+  elseif type(a:str) is type("")
+    let command = a:str
+  else
+    throw 'Process.system(): invalid argument (value type:'.type(a:str).')'
+  endif
+  let command = s:iconv(command, &encoding, 'char')
   let input = ''
   let use_vimproc = s:has_vimproc()
   let args = [command]
@@ -111,12 +119,33 @@ function! s:system(str, ...)
     let args += [input] + rest
   endif
 
-  let funcname = use_vimproc ? 'vimproc#system' : 'system'
+  if use_vimproc
+    " vimproc's parser seems to treat # as a comment
+    let args[0] = escape(args[0], '#')
+    let funcname = 'vimproc#system'
+  else
+    let funcname = 'system'
+  endif
   let output = call(funcname, args)
   let output = s:iconv(output, 'char', &encoding)
 
   return output
 endfunction
+
+function! s:get_last_status()
+  return s:has_vimproc() ?
+        \ vimproc#get_last_status() : v:shell_error
+endfunction
+
+if s:is_windows
+  function! s:shellescape(command)
+    return substitute(a:command, '[&()[\]{}^=;!''+,`~]', '^\0', 'g')
+  endfunction
+else
+  function! s:shellescape(...)
+    return call('shellescape', a:000)
+  endfunction
+endif
 
 
 let &cpo = s:save_cpo

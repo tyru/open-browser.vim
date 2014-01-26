@@ -48,7 +48,7 @@ function! s:common_head(strs)
     return a:strs[0]
   endif
   let strs = len == 2 ? a:strs : sort(copy(a:strs))
-  let pat = substitute(strs[0], '.', '[\0]', 'g')
+  let pat = substitute(strs[0], '.', '\="[" . escape(submatch(0), "^\\") . "]"', 'g')
   return pat == '' ? '' : matchstr(strs[-1], '^\%[' . pat . ']')
 endfunction
 
@@ -211,7 +211,7 @@ function! s:nr2hex(nr)
 endfunction
 
 " If a ==# b, returns -1.
-" If a !=# b, returns first index of diffrent character.
+" If a !=# b, returns first index of different character.
 function! s:diffidx(a, b)
   return a:a ==# a:b ? -1 : strlen(s:common_head([a:a, a:b]))
 endfunction
