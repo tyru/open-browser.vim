@@ -220,6 +220,11 @@ function! s:_deprecated(fname, newname)
         \ a:fname, a:newname)
 endfunction
 
+function! s:_deprecated2(fname)
+  echomsg printf("Vital.Prelude.%s is deprecated!",
+        \ a:fname)
+endfunction
+
 function! s:print_error(message)
   call s:_deprecated('print_error', 'Vital.Vim.Message.error')
 
@@ -242,26 +247,20 @@ function! s:escape_pattern(str)
   return escape(a:str, '~"\.^$[]*')
 endfunction
 
-" This is like builtin getchar() but always returns string.
 function! s:getchar(...)
   let c = call('getchar', a:000)
   return type(c) == type(0) ? nr2char(c) : c
 endfunction
 
-" This is like builtin getchar() but always returns string,
-" and also does inputsave()/inputrestore() before/after getchar().
 function! s:getchar_safe(...)
   let c = s:input_helper('getchar', a:000)
   return type(c) == type("") ? c : nr2char(c)
 endfunction
 
-" Like builtin getchar() but
-" do inputsave()/inputrestore() before/after input().
 function! s:input_safe(...)
   return s:input_helper('input', a:000)
 endfunction
 
-" Do inputsave()/inputrestore() before/after calling a:funcname.
 function! s:input_helper(funcname, args)
   let success = 0
   if inputsave() !=# success
@@ -283,6 +282,8 @@ function! s:set_default(var, val)
 endfunction
 
 function! s:set_dictionary_helper(variable, keys, pattern)
+  call s:_deprecated2('set_dictionary_helper')
+
   for key in split(a:keys, '\s*,\s*')
     if !has_key(a:variable, key)
       let a:variable[key] = a:pattern
