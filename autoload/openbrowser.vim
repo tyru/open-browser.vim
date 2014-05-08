@@ -280,7 +280,7 @@ function! s:open_browser(uri) "{{{
     let uri = a:uri
 
     redraw
-    if g:openbrowser_message
+    if g:openbrowser_show_message
         if g:openbrowser_short_message
           echo "opening ..."
         else
@@ -318,7 +318,7 @@ function! s:open_browser(uri) "{{{
         " so can't check its return value.
 
         redraw
-        if g:openbrowser_message
+        if g:openbrowser_show_message
             if g:openbrowser_short_message
               echo "opening ... done! (" . cmd.name . ")"
             else
