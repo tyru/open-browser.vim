@@ -167,6 +167,9 @@ endif
 if !exists('g:openbrowser_open_vim_command')
     let g:openbrowser_open_vim_command = 'vsplit'
 endif
+if !exists('g:openbrowser_message')
+    let g:openbrowser_message = 1
+endif
 if !exists('g:openbrowser_short_message')
     let g:openbrowser_short_message = 0
 endif
