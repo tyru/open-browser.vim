@@ -241,7 +241,7 @@ endfunction "}}}
 
 function! s:get_selected_text() "{{{
     let selected_text = s:Buffer.get_selected_text()
-    let text = substitute(selected_text, '[\n\r]', ' ', 'g')
+    let text = substitute(selected_text, '[\n\r]\+', ' ', 'g')
     return substitute(text, '^\s*\|\s*$', '', 'g')
 endfunction "}}}
 
