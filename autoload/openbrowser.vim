@@ -284,13 +284,14 @@ endfunction "}}}
 function! s:open_browser(uri) "{{{
     let uri = a:uri
 
-    redraw
-    if g:openbrowser_show_message
-        if g:openbrowser_short_message
-          echo "opening ..."
-        else
-          echo "opening '" . uri . "' ..."
-        endif
+    let format_message = s:get_var('openbrowser_format_message')
+    if format_message !=# ''
+        redraw
+        echo s:expand_keywords(format_message, {
+        \   'uri' : uri,
+        \   'done' : 0,
+        \   'command' : '',
+        \})
     endif
 
     for cmd in s:get_var('openbrowser_browser_commands')
@@ -322,13 +323,13 @@ function! s:open_browser(uri) "{{{
         " because browser is spawned in background process
         " so can't check its return value.
 
-        redraw
-        if g:openbrowser_show_message
-            if g:openbrowser_short_message
-              echo "opening ... done! (" . cmd.name . ")"
-            else
-              echo "opening '" . uri . "' ... done! (" . cmd.name . ")"
-            endif
+        if format_message !=# ''
+            redraw
+            echo s:expand_keywords(format_message, {
+            \   'uri' : uri,
+            \   'done' : 1,
+            \   'command' : cmd.name,
+            \})
         endif
         " succeed to open
         return 1
@@ -434,10 +435,32 @@ function! s:expand_keywords(str, options)  " {{{
             let result .= rest[1]
             let rest = rest[2 :]
         elseif rest[0] == '{'
-            let e = matchend(rest, '\\\@<!}')
-            let expr = substitute(rest[1 : e - 2], '\\}', '}', 'g')
-            let result .= eval(expr)
-            let rest = rest[e :]
+            " NOTE: braindex + 1 == 1, it skips first bracket (rest[0])
+            let braindex = 0
+            let braindex_stack = [braindex]
+            while !empty(braindex_stack)
+                let braindex = match(rest, '\\\@<![{}]', braindex + 1)
+                if braindex ==# -1
+                    echoerr 'expression is invalid: curly bracket is not closed.'
+                    return ''
+                elseif rest[braindex] ==# '{'
+                    call add(braindex_stack, braindex)
+                else    " '}'
+                    let brastart = remove(braindex_stack, -1)
+                    " expr does not contain brackets.
+                    " Assert: rest[brastart ==# '{' && rest[braindex] ==# '}'
+                    let left = brastart ==# 0 ? '' : rest[: brastart-1]
+                    let expr = rest[brastart+1 : braindex-1]
+                    let right = rest[braindex+1 :]
+                    " Remove(unescape) backslashes.
+                    let expr = substitute(expr, '\\\([{}]\)', '\1', 'g')
+                    let value = eval(expr) . ""
+                    let rest = left . value . right
+                    let braindex -= len(expr) - len(value)
+                endif
+            endwhile
+            let result .= rest[: braindex]
+            let rest = rest[braindex+1 :]
         else
             call s:warn('parse error: rest = '.rest.', result = '.result)
         endif
