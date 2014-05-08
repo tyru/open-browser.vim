@@ -347,8 +347,18 @@ function! openbrowser#get_url_on_cursor() "{{{
     " NOTE: Exact parser is not needed. (#42)
     " let re_url = '\(https\?\|ftp\)://[a-zA-Z0-9][a-zA-Z0-9_-]*\(\.[a-zA-Z0-9][a-zA-Z0-9_-]*\)*\(:\d\+\)\?\(/[a-zA-Z0-9_/.+%#?&=;@$,!''*~-]*\)\?'
     let re_url = '\(https\?\|ftp\)://[a-zA-Z0-9][a-zA-Z0-9_-]*\(\.[a-zA-Z0-9][a-zA-Z0-9_-]*\)*\(:\d\+\)\?\(/[a-zA-Z0-9_/.+%#?&=;@$,!*~-]*\)\?'
-    let url = matchstr(nonspstr, re_url)
-    return url
+    let matchstart = 0
+    while 1
+        let begin = match(nonspstr, re_url, matchstart)
+        if begin ==# -1
+            return ''
+        endif
+        let end = matchend(nonspstr, re_url, matchstart)
+        if begin <=# col - 1 && col <=# end
+            return nonspstr[begin : end-1]
+        endif
+        let matchstart = end + 1
+    endwhile
 endfunction "}}}
 
 function! openbrowser#get_filepath_on_cursor() "{{{
