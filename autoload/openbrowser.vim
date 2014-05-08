@@ -210,7 +210,7 @@ function! openbrowser#_keymapping_open(mode) "{{{
             return
         endif
     else
-        return openbrowser#open(s:Buffer.get_selected_text())
+        return openbrowser#open(s:get_selected_text())
     endif
 endfunction "}}}
 
@@ -219,7 +219,7 @@ function! openbrowser#_keymapping_search(mode) "{{{
     if a:mode ==# 'n'
         return openbrowser#search(expand('<cword>'))
     else
-        return openbrowser#search(s:Buffer.get_selected_text())
+        return openbrowser#search(s:get_selected_text())
     endif
 endfunction "}}}
 
@@ -235,10 +235,15 @@ function! openbrowser#_keymapping_smart_search(mode) "{{{
         endif
         return openbrowser#smart_search(query)
     else
-        return openbrowser#smart_search(s:Buffer.get_selected_text())
+        return openbrowser#smart_search(s:get_selected_text())
     endif
 endfunction "}}}
 
+function! s:get_selected_text() "{{{
+    let selected_text = s:Buffer.get_selected_text()
+    let text = substitute(selected_text, '[\n\r]', ' ', 'g')
+    return substitute(text, '^\s*\|\s*$', '', 'g')
+endfunction "}}}
 
 function! s:seems_path(uri) "{{{
     " - Has no invalid filename character (seeing &isfname)
