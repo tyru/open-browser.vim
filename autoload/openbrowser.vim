@@ -280,10 +280,12 @@ function! s:open_browser(uri) "{{{
     let uri = a:uri
 
     redraw
-    if g:openbrowser_short_message
-      echo "opening ..."
-    else
-      echo "opening '" . uri . "' ..."
+    if g:openbrowser_show_message
+        if g:openbrowser_short_message
+          echo "opening ..."
+        else
+          echo "opening '" . uri . "' ..."
+        endif
     endif
 
     for cmd in s:get_var('openbrowser_browser_commands')
@@ -316,10 +318,12 @@ function! s:open_browser(uri) "{{{
         " so can't check its return value.
 
         redraw
-        if g:openbrowser_short_message
-          echo "opening ... done! (" . cmd.name . ")"
-        else
-          echo "opening '" . uri . "' ... done! (" . cmd.name . ")"
+        if g:openbrowser_show_message
+            if g:openbrowser_short_message
+              echo "opening ... done! (" . cmd.name . ")"
+            else
+              echo "opening '" . uri . "' ... done! (" . cmd.name . ")"
+            endif
         endif
         " succeed to open
         return 1
