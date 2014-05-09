@@ -348,6 +348,7 @@ function! openbrowser#get_url_on_cursor() "{{{
     let left = col <=# 1 ? '' : line[: col-2]
     let right = line[col-1 :]
     let nonspstr = matchstr(left, '\S\+$').matchstr(right, '^\S\+')
+    let col -= len(left) - len(matchstr(left, '\S\+$'))
     " Extract URL.
     " via https://github.com/mattn/vim-textobj-url/blob/af1edbe57d4f05c11e571d4cacd30672cdd9d944/autoload/textobj/url.vim#L2
     " NOTE: Exact parser is not needed. (#42)
