@@ -347,20 +347,25 @@ function! openbrowser#get_url_on_cursor() "{{{
     " Get continuous non-space string under cursor.
     let left = col <=# 1 ? '' : line[: col-2]
     let right = line[col-1 :]
-    let nonspstr = matchstr(left, '\S\+$').matchstr(right, '^\S\+')
+    let leftnonspidx = match(left, '\S\+$')
+    let rightnonspidx = matchend(right, '^\S\+')
+    let nonspstr = (leftnonspidx <# 0 ? '' : left[leftnonspidx :])
+    \            . (rightnonspidx <=# 0 ? '' : right[: rightnonspidx-1])
     " Extract URL.
     " via https://github.com/mattn/vim-textobj-url/blob/af1edbe57d4f05c11e571d4cacd30672cdd9d944/autoload/textobj/url.vim#L2
     " NOTE: Exact parser is not needed. (#42)
     " let re_url = '\(https\?\|ftp\)://[a-zA-Z0-9][a-zA-Z0-9_-]*\(\.[a-zA-Z0-9][a-zA-Z0-9_-]*\)*\(:\d\+\)\?\(/[a-zA-Z0-9_/.+%#?&=;@$,!''*~-]*\)\?'
     let re_url = '\(https\?\|ftp\)://[a-zA-Z0-9][a-zA-Z0-9_-]*\(\.[a-zA-Z0-9][a-zA-Z0-9_-]*\)*\(:\d\+\)\?\(/[a-zA-Z0-9_/.+%#?&=;@$,!*~-]*\)\?'
     let matchstart = 0
+    let nonspcol = col - (leftnonspidx !=# -1 ? leftnonspidx : len(left) + rightnonspidx)
+    " Assert: nonspcol > 0
     while 1
         let begin = match(nonspstr, re_url, matchstart)
         if begin ==# -1
             return ''
         endif
         let end = matchend(nonspstr, re_url, matchstart)
-        if begin <=# col - 1 && col <=# end
+        if begin <=# nonspcol - 1 && nonspcol <=# end
             return nonspstr[begin : end-1]
         endif
         let matchstart = end + 1
