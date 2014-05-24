@@ -7,6 +7,7 @@ set cpo&vim
 " }}}
 
 let s:V = vital#of('openbrowser')
+let s:Prelude = s:V.import('Prelude')
 let s:Process = s:V.import('Process')
 let s:URI = s:V.import('Web.URI')
 let s:HTTP = s:V.import('Web.HTTP')
@@ -84,6 +85,11 @@ function! openbrowser#open(uri) "{{{
     endif
     if !opened
         call s:warn("open-browser doesn't know how to open '" . uri . "'.")
+    elseif s:Prelude.is_windows()
+        " XXX: Vim loose a focus after opening URI...
+        " Is this same as non-Windows platform?
+        sleep 1
+        call foreground()
     endif
 endfunction "}}}
 
