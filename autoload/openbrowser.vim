@@ -86,10 +86,12 @@ function! openbrowser#open(uri) "{{{
     if !opened
         call s:warn("open-browser doesn't know how to open '" . uri . "'.")
     elseif s:Prelude.is_windows()
-        " XXX: Vim loose a focus after opening URI...
+        " XXX: Vim looses a focus after opening URI...
         " Is this same as non-Windows platform?
-        sleep 1
-        call foreground()
+        augroup openbrowser
+            autocmd!
+            autocmd FocusLost * call foreground() | autocmd! openbrowser FocusLost
+        augroup END
     endif
 endfunction "}}}
 
