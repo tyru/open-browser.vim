@@ -85,7 +85,7 @@ function! openbrowser#open(uri) "{{{
     endif
     if !opened
         call s:warn("open-browser doesn't know how to open '" . uri . "'.")
-    elseif s:Prelude.is_windows()
+    elseif s:Prelude.is_windows() && g:openbrowser_force_foreground_after_open
         " XXX: Vim looses a focus after opening URI...
         " Is this same as non-Windows platform?
         augroup openbrowser

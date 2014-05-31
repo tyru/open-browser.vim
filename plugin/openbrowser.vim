@@ -177,6 +177,9 @@ endif
 if !exists('g:openbrowser_use_vimproc')
     let g:openbrowser_use_vimproc = 1
 endif
+if !exists('g:openbrowser_force_foreground_after_open')
+    let g:openbrowser_force_foreground_after_open = 0
+endif
 " }}}
 
 

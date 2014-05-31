@@ -254,6 +254,12 @@ g:openbrowser_no_default_menus
 	do not define default menus.
 	See |openbrowser-menus| for the default menus.
 
+					*g:openbrowser_force_foreground_after_open*
+g:openbrowser_force_foreground_after_open
+								(default: 0)
+	If this value is non-zero,
+	make Vim foreground after opening URL or searching word(s).
+
 }}}
 ------------------------------------------------------------------------------
 MENUS					*openbrowser-menus* {{{
