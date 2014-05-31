@@ -24,6 +24,7 @@ Introduction		|openbrowser-introduction|
 Interface			|openbrowser-interface|
   Keymappings		|openbrowser-keymappings|
   Variables			|openbrowser-variables|
+  Menus				|openbrowser-menus|
   Commands			|openbrowser-commands|
   Functions			|openbrowser-functions|
 Available Syntax in Options		|openbrowser-option-syntax|
@@ -245,6 +246,29 @@ g:openbrowser_use_vimproc
 								(default: 1)
 	If this value is non-zero and vimproc is installed,
 	use vimproc to open a URL.
+
+					*g:openbrowser_no_default_menus*
+g:openbrowser_no_default_menus
+								(default: None)
+	If this value is defined and non-zero,
+	do not define default menus.
+	See |openbrowser-menus| for the default menus.
+
+}}}
+------------------------------------------------------------------------------
+MENUS					*openbrowser-menus* {{{
+
+						*openbrowser-menu-open*
+PopUp.Open URL	(modes: n, v)
+	This is same as |<Plug>(openbrowser-open)|.
+
+						*openbrowser-menu-search*
+PopUp.Open Word(s)	(modes: n, v)
+	This is same as |<Plug>(openbrowser-search)|.
+
+						*openbrowser-menu-smart-search*
+PopUp.Open URL or Word(s)	(modes: n, v)
+	This is same as |<Plug>(openbrowser-smart-search)|.
 
 }}}
 ------------------------------------------------------------------------------
