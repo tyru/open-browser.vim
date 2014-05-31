@@ -221,6 +221,17 @@ vnoremap <silent> <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymapping_
 nnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymapping_smart_search('n')<CR>
 vnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymapping_smart_search('v')<CR>
 
+
+" Popup menus for Right-Click
+if !get(g:, 'openbrowser_no_default_menus', 0)
+    nmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
+    vmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
+    nmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
+    vmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
+    nmenu <silent> PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
+    vmenu <silent> PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
+endif
+
 " }}}
 
 
