@@ -293,9 +293,9 @@ function! s:open_browser(uri) "{{{
     let uri = a:uri
 
     let format_message = s:get_var('openbrowser_format_message')
-    if format_message !=# ''
+    if format_message.msg !=# ''
         redraw
-        echo s:expand_keywords(format_message, {
+        echo s:expand_keywords(format_message.msg, {
         \   'uri' : uri,
         \   'done' : 0,
         \   'command' : '',
@@ -331,9 +331,9 @@ function! s:open_browser(uri) "{{{
         " because browser is spawned in background process
         " so can't check its return value.
 
-        if format_message !=# ''
+        if format_message.msg !=# ''
             redraw
-            echo s:expand_keywords(format_message, {
+            echo s:expand_keywords(format_message.msg, {
             \   'uri' : uri,
             \   'done' : 1,
             \   'command' : cmd.name,
