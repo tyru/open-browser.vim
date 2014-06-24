@@ -168,11 +168,7 @@ if !exists('g:openbrowser_open_vim_command')
     let g:openbrowser_open_vim_command = 'vsplit'
 endif
 if !exists('g:openbrowser_format_message')
-    if get(g:, 'openbrowser_short_message', 0)
-        let g:openbrowser_format_message = "opening ... {done ? 'done! ({command})' : ''}"
-    else
-        let g:openbrowser_format_message = "opening '{uri}' ... {done ? 'done! ({command})' : ''}"
-    endif
+    let g:openbrowser_format_message = "opening '{uri}' ... {done ? 'done! ({command})' : ''}"
 endif
 if !exists('g:openbrowser_use_vimproc')
     let g:openbrowser_use_vimproc = 1
