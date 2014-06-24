@@ -226,6 +226,27 @@ g:openbrowser_open_vim_command
 	This value is used for opening looks-like-a-path string.
 	See |g:openbrowser_open_filepath_in_vim| for the details.
 
+					*g:openbrowser_format_message*
+g:openbrowser_format_message
+								(default: See below)
+
+	If the value is empty string,
+	openbrowser does not output any message when opening URL.
+	If the value is not empty string,
+	convert by its format and output to command-line.
+	See |openbrowser-option-syntax| about detailed syntax description
+	for the format.
+
+	Default value is:
+>
+	let g:openbrowser_format_message = "opening '{uri}' ... {done ? 'done!
+	({command})' : ''}"
+<
+	In the format, you can use some existing variables:
+
+	uri: URI to open
+	done: zero before opening URI, non-zero afterward
+
 					*g:openbrowser_use_vimproc*
 g:openbrowser_use_vimproc
 								(default: 1)
