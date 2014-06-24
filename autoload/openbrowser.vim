@@ -289,17 +289,56 @@ function! s:convert_to_fullpath(path) "{{{
     endtry
 endfunction "}}}
 
+" XXX: Those fixed values may be different between different OSes?
+function! s:get_hit_enter_max_col() "{{{
+    let maxcol = &columns
+    if &ruler
+        " TODO
+    endif
+    if &showcmd
+        let maxcol -= 11
+    endif
+    return maxcol
+endfunction "}}}
+
+function! s:expand_format_message(format_message, keywords) "{{{
+    let maxcol = s:get_hit_enter_max_col()
+    let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
+    if a:format_message.truncate && strlen(expanded_msg) >= maxcol
+        " Avoid |hit-enter-prompt|.
+        " TODO: Remove protocol in URI at first and try it.
+        " TODO: MIN_URI_STR_NUM should include in |g:openbrowser_format_message|.
+        let MIN_URI_STR_NUM = 4
+        let non_uri_len = strlen(expanded_msg) - strlen(a:keywords.uri)
+        if maxcol <= non_uri_len + MIN_URI_STR_NUM
+            " Need truncate whole string.
+            let a:keywords.uri = s:Prelude.truncate_skipping(
+            \                   a:keywords.uri, MIN_URI_STR_NUM, 0, '...')
+            let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
+            let expanded_msg = s:Prelude.truncate_skipping(
+            \                   expanded_msg, maxcol - 1, 0, '...')
+        else
+            let a:keywords.uri = s:Prelude.truncate_skipping(
+            \           a:keywords.uri, maxcol - 1 - non_uri_len, 0, '...')
+            let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
+        endif
+    endif
+    return expanded_msg
+endfunction "}}}
+
 function! s:open_browser(uri) "{{{
     let uri = a:uri
 
     let format_message = s:get_var('openbrowser_format_message')
     if format_message.msg !=# ''
         redraw
-        echo s:expand_keywords(format_message.msg, {
-        \   'uri' : uri,
-        \   'done' : 0,
-        \   'command' : '',
-        \})
+        let msg = s:expand_format_message(format_message,
+        \   {
+        \      'uri' : uri,
+        \      'done' : 0,
+        \      'command' : '',
+        \   })
+        echo msg
     endif
 
     for cmd in s:get_var('openbrowser_browser_commands')
@@ -333,11 +372,13 @@ function! s:open_browser(uri) "{{{
 
         if format_message.msg !=# ''
             redraw
-            echo s:expand_keywords(format_message.msg, {
-            \   'uri' : uri,
-            \   'done' : 1,
-            \   'command' : cmd.name,
-            \})
+            let msg = s:expand_format_message(format_message,
+            \   {
+            \      'uri' : uri,
+            \      'done' : 1,
+            \      'command' : cmd.name,
+            \   })
+            echo msg
         endif
         " succeed to open
         return 1
