@@ -306,20 +306,32 @@ function! s:expand_format_message(format_message, keywords) "{{{
     let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
     if a:format_message.truncate && strlen(expanded_msg) >= maxcol
         " Avoid |hit-enter-prompt|.
-        " TODO: Remove protocol in URI at first and try it.
-        let min_uri_len = a:format_message.min_uri_len
         let non_uri_len = strlen(expanded_msg) - strlen(a:keywords.uri)
-        if maxcol <= non_uri_len + min_uri_len
-            " Need truncate whole string.
-            let a:keywords.uri = s:Prelude.truncate_skipping(
-            \                   a:keywords.uri, min_uri_len, 0, '...')
+        " First Try: Remove protocol in URI.
+        let protocol = '\C^https\?://'
+        let matched_len = strlen(matchstr(a:keywords.uri, protocol))
+        if matched_len > 0
+            let a:keywords.uri = a:keywords.uri[matched_len :]
+        endif
+        if non_uri_len + strlen(a:keywords.uri) < maxcol
             let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
-            let expanded_msg = s:Prelude.truncate_skipping(
-            \                   expanded_msg, maxcol - 1, 0, '...')
         else
-            let a:keywords.uri = s:Prelude.truncate_skipping(
-            \           a:keywords.uri, maxcol - 1 - non_uri_len, 0, '...')
-            let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
+            " Second Try: Truncate URI as possible.
+            let min_uri_len = a:format_message.min_uri_len
+            if non_uri_len + min_uri_len < maxcol
+                " Truncate only URI.
+                let a:keywords.uri = s:Prelude.truncate_skipping(
+                \           a:keywords.uri, maxcol - 1 - non_uri_len, 0, '...')
+                let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
+            else
+                " However, 'expanded_msg' is longer than command-line yet
+                " even above 2 tries. Need to truncate whole string.
+                let a:keywords.uri = s:Prelude.truncate_skipping(
+                \                   a:keywords.uri, min_uri_len, 0, '...')
+                let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
+                let expanded_msg = s:Prelude.truncate_skipping(
+                \                   expanded_msg, maxcol - 1, 0, '...')
+            endif
         endif
     endif
     return expanded_msg
