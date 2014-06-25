@@ -307,13 +307,12 @@ function! s:expand_format_message(format_message, keywords) "{{{
     if a:format_message.truncate && strlen(expanded_msg) >= maxcol
         " Avoid |hit-enter-prompt|.
         " TODO: Remove protocol in URI at first and try it.
-        " TODO: MIN_URI_STR_NUM should include in |g:openbrowser_format_message|.
-        let MIN_URI_STR_NUM = 4
+        let min_uri_len = a:format_message.min_uri_len
         let non_uri_len = strlen(expanded_msg) - strlen(a:keywords.uri)
-        if maxcol <= non_uri_len + MIN_URI_STR_NUM
+        if maxcol <= non_uri_len + min_uri_len
             " Need truncate whole string.
             let a:keywords.uri = s:Prelude.truncate_skipping(
-            \                   a:keywords.uri, MIN_URI_STR_NUM, 0, '...')
+            \                   a:keywords.uri, min_uri_len, 0, '...')
             let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
             let expanded_msg = s:Prelude.truncate_skipping(
             \                   expanded_msg, maxcol - 1, 0, '...')

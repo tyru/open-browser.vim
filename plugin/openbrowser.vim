@@ -171,6 +171,7 @@ endif
 let s:FORMAT_MESSAGE_DEFAULT = {
 \   'msg': "opening '{uri}' ... {done ? 'done! ({command})' : ''}",
 \   'truncate': 1,
+\   'min_uri_len': 15,
 \}
 if !exists('g:openbrowser_format_message')
     let g:openbrowser_format_message = s:FORMAT_MESSAGE_DEFAULT
