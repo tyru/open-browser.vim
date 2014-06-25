@@ -235,6 +235,7 @@ g:openbrowser_format_message
 	let g:openbrowser_format_message = {
 	\   'msg': "opening '{uri}' ... {done ? 'done! ({command})' : ''}",
 	\   'truncate': 1,
+	\   'min_uri_len': 15,
 	\}
 <
 	In the "msg" key's value, you can use some existing variables:
@@ -254,6 +255,14 @@ g:openbrowser_format_message
 	when the message is enough long to show |hit-enter-prompt|.
 	If the value is zero, openbrowser does not truncate
 	the output message.
+	Here is the truncating algorithm:
+
+	1. Remove "http" or "https" protocol in URI(URL).
+	2. After 1, if URI is longer than command-line, then
+		2.1. Truncate URI as possible as
+		     |g:openbrowser_format_message|.min_uri_len is allowed.
+		2.2. After 2.1, if URI is longer than command-line, then
+			2.2.1. Truncate whole string.
 
 					*g:openbrowser_use_vimproc*
 g:openbrowser_use_vimproc
