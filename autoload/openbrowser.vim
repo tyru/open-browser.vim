@@ -321,7 +321,7 @@ function! s:expand_format_message(format_message, keywords) "{{{
             if non_uri_len + min_uri_len < maxcol
                 " Truncate only URI.
                 let a:keywords.uri = s:Prelude.truncate_skipping(
-                \           a:keywords.uri, maxcol - 1 - non_uri_len, 0, '...')
+                \           a:keywords.uri, maxcol - 4 - non_uri_len, 0, '...')
                 let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
             else
                 " However, 'expanded_msg' is longer than command-line yet
@@ -330,7 +330,7 @@ function! s:expand_format_message(format_message, keywords) "{{{
                 \                   a:keywords.uri, min_uri_len, 0, '...')
                 let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
                 let expanded_msg = s:Prelude.truncate_skipping(
-                \                   expanded_msg, maxcol - 1, 0, '...')
+                \                   expanded_msg, maxcol - 4, 0, '...')
             endif
         endif
     endif
