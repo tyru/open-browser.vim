@@ -167,9 +167,26 @@ endif
 if !exists('g:openbrowser_open_vim_command')
     let g:openbrowser_open_vim_command = 'vsplit'
 endif
+
+let s:FORMAT_MESSAGE_DEFAULT = {
+\   'msg': "opening '{uri}' ... {done ? 'done! ({command})' : ''}",
+\   'truncate': 1,
+\   'min_uri_len': 15,
+\}
 if !exists('g:openbrowser_format_message')
-    let g:openbrowser_format_message = "opening '{uri}' ... {done ? 'done! ({command})' : ''}"
+    let g:openbrowser_format_message = s:FORMAT_MESSAGE_DEFAULT
+elseif type(g:openbrowser_format_message) is type("")
+    " Backward-compatibility
+    let s:msg = g:openbrowser_format_message
+    unlet g:openbrowser_format_message
+    let g:openbrowser_format_message = extend(
+    \   s:FORMAT_MESSAGE_DEFAULT, {'msg': s:msg}, 'force')
+else
+    let g:openbrowser_format_message = extend(
+    \   g:openbrowser_format_message, s:FORMAT_MESSAGE_DEFAULT, 'keep')
 endif
+unlet s:FORMAT_MESSAGE_DEFAULT
+
 if !exists('g:openbrowser_use_vimproc')
     let g:openbrowser_use_vimproc = 1
 endif
