@@ -28,6 +28,7 @@ Interface			|openbrowser-interface|
   Commands			|openbrowser-commands|
   Functions			|openbrowser-functions|
 Available Syntax in Options		|openbrowser-option-syntax|
+FAQ					|openbrowser-faq|
 Changelog			|openbrowser-changelog|
 Thanks			|openbrowser-thanks|
 
@@ -381,6 +382,15 @@ See :help |quickrun-syntax-option| for details.
 
 }}}
 ==============================================================================
+FAQ							*openbrowser-faq* {{{
+
+Q. How to open a current file in browser?
+A. Define the following command.
+>
+	command! OpenBrowserCurrent execute "OpenBrowser" "file:///" . expand('%:p:gs?\\?/?')
+<
+
+}}}
 ==============================================================================
 CHANGELOG							*openbrowser-changelog* {{{
 
