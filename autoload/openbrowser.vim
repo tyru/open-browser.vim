@@ -316,7 +316,8 @@ function! s:expand_format_message(format_message, keywords) "{{{
         if non_uri_len + strlen(a:keywords.uri) < maxcol
             let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
         else
-            " Second Try: Truncate URI as possible.
+            " Second Try: Even if expanded_msg is longer than command-line
+            " after "First Try", truncate URI as possible.
             let min_uri_len = a:format_message.min_uri_len
             if non_uri_len + min_uri_len < maxcol
                 " Truncate only URI.
@@ -324,8 +325,8 @@ function! s:expand_format_message(format_message, keywords) "{{{
                 \           a:keywords.uri, maxcol - 4 - non_uri_len, 0, '...')
                 let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
             else
-                " However, 'expanded_msg' is longer than command-line yet
-                " even above 2 tries. Need to truncate whole string.
+                " Fallback: Even if expanded_msg is longer than command-line
+                " after "Second Try", truncate whole string.
                 let a:keywords.uri = s:Prelude.truncate_skipping(
                 \                   a:keywords.uri, min_uri_len, 0, '...')
                 let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
