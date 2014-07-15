@@ -12,6 +12,7 @@ let s:Process = s:V.import('Process')
 let s:URI = s:V.import('Web.URI')
 let s:HTTP = s:V.import('Web.HTTP')
 let s:Buffer = s:V.import('Vim.Buffer')
+let s:Msg = s:V.import('Vim.Message')
 unlet s:V
 
 
@@ -52,7 +53,7 @@ function! openbrowser#open(uri) "{{{
                 execute command fullpath
                 let opened = 1
             catch
-                call s:error('open-browser failed to open in vim...: '
+                call s:Msg.error('open-browser failed to open in vim...: '
                 \          . 'v:exception = ' . v:exception
                 \          . ', v:throwpoint = ' . v:throwpoint)
             endtry
@@ -84,7 +85,7 @@ function! openbrowser#open(uri) "{{{
         let opened = s:open_browser(uri)
     endif
     if !opened
-        call s:warn("open-browser doesn't know how to open '" . uri . "'.")
+        call s:Msg.warn("open-browser doesn't know how to open '" . uri . "'.")
     elseif s:Prelude.is_windows() && g:openbrowser_force_foreground_after_open
         " XXX: Vim looses a focus after opening URI...
         " Is this same as non-Windows platform?
@@ -106,7 +107,7 @@ function! openbrowser#search(query, ...) "{{{
     let search_engines =
     \   s:get_var('openbrowser_search_engines')
     if !has_key(search_engines, engine)
-        call s:warn("Unknown search engine '" . engine . "'.")
+        call s:Msg.warn("Unknown search engine '" . engine . "'.")
         return
     endif
 
@@ -148,7 +149,7 @@ function! s:parse_and_delegate(excmd, parse, delegate, cmdline) "{{{
     try
         let [engine, cmdline] = {a:parse}(cmdline)
     catch /^parse error/
-        call s:warn(
+        call s:Msg.warn(
         \   a:excmd
         \   . ' [-{search-engine}]'
         \   . ' {query}'
@@ -214,7 +215,7 @@ function! openbrowser#_keymapping_open(mode) "{{{
         elseif filepath != ''
             return openbrowser#open(filepath)
         else
-            call s:error("URL or file path is not found under cursor!")
+            call s:Msg.error("URL or file path is not found under cursor!")
             return
         endif
     else
@@ -238,7 +239,7 @@ function! openbrowser#_keymapping_smart_search(mode) "{{{
         let filepath = openbrowser#get_filepath_on_cursor()
         let query = (url !=# '' ? url : filepath !=# '' ? filepath : expand('<cword>'))
         if query ==# ''
-            call s:error("URL or word is not found under cursor!")
+            call s:Msg.error("URL or word is not found under cursor!")
             return
         endif
         return openbrowser#smart_search(query)
@@ -289,22 +290,10 @@ function! s:convert_to_fullpath(path) "{{{
     endtry
 endfunction "}}}
 
-" XXX: Those fixed values may be different between different OSes?
-function! s:get_hit_enter_max_col() "{{{
-    let maxcol = &columns
-    if &ruler
-        " TODO
-    endif
-    if &showcmd
-        let maxcol -= 11
-    endif
-    return maxcol
-endfunction "}}}
-
 function! s:expand_format_message(format_message, keywords) "{{{
-    let maxcol = s:get_hit_enter_max_col()
+    let maxlen = s:Msg.get_hit_enter_max_length()
     let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
-    if a:format_message.truncate && strlen(expanded_msg) >= maxcol
+    if a:format_message.truncate && strlen(expanded_msg) >= maxlen
         " Avoid |hit-enter-prompt|.
         let non_uri_len = strlen(expanded_msg) - strlen(a:keywords.uri)
         " First Try: Remove protocol in URI.
@@ -313,16 +302,16 @@ function! s:expand_format_message(format_message, keywords) "{{{
         if matched_len > 0
             let a:keywords.uri = a:keywords.uri[matched_len :]
         endif
-        if non_uri_len + strlen(a:keywords.uri) < maxcol
+        if non_uri_len + strlen(a:keywords.uri) < maxlen
             let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
         else
             " Second Try: Even if expanded_msg is longer than command-line
             " after "First Try", truncate URI as possible.
             let min_uri_len = a:format_message.min_uri_len
-            if non_uri_len + min_uri_len < maxcol
+            if non_uri_len + min_uri_len < maxlen
                 " Truncate only URI.
                 let a:keywords.uri = s:Prelude.truncate_skipping(
-                \           a:keywords.uri, maxcol - 4 - non_uri_len, 0, '...')
+                \           a:keywords.uri, maxlen - 4 - non_uri_len, 0, '...')
                 let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
             else
                 " Fallback: Even if expanded_msg is longer than command-line
@@ -331,7 +320,7 @@ function! s:expand_format_message(format_message, keywords) "{{{
                 \                   a:keywords.uri, min_uri_len, 0, '...')
                 let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
                 let expanded_msg = s:Prelude.truncate_skipping(
-                \                   expanded_msg, maxcol - 4, 0, '...')
+                \                   expanded_msg, maxlen - 4, 0, '...')
             endif
         endif
     endif
@@ -524,7 +513,7 @@ function! s:expand_keywords(str, options)  " {{{
             let result .= rest[: braindex]
             let rest = rest[braindex+1 :]
         else
-            call s:warn('parse error: rest = '.rest.', result = '.result)
+            call s:Msg.warn('parse error: rest = '.rest.', result = '.result)
         endif
     endwhile
     return result
@@ -603,23 +592,6 @@ function! s:getconcealedcol(expr) "{{{
     endif
 
     return ret
-endfunction "}}}
-
-function! s:warn(msg) "{{{
-    call s:echomsg('WarningMsg', a:msg)
-endfunction "}}}
-
-function! s:error(msg) "{{{
-    call s:echomsg('ErrorMsg', a:msg)
-endfunction "}}}
-
-function! s:echomsg(hl, msg) "{{{
-    execute 'echohl' a:hl
-    try
-        echomsg a:msg
-    finally
-        echohl None
-    endtry
 endfunction "}}}
 
 " }}}
