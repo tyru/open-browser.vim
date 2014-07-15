@@ -293,7 +293,7 @@ endfunction "}}}
 function! s:expand_format_message(format_message, keywords) "{{{
     let maxlen = s:Msg.get_hit_enter_max_length()
     let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
-    if a:format_message.truncate && strlen(expanded_msg) >= maxlen
+    if a:format_message.truncate && strlen(expanded_msg) > maxlen
         " Avoid |hit-enter-prompt|.
         let non_uri_len = strlen(expanded_msg) - strlen(a:keywords.uri)
         " First Try: Remove protocol in URI.
@@ -302,13 +302,13 @@ function! s:expand_format_message(format_message, keywords) "{{{
         if matched_len > 0
             let a:keywords.uri = a:keywords.uri[matched_len :]
         endif
-        if non_uri_len + strlen(a:keywords.uri) < maxlen
+        if non_uri_len + strlen(a:keywords.uri) <= maxlen
             let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
         else
             " Second Try: Even if expanded_msg is longer than command-line
             " after "First Try", truncate URI as possible.
             let min_uri_len = a:format_message.min_uri_len
-            if non_uri_len + min_uri_len < maxlen
+            if non_uri_len + min_uri_len <= maxlen
                 " Truncate only URI.
                 let a:keywords.uri = s:Prelude.truncate_skipping(
                 \           a:keywords.uri, maxlen - 4 - non_uri_len, 0, '...')
