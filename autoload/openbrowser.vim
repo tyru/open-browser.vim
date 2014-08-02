@@ -348,24 +348,18 @@ function! s:open_browser(uri) "{{{
         endif
 
         let args = deepcopy(cmd.args)
+        let system_args = map(
+        \   (type(args) is type([]) ? copy(args) : [args]),
+        \   's:expand_keywords(
+        \      v:val,
+        \      {"browser": cmd.name, "uri": uri}
+        \   )'
+        \)
         let use_vimproc = (g:openbrowser_use_vimproc && s:vimproc_is_installed)
-        if type(args) is type([])
-            call map(args, 's:expand_keywords(
-            \   v:val,
-            \   {"browser": cmd.name, "uri": uri}
-            \)')
-            call s:Process.system(args, {
-            \   'use_vimproc': use_vimproc
-            \})
-        else
-            let command = s:expand_keywords(
-            \   args,
-            \   {"browser": cmd.name, "uri": uri}
-            \)
-            call s:Process.system(command, {
-            \   'use_vimproc': use_vimproc
-            \})
-        endif
+        call s:Process.system(
+        \   (type(args) is type([]) ? system_args : system_args[0]),
+        \   {'use_vimproc': use_vimproc}
+        \)
 
         " No need to check v:shell_error
         " because browser is spawned in background process
