@@ -242,12 +242,12 @@ vnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keyma
 if !get(g:, 'openbrowser_no_default_menus', 0)
     nmenu PopUp.-OpenBrowserSep- :
     vmenu PopUp.-OpenBrowserSep- :
-    nmenu <silent> 600 PopUp.Open\ URL <Plug>(openbrowser-open)
-    vmenu <silent> 600 PopUp.Open\ URL <Plug>(openbrowser-open)
-    nmenu <silent> 600 PopUp.Open\ Word(s) <Plug>(openbrowser-search)
-    vmenu <silent> 600 PopUp.Open\ Word(s) <Plug>(openbrowser-search)
-    nmenu <silent> 600 PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
-    vmenu <silent> 600 PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
+    nmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
+    vmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
+    nmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
+    vmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
+    nmenu <silent> PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
+    vmenu <silent> PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
 endif
 
 " }}}
