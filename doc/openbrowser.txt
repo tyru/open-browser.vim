@@ -279,7 +279,15 @@ g:openbrowser_no_default_menus
 	See |openbrowser-menus| for the default menus.
 
 g:restart_menu_lang		*g:restart_menu_lang*
-					(default: |v:lang|)
+					(default: 'langmenu' or |v:lang|)
+	If the value is specified and not empty string, the value is used.
+	Or, the following values are used by the following order.
+	The first non empty string is used.
+	(This is what $VIMRUNTIME/menu.vim does)
+
+	1. 'langmenu'
+	2. |v:lang|
+
 	Value	Meaning
 	-----	-------
 	"ja"	Japanese

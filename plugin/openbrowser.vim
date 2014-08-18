@@ -242,7 +242,7 @@ vnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keyma
 if !get(g:, 'openbrowser_no_default_menus', 0)
     nmenu PopUp.-OpenBrowserSep- :
     vmenu PopUp.-OpenBrowserSep- :
-    if get(g:, 'openbrowser_menu_lang', v:lang) ==# 'ja'
+    if get(g:, 'openbrowser_menu_lang', &langmenu !=# '' ? &langmenu : v:lang) ==# 'ja'
         nmenu <silent> PopUp.カーソル下のURLを開く <Plug>(openbrowser-open)
         vmenu <silent> PopUp.カーソル下のURLを開く <Plug>(openbrowser-open)
         nmenu <silent> PopUp.カーソル下の単語を開く <Plug>(openbrowser-search)
