@@ -278,6 +278,16 @@ g:openbrowser_no_default_menus
 	do not define default menus.
 	See |openbrowser-menus| for the default menus.
 
+g:restart_menu_lang		*g:restart_menu_lang*
+					(default: |v:lang|)
+	Value	Meaning
+	-----	-------
+	"ja"	Japanese
+	"en"	English
+
+	If the value is not any of above values,
+	fallback to English menu.
+
 					*g:openbrowser_force_foreground_after_open*
 g:openbrowser_force_foreground_after_open
 								(default: 0)
