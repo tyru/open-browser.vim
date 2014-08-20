@@ -395,9 +395,10 @@ function! openbrowser#get_url_on_cursor() "{{{
     let col -= len(left) - len(matchstr(left, '\S\+$'))
     " Extract URL.
     " via https://github.com/mattn/vim-textobj-url/blob/af1edbe57d4f05c11e571d4cacd30672cdd9d944/autoload/textobj/url.vim#L2
-    " NOTE: Exact parser is not needed. (#42)
+    " NOTE: Exact parser is not needed. (#42, #58)
+    " Because a user can always select a URL in visual-mode.
     " let re_url = '\(https\?\|ftp\)://[a-zA-Z0-9][a-zA-Z0-9_-]*\(\.[a-zA-Z0-9][a-zA-Z0-9_-]*\)*\(:\d\+\)\?\(/[a-zA-Z0-9_/.+%#?&=;@$,!''*~-]*\)\?'
-    let re_url = '\(https\?\|ftp\)://[a-zA-Z0-9][a-zA-Z0-9_-]*\(\.[a-zA-Z0-9][a-zA-Z0-9_-]*\)*\(:\d\+\)\?\(/[a-zA-Z0-9_/.+%#?&=;@$,!*~-]*\)\?'
+    let re_url = '\(https\?\|ftp\)://[a-zA-Z0-9][a-zA-Z0-9_-]*\(\.[a-zA-Z0-9][a-zA-Z0-9_-]*\)*\(:\d\+\)\?\(/[a-zA-Z0-9_/+%#?&=;@$!*~-]*\)\?'
     let matchstart = 0
     while 1
         let begin = match(nonspstr, re_url, matchstart)
