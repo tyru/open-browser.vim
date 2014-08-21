@@ -401,7 +401,9 @@ function! openbrowser#get_url_on_cursor() "{{{
     let PROTO = '\(https\?\|ftp\)'
     let HOST = '[a-zA-Z0-9][a-zA-Z0-9_-]*\(\.[a-zA-Z0-9][a-zA-Z0-9_-]*\)*'
     let PORT = '\(:\d\+\)\?'
-    let PATH_FRAGMENT = '\(/[a-zA-Z0-9_/+%#?&=;@$!*~-]*\)\?'
+    let CHARS = '['',.a-zA-Z0-9_/+%#?&=;@$!*~-]'
+    let LAST_CHAR = '[a-zA-Z0-9_/+%#?&=;@$!*~-]'
+    let PATH_FRAGMENT = '\(/' . CHARS . '*' . LAST_CHAR . '\)\?'
     let re_url = PROTO . '://' . HOST . PORT . PATH_FRAGMENT
     let matchstart = 0
     while 1
