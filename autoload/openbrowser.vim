@@ -394,15 +394,18 @@ function! openbrowser#get_url_on_cursor() "{{{
     let nonspstr = matchstr(left, '\S\+$').matchstr(right, '^\S\+')
     let col -= len(left) - len(matchstr(left, '\S\+$'))
     " Extract URL.
-    " via https://github.com/mattn/vim-textobj-url/blob/af1edbe57d4f05c11e571d4cacd30672cdd9d944/autoload/textobj/url.vim#L2
+    " based on https://github.com/mattn/vim-textobj-url/blob/master/autoload/textobj/url.vim#L1
     " NOTE: Exact parser is not needed. (#42, #58)
     " Because a user can always select a URL in visual-mode.
     " let re_url = '\(https\?\|ftp\)://[a-zA-Z0-9][a-zA-Z0-9_-]*\(\.[a-zA-Z0-9][a-zA-Z0-9_-]*\)*\(:\d\+\)\?\(/[a-zA-Z0-9_/.+%#?&=;@$,!''*~-]*\)\?'
     let PROTO = '\(https\?\|ftp\)'
     let HOST = '[a-zA-Z0-9][a-zA-Z0-9_-]*\(\.[a-zA-Z0-9][a-zA-Z0-9_-]*\)*'
     let PORT = '\(:\d\+\)\?'
-    let PATH_FRAGMENT = '\(/[a-zA-Z0-9_/+%#?&=;@$!*~-]*\)\?'
-    let re_url = PROTO . '://' . HOST . PORT . PATH_FRAGMENT
+    let PATH_FRAGMENT = '\(/[a-zA-Z0-9_/.+%?&=;@$,!''*~-]*\)\?'
+    let HASH_FRAGMENT = '\(#[a-zA-Z0-9_/.+%#?&=;@$,!''*~-]*\)\?'
+    let LAST_CHAR = '[a-zA-Z0-9_/+%#?&=;@$!*~-]'
+    let re_url = PROTO . '://' . HOST . PORT
+                \ . PATH_FRAGMENT . HASH_FRAGMENT . LAST_CHAR
     let matchstart = 0
     while 1
         let begin = match(nonspstr, re_url, matchstart)
