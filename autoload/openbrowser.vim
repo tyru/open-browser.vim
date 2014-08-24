@@ -283,12 +283,16 @@ function! s:detect_query_type(query) "{{{
 endfunction "}}}
 
 function! s:convert_to_fullpath(path) "{{{
-    let save_shellslash = &shellslash
-    let &l:shellslash = 1
+    if exists('+shellslash')
+        let save_shellslash = &l:shellslash
+        let &l:shellslash = 1
+    endif
     try
         return fnamemodify(a:path, ':p')
     finally
-        let &l:shellslash = save_shellslash
+        if exists('+shellslash')
+            let &l:shellslash = save_shellslash
+        endif
     endtry
 endfunction "}}}
 
@@ -596,6 +600,10 @@ function! s:getconcealedcol(expr) "{{{
     endif
 
     return ret
+endfunction "}}}
+
+function! s:shellslash()
+    return exists('+shellslash') && &l:shellslash
 endfunction "}}}
 
 " }}}
