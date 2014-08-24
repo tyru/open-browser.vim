@@ -48,6 +48,7 @@ function! openbrowser#open(uri) "{{{
             let fullpath = s:convert_to_fullpath(uri)
         endif
         if s:get_var('openbrowser_open_filepath_in_vim')
+            let fullpath = tr(fullpath, '\', '/')
             try
                 let command = s:get_var('openbrowser_open_vim_command')
                 execute command fullpath
@@ -58,6 +59,7 @@ function! openbrowser#open(uri) "{{{
                 \          . ', v:throwpoint = ' . v:throwpoint)
             endtry
         else
+            let fullpath = tr(fullpath, '\', '/')
             " Convert to file:// string.
             " NOTE: cygwin cannot treat file:// URI,
             " pass a string as fullpath.
