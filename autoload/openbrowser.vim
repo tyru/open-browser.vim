@@ -251,7 +251,7 @@ function! openbrowser#_keymapping_smart_search(mode) "{{{
 endfunction "}}}
 
 function! s:get_selected_text() "{{{
-    let selected_text = s:Buffer.get_selected_text()
+    let selected_text = s:Buffer.get_last_selected()
     let text = substitute(selected_text, '[\n\r]\+', ' ', 'g')
     return substitute(text, '^\s*\|\s*$', '', 'g')
 endfunction "}}}
@@ -353,12 +353,17 @@ function! s:open_browser(uri) "{{{
             continue
         endif
 
+        " If args is not List, need to escape by open-browser,
+        " not s:Process.system().
         let args = deepcopy(cmd.args)
+        let need_escape = type(args) isnot type([])
+        let quote = need_escape ? "'" : ''
         let system_args = map(
         \   (type(args) is type([]) ? copy(args) : [args]),
         \   's:expand_keywords(
         \      v:val,
-        \      {"browser": cmd.name, "uri": uri}
+        \      {"browser": quote . cmd.name . quote,
+        \       "uri"    : quote . uri . quote}
         \   )'
         \)
         let use_vimproc = (g:openbrowser_use_vimproc && s:vimproc_is_installed)
