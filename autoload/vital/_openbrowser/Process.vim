@@ -144,7 +144,6 @@ function! s:system(str, ...)
     let command = s:iconv(command, &encoding, 'char')
   endif
   let args = [command] + args
-  PP! args
 
   let funcname = use_vimproc ? 'vimproc#system' : 'system'
   let output = call(funcname, args)
