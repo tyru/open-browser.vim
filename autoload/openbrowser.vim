@@ -362,8 +362,12 @@ function! s:open_browser(uri) "{{{
         \   (type(args) is type([]) ? copy(args) : [args]),
         \   's:expand_keywords(
         \      v:val,
-        \      {"browser": quote . cmd.name . quote,
-        \       "uri"    : quote . uri . quote}
+        \      {
+        \           "browser"      : quote . cmd.name . quote,
+        \           "browser_noesc": cmd.name,
+        \           "uri"          : quote . uri . quote,
+        \           "uri_noesc"    : uri,
+        \       }
         \   )'
         \)
         let use_vimproc = (g:openbrowser_use_vimproc && s:vimproc_is_installed)
