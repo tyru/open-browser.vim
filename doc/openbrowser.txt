@@ -278,7 +278,7 @@ g:openbrowser_no_default_menus
 	do not define default menus.
 	See |openbrowser-menus| for the default menus.
 
-g:restart_menu_lang		*g:restart_menu_lang*
+g:openbrowser_menu_lang		*g:openbrowser_menu_lang*
 					(default: 'langmenu' or |v:lang|)
 	If the value is specified and not empty string, the value is used.
 	Or, the following values are used by the following order.
