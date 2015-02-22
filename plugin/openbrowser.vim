@@ -57,7 +57,7 @@ elseif g:__openbrowser_platform.mswin
     function! s:get_default_browser_commands()
         return [
         \   {'name': 'rundll32',
-        \    'args': 'rundll32 url.dll,FileProtocolHandler {uri_noesc}'}
+        \    'args': 'rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
         \]
     endfunction
 elseif g:__openbrowser_platform.unix

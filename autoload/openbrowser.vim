@@ -358,6 +358,7 @@ function! s:open_browser(uri) "{{{
         let args = deepcopy(cmd.args)
         let need_escape = type(args) isnot type([])
         let quote = need_escape ? "'" : ''
+        let use_vimproc = (g:openbrowser_use_vimproc && s:vimproc_is_installed)
         let system_args = map(
         \   (type(args) is type([]) ? copy(args) : [args]),
         \   's:expand_keywords(
@@ -367,10 +368,10 @@ function! s:open_browser(uri) "{{{
         \           "browser_noesc": cmd.name,
         \           "uri"          : quote . uri . quote,
         \           "uri_noesc"    : uri,
+        \           "use_vimproc"  : use_vimproc,
         \       }
         \   )'
         \)
-        let use_vimproc = (g:openbrowser_use_vimproc && s:vimproc_is_installed)
         call s:Process.system(
         \   (type(args) is type([]) ? system_args : system_args[0]),
         \   {'use_vimproc': use_vimproc}
