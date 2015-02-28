@@ -2,7 +2,7 @@
 
 Author:
   tyru <tyru.exe@gmail.com>
-Version: 0.1.0
+Version: 0.1.1
 License:
 NEW BSD LICENSE {{{
   Copyright (c) 2010, tyru
@@ -494,6 +494,19 @@ backward compatibility.
   (see :help openbrowser-option-syntax for details)
   - Change default value of g:openbrowser_open_rules
   - Change default value of g:openbrowser_search_engines
+
+0.1.1:
+- Avoid hit-enter-prompt when opening URL
+- Add English/Japanese menus
+- Allow to disable the default search engines
+- Add g:openbrowser_short_message
+- Improve URI/URL handling
+- Improve vimproc.vim integration
+- Improve open-browser-github.vim integration
+- Improve ghq command integration
+- Change structure of g:openbrowser_browser_commands
+- Remove g:openbrowser_{isfname,iskeyword}
+- ...and fixed many many problems...
 
 }}}
 ==============================================================================
