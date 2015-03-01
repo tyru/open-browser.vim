@@ -1,26 +1,26 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-function! s:_vital_loaded(V)
+function! s:_vital_loaded(V) abort
   let s:V = a:V
   let s:P = s:V.import('Prelude')
 endfunction
 
-function! s:_vital_depends()
+function! s:_vital_depends() abort
   return ['Prelude']
 endfunction
 
 if exists('*getcmdwintype')
-  function! s:is_cmdwin()
+  function! s:is_cmdwin() abort
     return getcmdwintype() !=# ''
   endfunction
 else
-  function! s:is_cmdwin()
+  function! s:is_cmdwin() abort
     return bufname('%') ==# '[Command Line]'
   endfunction
 endif
 
-function! s:open(buffer, opener)
+function! s:open(buffer, opener) abort
   let save_wildignore = &wildignore
   let &wildignore = ''
   try
@@ -48,46 +48,45 @@ function! s:open(buffer, opener)
   return loaded
 endfunction
 
-function! s:get_selected_text(...)
+function! s:get_selected_text(...) abort
   echohl WarningMsg
   echom "[WARN] s:get_selected_text() is deprecated. Use 's:get_last_selected()'."
   echohl None
   return call('s:get_last_selected', a:000)
 endfunction
 
-" Get the last selected text in visual mode.
-function! s:get_last_selected()
-  let save = getreg('"', 1)
-  let save_type = getregtype('"')
-  let [begin, end] = [getpos("'<"), getpos("'>")]
-  try
-    if visualmode() ==# "\<C-v>"
-      let begincol = begin[2] + (begin[2] ># getline('.') ? begin[3] : 0)
-      let endcol   =   end[2] + (  end[2] ># getline('.') ?   end[3] : 0)
-      if begincol ># endcol
-        " end's col must be greater than begin.
-        let tmp = begin[2:3]
-        let begin[2:3] = end[2:3]
-        let end[2:3] = tmp
-      endif
-      let virtpadchar = ' '
-      let lines = map(getline(begin[1], end[1]), '
-      \ (v:val[begincol-1 : endcol-1])
-      \ . repeat(virtpadchar, endcol-len(v:val))
-      \')
+" Get the last selected text in visual mode
+" without using |gv| to avoid |textlock|.
+" NOTE:
+" * This function uses |gv| only when using |CTRL-V|
+"   because |gv| is the only way to get selected text
+"   when using <C-v>$ .
+"   Please see #192 for the details.
+" * If you don't care about |textlock|,
+"   you can use simple version of this function.
+"   https://github.com/vim-jp/vital.vim/commit/39aae80f3839fdbeebd838ff14d87327a6b889a9
+function! s:get_last_selected() abort
+  if visualmode() ==# "\<C-v>"
+    let save = getreg('"', 1)
+    let save_type = getregtype('"')
+    try
+      normal! gv""y
+      return @"
+    finally
+      call setreg('"', save, save_type)
+    endtry
+  else
+    let [begin, end] = [getpos("'<"), getpos("'>")]
+    let lastchar = matchstr(getline(end[1])[end[2]-1 :], '.')
+    if begin[1] ==# end[1]
+      let lines = [getline(begin[1])[begin[2]-1 : end[2]-2]]
     else
-      if begin[1] ==# end[1]
-        let lines = [getline(begin[1])[begin[2]-1 : end[2]-1]]
-      else
-        let lines = [getline(begin[1])[begin[2]-1 :]]
-        \         + (end[1] - begin[1] <# 2 ? [] : getline(begin[1]+1, end[1]-1))
-        \         + [getline(end[1])[: end[2]-1]]
-      endif
+      let lines = [getline(begin[1])[begin[2]-1 :]]
+      \         + (end[1] - begin[1] <# 2 ? [] : getline(begin[1]+1, end[1]-1))
+      \         + [getline(end[1])[: end[2]-2]]
     endif
-    return join(lines, "\n") . (visualmode() ==# "V" ? "\n" : "")
-  finally
-    call setreg('"', save, save_type)
-  endtry
+    return join(lines, "\n") . lastchar . (visualmode() ==# "V" ? "\n" : "")
+  endif
 endfunction
 
 

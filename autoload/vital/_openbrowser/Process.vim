@@ -36,7 +36,7 @@ let s:TYPE_STRING = type("")
 "
 " Unix:
 " using :! , execute program in the background by shell.
-function! s:spawn(expr, ...)
+function! s:spawn(expr, ...) abort
   let shellslash = 0
   if s:is_windows
     let shellslash = &l:shellslash
@@ -69,7 +69,7 @@ function! s:spawn(expr, ...)
 endfunction
 
 " iconv() wrapper for safety.
-function! s:iconv(expr, from, to)
+function! s:iconv(expr, from, to) abort
   if a:from == '' || a:to == '' || a:from ==? a:to
     return a:expr
   endif
@@ -78,7 +78,7 @@ function! s:iconv(expr, from, to)
 endfunction
 
 " Check vimproc.
-function! s:has_vimproc()
+function! s:has_vimproc() abort
   if !exists('s:exists_vimproc')
     try
       call vimproc#version()
@@ -96,13 +96,15 @@ endfunction
 "     use_vimproc: bool,
 "     input: string,
 "     timeout: bool,
+"     background: bool,
 "   }
-function! s:system(str, ...)
+function! s:system(str, ...) abort
   " Process optional arguments at first
   " because use_vimproc is required later
   " for a:str argument.
   let input = ''
   let use_vimproc = s:has_vimproc()
+  let background = 0
   let args = []
   if a:0 ==# 1
     " {command} [, {dict}]
@@ -117,6 +119,9 @@ function! s:system(str, ...)
       if use_vimproc && has_key(a:1, 'timeout')
         " ignores timeout unless you have vimproc.
         let args += [a:1.timeout]
+      endif
+      if has_key(a:1, 'background')
+        let background = a:1.background
       endif
     elseif type(a:1) is s:TYPE_STRING
       let args += [s:iconv(a:1, &encoding, 'char')]
@@ -144,6 +149,9 @@ function! s:system(str, ...)
     let command = s:iconv(command, &encoding, 'char')
   endif
   let args = [command] + args
+  if background && (use_vimproc || !s:is_windows)
+    let args[0] = args[0] . ' &'
+  endif
 
   let funcname = use_vimproc ? 'vimproc#system' : 'system'
   let output = call(funcname, args)
@@ -151,17 +159,17 @@ function! s:system(str, ...)
   return output
 endfunction
 
-function! s:get_last_status()
+function! s:get_last_status() abort
   return s:has_vimproc() ?
         \ vimproc#get_last_status() : v:shell_error
 endfunction
 
 if s:is_windows
-  function! s:shellescape(command)
+  function! s:shellescape(command) abort
     return substitute(a:command, '[&()[\]{}^=;!''+,`~]', '^\0', 'g')
   endfunction
 else
-  function! s:shellescape(...)
+  function! s:shellescape(...) abort
     return call('shellescape', a:000)
   endfunction
 endif
