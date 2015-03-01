@@ -374,7 +374,8 @@ function! s:open_browser(uri) "{{{
         \)
         call s:Process.system(
         \   (type(args) is type([]) ? system_args : system_args[0]),
-        \   {'use_vimproc': use_vimproc}
+        \   {'use_vimproc': use_vimproc,
+        \    'background': get(cmd, 'background')}
         \)
 
         " No need to check v:shell_error

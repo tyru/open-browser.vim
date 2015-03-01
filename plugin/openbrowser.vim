@@ -50,7 +50,8 @@ elseif g:__openbrowser_platform.macunix
     function! s:get_default_browser_commands()
         return [
         \   {'name': 'open',
-        \    'args': ['{browser}', '{uri}']}
+        \    'args': ['{browser}', '{uri}'],
+        \    'background': 1}
         \]
     endfunction
 elseif g:__openbrowser_platform.mswin
@@ -64,13 +65,17 @@ elseif g:__openbrowser_platform.unix
     function! s:get_default_browser_commands()
         return [
         \   {'name': 'xdg-open',
-        \    'args': ['{browser}', '{uri}']},
+        \    'args': ['{browser}', '{uri}'],
+        \    'background': 1},
         \   {'name': 'x-www-browser',
-        \    'args': ['{browser}', '{uri}']},
+        \    'args': ['{browser}', '{uri}'],
+        \    'background': 1},
         \   {'name': 'firefox',
-        \    'args': ['{browser}', '{uri}']},
+        \    'args': ['{browser}', '{uri}'],
+        \    'background': 1},
         \   {'name': 'w3m',
-        \    'args': ['{browser}', '{uri}']},
+        \    'args': ['{browser}', '{uri}'],
+        \    'background': 1},
         \]
     endfunction
 endif
