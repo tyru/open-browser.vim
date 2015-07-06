@@ -447,7 +447,9 @@ Q. How to open a current file in browser?
 A. Define the following command.
 >
 	command! OpenBrowserCurrent execute "OpenBrowser" "file:///" . expand('%:p:gs?\\?/?')
-<
+
+Q. How do I add to default search engines?
+A. See |g:openbrowser_search_engines|.
 
 }}}
 ==============================================================================
