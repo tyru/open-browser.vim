@@ -139,6 +139,27 @@ g:openbrowser_browser_commands		*g:openbrowser_browser_commands*
 		\  "args": ["{browser}", "{uri}"]},
 		\]
 
+	Within "args" value, available variables (see |openbrowser-option-syntax| for notation)
+		{browser}			(String) Browser executable command
+									with shell quotes
+		{browser_noesc}		(String) Browser executable command
+		{uri}				(String) URI to open with shell quotes
+		{uri_noesc}			(String) URI to open
+		{use_vimproc}		(Boolean) Use |vimproc| or not.
+
+	Some variables with "_noesc" postfix are raw string.
+	And the variables without "_noesc" postfix are surrounded by shell quotes.
+	But "args" value is |List|, no shell quotes are surrounded.
+
+	Using {use_vimproc}, you can branch like the followings.
+	This is to keep "args" value from vimproc's special parser treatment.
+	See |vimproc#system()| for the details.
+	This is the default value on MS Windows. >
+		let g:openbrowser_browser_commands = [
+		\   {'name': 'rundll32',
+		\    'args': 'rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
+		\]
+<
 g:openbrowser_open_commands			*g:openbrowser_open_commands*
 g:openbrowser_open_rules			*g:openbrowser_open_rules*
 	NOTE: Deprecated.
@@ -199,20 +220,39 @@ g:openbrowser_default_search		*g:openbrowser_default_search*
 
 g:openbrowser_search_engines		*g:openbrowser_search_engines*
 								(default: See below)
-	Default value is very long.
-	See autoload/openbrowser.vim.
-	(You can e-mail me to add more search engines :)
-
 	You can add favorite search engines like: >
     let g:openbrowser_search_engines = {
     \   'favorite': 'http://example.com/search?q={query}',
     \}
-<	{query} will be replaced with given query.
+<	NOTE: The default values are added if |Dictionary| keys are absent.
+	So you don't have to concern about missing default values.
 
-	Available variables (see |openbrowser-option-syntax| for details)
-		query:
-			Query specified by openbrowser Ex commands.
+	Available variables (see |openbrowser-option-syntax| for notation)
+		{query}		(String) Query specified by openbrowser Ex commands.
 
+	Here is the default values.
+	(You can e-mail me to add more search engines :) >
+		let g:openbrowser_search_engines = {
+		\       'alc': 'http://eow.alc.co.jp/{query}/UTF-8/',
+		\       'askubuntu': 'http://askubuntu.com/search?q={query}',
+		\       'baidu': 'http://www.baidu.com/s?wd={query}&rsv_bp=0&rsv_spt=3&inputT=2478',
+		\       'blekko': 'http://blekko.com/ws/+{query}',
+		\       'cpan': 'http://search.cpan.org/search?query={query}',
+		\       'duckduckgo': 'http://duckduckgo.com/?q={query}',
+		\       'github': 'http://github.com/search?q={query}',
+		\       'google': 'http://google.com/search?q={query}',
+		\       'google-code': 'http://code.google.com/intl/en/query/#q={query}',
+		\       'php': 'http://php.net/{query}',
+		\       'python': 'http://docs.python.org/dev/search.html?q={query}&check_keywords=yes&area=default',
+		\       'twitter-search': 'http://twitter.com/search/{query}',
+		\       'twitter-user': 'http://twitter.com/{query}',
+		\       'verycd': 'http://www.verycd.com/search/entries/{query}',
+		\       'vim': 'http://www.google.com/cse?cx=partner-pub-3005259998294962%3Abvyni59kjr1&ie=ISO-8859-1&q={query}&sa=Search&siteurl=www.vim.org%2F#gsc.tab=0&gsc.q={query}&gsc.page=1',
+		\       'wikipedia': 'http://en.wikipedia.org/wiki/{query}',
+		\       'wikipedia-ja': 'http://ja.wikipedia.org/wiki/{query}',
+		\       'yahoo': 'http://search.yahoo.com/search?p={query}',
+		}
+<
 					*g:openbrowser_open_filepath_in_vim*
 g:openbrowser_open_filepath_in_vim
 								(default: 1)
