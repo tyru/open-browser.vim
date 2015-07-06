@@ -149,6 +149,7 @@ let g:openbrowser_search_engines = extend(
 \       'baidu': 'http://www.baidu.com/s?wd={query}&rsv_bp=0&rsv_spt=3&inputT=2478',
 \       'blekko': 'http://blekko.com/ws/+{query}',
 \       'cpan': 'http://search.cpan.org/search?query={query}',
+\       'devdocs': 'http://devdocs.io/#q={query}',
 \       'duckduckgo': 'http://duckduckgo.com/?q={query}',
 \       'github': 'http://github.com/search?q={query}',
 \       'google': 'http://google.com/search?q={query}',
