@@ -221,7 +221,9 @@ function! openbrowser#_keymapping_open(mode) "{{{
             return
         endif
     else
-        return openbrowser#open(s:get_selected_text())
+        for url in s:extract_urls(s:get_selected_text())
+            call openbrowser#open(url)
+        endfor
     endif
 endfunction "}}}
 
@@ -246,7 +248,17 @@ function! openbrowser#_keymapping_smart_search(mode) "{{{
         endif
         return openbrowser#smart_search(query)
     else
-        return openbrowser#smart_search(s:get_selected_text())
+        let text = s:get_selected_text()
+        let urls = s:extract_urls(text)
+        if !empty(urls)
+            for url in urls
+                call openbrowser#open(url)
+            endfor
+        else
+            call openbrowser#search(
+            \   text, s:get_var('openbrowser_default_search')
+            \)
+        endif
     endif
 endfunction "}}}
 
@@ -255,6 +267,40 @@ function! s:get_selected_text() "{{{
     let text = substitute(selected_text, '[\n\r]\+', ' ', 'g')
     return substitute(text, '^\s*\|\s*$', '', 'g')
 endfunction "}}}
+
+function! s:by_length(s1, s2) abort
+    let [l1, l2] = [strlen(a:s1), strlen(a:s2)]
+    return l1 ># l2 ? -1 : l1 <# l2 ? 1 : 0
+endfunction
+
+function! s:extract_urls(text) abort
+    let text = a:text
+    let schemes = s:get_var('openbrowser_fix_schemes')
+    let schemes_pattern = join(sort(keys(schemes), 's:by_length'), '\|')
+    let pattern = '\(https\?\|' . schemes_pattern . '\)'
+    let urls = []
+    while text !=# ''
+        let begin = match(text, pattern)
+        if begin ==# -1
+            break
+        endif
+        let end = matchend(text, pattern)
+        let text = text[begin :]
+        let [begin, end] = [0, end - begin]
+        if has_key(schemes, text[begin : end - 1])
+            let rep = schemes[text[begin : end - 1]]
+            let text = substitute(text, '^'.pattern, rep, '')
+        endif
+        let url = s:URI.new_from_seq_string(text, s:NONE)
+        if url isnot s:NONE
+            let urls += [url.to_string()]
+            let text = text[len(url) :]
+        else
+            let text = text[end :]
+        endif
+    endwhile
+    return urls
+endfunction
 
 function! s:seems_path(uri) "{{{
     " - Has no invalid filename character (seeing &isfname)
