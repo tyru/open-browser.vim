@@ -8,6 +8,7 @@ set cpo&vim
 
 let s:V = vital#of('openbrowser')
 let s:Prelude = s:V.import('Prelude')
+let s:String = s:V.import('Data.String')
 let s:Process = s:V.import('Process')
 let s:URI = s:V.import('Web.URI')
 let s:HTTP = s:V.import('Web.HTTP')
@@ -362,16 +363,16 @@ function! s:expand_format_message(format_message, keywords) "{{{
             let min_uri_len = a:format_message.min_uri_len
             if non_uri_len + min_uri_len <= maxlen
                 " Truncate only URI.
-                let a:keywords.uri = s:Prelude.truncate_skipping(
+                let a:keywords.uri = s:String.truncate_skipping(
                 \           a:keywords.uri, maxlen - 4 - non_uri_len, 0, '...')
                 let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
             else
                 " Fallback: Even if expanded_msg is longer than command-line
                 " after "Second Try", truncate whole string.
-                let a:keywords.uri = s:Prelude.truncate_skipping(
+                let a:keywords.uri = s:String.truncate_skipping(
                 \                   a:keywords.uri, min_uri_len, 0, '...')
                 let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
-                let expanded_msg = s:Prelude.truncate_skipping(
+                let expanded_msg = s:String.truncate_skipping(
                 \                   expanded_msg, maxlen - 4, 0, '...')
             endif
         endif
