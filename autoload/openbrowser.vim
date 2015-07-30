@@ -280,41 +280,40 @@ endfunction
 "         endidx end index ([startidex, endidx), half-open interval)
 function! s:extract_urls(text) abort
     let text = a:text
-    let scheme_list = s:get_var('openbrowser_fix_schemes')
-    let schemes_pattern = join(sort(keys(scheme_list), 's:by_length'), '\|')
+    let scheme_map = s:get_var('openbrowser_fix_schemes')
+    let schemes_pattern = join(sort(keys(scheme_map), 's:by_length'), '\|')
     let pattern = '\(https\?\|' . schemes_pattern . '\)'
     let urls = []
-    let index = 0
+    let start = 0
     let len = strlen(text)
-    while index <# len
-        " Search scheme_list.
-        let start = match(text, pattern, index)
+    while start <# len
+        " Search scheme.
+        let [start, end] = [match(text, pattern, start), matchend(text, pattern, start)]
         if start ==# -1
             break
         endif
-        let index += start
-        let end = matchend(text, pattern, index)
+        let subtext = text[start :]
         let scheme = text[start : end - 1]
-        if has_key(scheme_list, scheme)
-            let rep = scheme_list[scheme]
-            let seqstr = substitute(text, '^'.pattern, rep, '')
-            let results = s:URI.new_from_seq_string(seqstr, s:NONE)
+        if has_key(scheme_map, scheme)
+            let rep = scheme_map[scheme]
+            let subtext = substitute(subtext, '^'.pattern, rep, '')
+            let results = s:URI.new_from_seq_string(subtext, s:NONE)
         else
-            let results = s:URI.new_from_seq_string(text, s:NONE)
+            let results = s:URI.new_from_seq_string(subtext, s:NONE)
         endif
         " Try to parse string as URI.
         if results isnot s:NONE
             let [url, original_url] = results[0:1]
-            let skip_num = len(original_url) + (has_key(scheme_list, scheme) ?
+            let skip_num = len(original_url) + (has_key(scheme_map, scheme) ?
             \                                   len(rep) - len(scheme) : 0)
             let urls += [{
             \   'str': url.to_string(),
             \   'startidx': start,
             \   'endidx': start + skip_num,
             \}]
-            let index += skip_num
+            let start += skip_num
         else
-            let index = end
+            let start = end
         endif
     endwhile
     return urls
