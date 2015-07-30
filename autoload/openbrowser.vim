@@ -223,7 +223,7 @@ function! openbrowser#_keymapping_open(mode) "{{{
         endif
     else
         for url in s:extract_urls(s:get_selected_text())
-            call openbrowser#open(url)
+            call openbrowser#open(url.str)
         endfor
     endif
 endfunction "}}}
@@ -253,7 +253,7 @@ function! openbrowser#_keymapping_smart_search(mode) "{{{
         let urls = s:extract_urls(text)
         if !empty(urls)
             for url in urls
-                call openbrowser#open(url)
+                call openbrowser#open(url.str)
             endfor
         else
             call openbrowser#search(
@@ -274,30 +274,47 @@ function! s:by_length(s1, s2) abort
     return l1 ># l2 ? -1 : l1 <# l2 ? 1 : 0
 endfunction
 
+" @return Dictionary
+"         str url
+"         startidx start index
+"         endidx end index ([startidex, endidx), half-open interval)
 function! s:extract_urls(text) abort
     let text = a:text
-    let schemes = s:get_var('openbrowser_fix_schemes')
-    let schemes_pattern = join(sort(keys(schemes), 's:by_length'), '\|')
+    let scheme_list = s:get_var('openbrowser_fix_schemes')
+    let schemes_pattern = join(sort(keys(scheme_list), 's:by_length'), '\|')
     let pattern = '\(https\?\|' . schemes_pattern . '\)'
     let urls = []
-    while text !=# ''
-        let begin = match(text, pattern)
-        if begin ==# -1
+    let index = 0
+    let len = strlen(text)
+    while index <# len
+        " Search scheme_list.
+        let start = match(text, pattern, index)
+        if start ==# -1
             break
         endif
-        let end = matchend(text, pattern)
-        let text = text[begin :]
-        let [begin, end] = [0, end - begin]
-        if has_key(schemes, text[begin : end - 1])
-            let rep = schemes[text[begin : end - 1]]
-            let text = substitute(text, '^'.pattern, rep, '')
-        endif
-        let url = s:URI.new_from_seq_string(text, s:NONE)
-        if url isnot s:NONE
-            let urls += [url.to_string()]
-            let text = text[len(url) :]
+        let index += start
+        let end = matchend(text, pattern, index)
+        let scheme = text[start : end - 1]
+        if has_key(scheme_list, scheme)
+            let rep = scheme_list[scheme]
+            let seqstr = substitute(text, '^'.pattern, rep, '')
+            let results = s:URI.new_from_seq_string(seqstr, s:NONE)
         else
-            let text = text[end :]
+            let results = s:URI.new_from_seq_string(text, s:NONE)
+        endif
+        " Try to parse string as URI.
+        if results isnot s:NONE
+            let [url, original_url] = results[0:1]
+            let skip_num = len(original_url) + (has_key(scheme_list, scheme) ?
+            \                                   len(rep) - len(scheme) : 0)
+            let urls += [{
+            \   'str': url.to_string(),
+            \   'startidx': start,
+            \   'endidx': start + skip_num,
+            \}]
+            let index += skip_num
+        else
+            let index = end
         endif
     endwhile
     return urls
@@ -446,49 +463,38 @@ function! s:open_browser(uri) "{{{
     return 0
 endfunction "}}}
 
+" @return the URL on cursor, or the first URL after cursor
 function! openbrowser#get_url_on_cursor() "{{{
     let line = s:getconcealedline('.')
     let col = s:getconcealedcol('.')
-    if line[col-1] !~# '\S'    " cursor is not on URL
+    if line[col-1] =~# '\s'
+        " Skip whitespaces.
+        let line = substitute(line[col-1 :], '^\s\+', '', '')
+        let urls = s:extract_urls(line)
+        return (!empty(urls) ? urls[0].str : '')
+    else
+        " If cursor is on URL, return it.
+        " Otherwise, find the first URL after cursor.
+        let idx = col-1
+        for url in s:extract_urls(line)
+            if url.startidx <=# idx && idx <# url.endidx
+            \   || idx <=# url.startidx
+                return url.str
+            endif
+        endfor
         return ''
     endif
-    " Get continuous non-space string under cursor.
-    let left = col <=# 1 ? '' : line[: col-2]
-    let right = line[col-1 :]
-    let nonspstr = matchstr(left, '\S\+$').matchstr(right, '^\S\+')
-    let col -= len(left) - len(matchstr(left, '\S\+$'))
-    " Extract URL.
-    " based on https://github.com/mattn/vim-textobj-url/blob/master/autoload/textobj/url.vim#L1
-    " NOTE: Exact parser is not needed. (#42, #58)
-    " Because a user can always select a URL in visual-mode.
-    " let re_url = '\(https\?\|ftp\)://[a-zA-Z0-9][a-zA-Z0-9_-]*\(\.[a-zA-Z0-9][a-zA-Z0-9_-]*\)*\(:\d\+\)\?\(/[a-zA-Z0-9_/.+%#?&=;@$,!''*~-]*\)\?'
-    let PROTO = '\(https\?\|ftp\)'
-    let HOST = '[a-zA-Z0-9][a-zA-Z0-9_-]*\(\.[a-zA-Z0-9][a-zA-Z0-9_-]*\)*'
-    let PORT = '\(:\d\+\)\?'
-    let PATH_FRAGMENT = '\(/[a-zA-Z0-9_/.+%?&=;@$,!''*~-]*\)\?'
-    let HASH_FRAGMENT = '\(#[a-zA-Z0-9_/.+%#?&=;@$,!''*~-]*\)\?'
-    let LAST_CHAR = '[a-zA-Z0-9_/+%#?&=;@$!*~-]'
-    let re_url = PROTO . '://' . HOST . PORT
-                \ . PATH_FRAGMENT . HASH_FRAGMENT . LAST_CHAR
-    let matchstart = 0
-    while 1
-        let begin = match(nonspstr, re_url, matchstart)
-        if begin ==# -1
-            return ''
-        endif
-        let end = matchend(nonspstr, re_url, matchstart)
-        if begin <=# col - 1 && col <=# end
-            return nonspstr[begin : end-1]
-        endif
-        let matchstart = end + 1
-    endwhile
 endfunction "}}}
 
+" @return the filepath on cursor, or the first filepath after cursor
 function! openbrowser#get_filepath_on_cursor() "{{{
     let line = s:getconcealedline('.')
     let col = s:getconcealedcol('.')
-    if line[col-1] !~# '\S'    " cursor is not on file path
-        return ''
+    if line[col-1] =~# '\s'
+        let line = substitute(line[col-1 :], '^\s\+', '', '')
+        if line ==# ''
+            return ''
+        endif
     endif
     " Get continuous non-space string under cursor.
     let left = col <=# 1 ? '' : line[: col-2]
