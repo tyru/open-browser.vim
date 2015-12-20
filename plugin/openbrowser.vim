@@ -168,7 +168,7 @@ let g:openbrowser_search_engines = extend(
 \)
 
 if !exists('g:openbrowser_open_filepath_in_vim')
-    let g:openbrowser_open_filepath_in_vim = 1
+    let g:openbrowser_open_filepath_in_vim = 0
 endif
 if !exists('g:openbrowser_open_vim_command')
     let g:openbrowser_open_vim_command = 'vsplit'
