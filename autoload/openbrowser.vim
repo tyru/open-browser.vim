@@ -383,7 +383,7 @@ function! s:expand_format_message(format_message, keywords) "{{{
                 \           a:keywords.uri, maxlen - 4 - non_uri_len, 0, '...')
                 let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
             else
-                " Fallback: Even if expanded_msg is longer than command-line
+                " Third, Fallback: Even if expanded_msg is longer than command-line
                 " after "Second Try", truncate whole string.
                 let a:keywords.uri = s:String.truncate_skipping(
                 \                   a:keywords.uri, min_uri_len, 0, '...')
@@ -441,7 +441,7 @@ function! s:open_browser(uri) "{{{
         \    'background': get(cmd, 'background')}
         \)
 
-        " No need to check v:shell_error
+        " No need to check v:shell_error here
         " because browser is spawned in background process
         " so can't check its return value.
 
@@ -455,7 +455,7 @@ function! s:open_browser(uri) "{{{
             \   })
             echo msg
         endif
-        " succeed to open
+        " succeeded to open
         return 1
     endfor
     " failed to open
