@@ -274,6 +274,29 @@ function! s:by_length(s1, s2) abort
     return l1 ># l2 ? -1 : l1 <# l2 ? 1 : 0
 endfunction
 
+
+" Define more tolerant URI parsing. {{{
+" TODO: Make this configurable.
+
+let s:LoosePatternSet = {}
+
+function! s:new_loose_pattern_set() abort
+    if !empty(s:LoosePatternSet)
+        return s:LoosePatternSet
+    endif
+    let s:LoosePatternSet = s:URI.new_default_pattern_set()
+
+    " Remove "'", "(", ")".
+    function! s:LoosePatternSet.sub_delims() abort
+        return '[!$&*+,;=]'
+    endfunction
+
+    return s:LoosePatternSet
+endfunction
+
+" }}}
+
+
 " @return Dictionary
 "         str url
 "         startidx start index
@@ -297,9 +320,9 @@ function! s:extract_urls(text) abort
         if has_key(scheme_map, scheme)
             let rep = scheme_map[scheme]
             let subtext = substitute(subtext, '^'.pattern, rep, '')
-            let results = s:URI.new_from_seq_string(subtext, s:NONE)
+            let results = s:URI.new_from_seq_string(subtext, s:NONE, s:new_loose_pattern_set())
         else
-            let results = s:URI.new_from_seq_string(subtext, s:NONE)
+            let results = s:URI.new_from_seq_string(subtext, s:NONE, s:new_loose_pattern_set())
         endif
         " Try to parse string as URI.
         if results isnot s:NONE
@@ -435,11 +458,18 @@ function! s:open_browser(uri) "{{{
         \       }
         \   )'
         \)
-        call s:Process.system(
-        \   (type(args) is type([]) ? system_args : system_args[0]),
-        \   {'use_vimproc': use_vimproc,
-        \    'background': get(cmd, 'background')}
-        \)
+        try
+            call s:Process.system(
+            \   (type(args) is type([]) ? system_args : system_args[0]),
+            \   {'use_vimproc': use_vimproc,
+            \    'background': get(cmd, 'background')}
+            \)
+        catch
+            call s:Msg.error('open-browser failed to open URI...')
+            call s:Msg.error('v:exception = ' . v:exception)
+            call s:Msg.error('v:throwpoint = ' . v:throwpoint)
+            return 0
+        endtry
 
         " No need to check v:shell_error here
         " because browser is spawned in background process

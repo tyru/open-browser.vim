@@ -40,6 +40,15 @@ function! s:reverse(str) abort
   return join(reverse(split(a:str, '.\zs')), '')
 endfunction
 
+function! s:starts_with(str, prefix) abort
+  return stridx(a:str, a:prefix) == 0
+endfunction
+
+function! s:ends_with(str, suffix) abort
+  let idx = strridx(a:str, a:suffix)
+  return 0 <= idx && idx + len(a:suffix) == len(a:str)
+endfunction
+
 function! s:common_head(strs) abort
   if empty(a:strs)
     return ''
@@ -172,6 +181,14 @@ endfunction
 
 function! s:trim(str) abort
   return matchstr(a:str,'^\s*\zs.\{-}\ze\s*$')
+endfunction
+
+function! s:trim_start(str) abort
+  return matchstr(a:str,'^\s*\zs.\{-}$')
+endfunction
+
+function! s:trim_end(str) abort
+  return matchstr(a:str,'^.\{-}\ze\s*$')
 endfunction
 
 function! s:wrap(str,...) abort
