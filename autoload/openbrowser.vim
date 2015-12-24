@@ -30,23 +30,35 @@ endfunction "}}}
 
 
 " :OpenBrowser
+" @param uri URI object or String
 function! openbrowser#open(uri) "{{{
-    let uri = a:uri
-    if uri =~# '^\s*$'
-        " Error
-        return
+    if type(a:uri) is type({})
+    \   && has_key(a:uri, '__pattern_set')    " URI object
+        " Trust URI object value because
+        " it must be validated by parser.
+        let uriobj = a:uri
+        let uristr = a:uri.to_string()
+    elseif type(a:uri) is type("")
+        let uristr = a:uri
+        if uristr =~# '^\s*$'
+            return
+        endif
+        let uriobj = s:URI.new_from_uri_like_string(a:uri, s:NONE)
+        if uriobj is s:NONE
+            return
+        endif
     endif
 
     let opened = 0
-    let type = s:detect_query_type(uri)
+    let type = s:detect_query_type(uristr, uriobj)
     if type.filepath    " Existed file path or 'file://'
         " Convert to full path.
-        if stridx(uri, 'file://') is 0    " file://
-            let fullpath = substitute(uri, '^file://', '', '')
-        elseif uri[0] ==# '/'    " full path
-            let fullpath = uri
+        if stridx(uristr, 'file://') is 0    " file://
+            let fullpath = substitute(uristr, '^file://', '', '')
+        elseif uristr[0] ==# '/'    " full path
+            let fullpath = uristr
         else    " relative path
-            let fullpath = s:convert_to_fullpath(uri)
+            let fullpath = s:convert_to_fullpath(uristr)
         endif
         if s:get_var('openbrowser_open_filepath_in_vim')
             let fullpath = tr(fullpath, '\', '/')
@@ -70,25 +82,20 @@ function! openbrowser#open(uri) "{{{
             let opened = s:open_browser(fullpath)
         endif
     elseif type.uri    " other URI
-        let obj = s:URI.new_from_uri_like_string(uri, s:NONE)
-        if obj is s:NONE
-            " Error
-            return
-        endif
         " Fix scheme, host, path.
         " e.g.: "ttp" => "http"
         for where in ['scheme', 'host', 'path']
             let fix = s:get_var('openbrowser_fix_'.where.'s')
-            let value = obj[where]()
+            let value = uriobj[where]()
             if has_key(fix, value)
-                call call(obj[where], [fix[value]], obj)
+                call call(uriobj[where], [fix[value]], uriobj)
             endif
         endfor
-        let uri = obj.to_string()
-        let opened = s:open_browser(uri)
+        let uristr = uriobj.to_string()
+        let opened = s:open_browser(uristr)
     endif
     if !opened
-        call s:Msg.warn("open-browser doesn't know how to open '" . uri . "'.")
+        call s:Msg.warn("open-browser doesn't know how to open '" . uristr . "'.")
     elseif s:Prelude.is_windows() && g:openbrowser_force_foreground_after_open
         " XXX: Vim looses a focus after opening URI...
         " Is this same as non-Windows platform?
@@ -211,9 +218,9 @@ endfunction "}}}
 " <Plug>(openbrowser-open)
 function! openbrowser#_keymapping_open(mode) "{{{
     if a:mode ==# 'n'
-        let url = openbrowser#get_url_on_cursor()
-        let filepath = openbrowser#get_filepath_on_cursor()
-        if url != ''
+        let url = s:get_url_on_cursor()
+        let filepath = s:get_filepath_on_cursor()
+        if !empty(url)
             return openbrowser#open(url)
         elseif filepath != ''
             return openbrowser#open(filepath)
@@ -223,7 +230,7 @@ function! openbrowser#_keymapping_open(mode) "{{{
         endif
     else
         for url in s:extract_urls(s:get_selected_text())
-            call openbrowser#open(url.str)
+            call openbrowser#open(url.obj)
         endfor
     endif
 endfunction "}}}
@@ -240,9 +247,10 @@ endfunction "}}}
 " <Plug>(openbrowser-smart-search)
 function! openbrowser#_keymapping_smart_search(mode) "{{{
     if a:mode ==# 'n'
-        let url = openbrowser#get_url_on_cursor()
-        let filepath = openbrowser#get_filepath_on_cursor()
-        let query = (url !=# '' ? url : filepath !=# '' ? filepath : expand('<cword>'))
+        let url = s:get_url_on_cursor()
+        let filepath = s:get_filepath_on_cursor()
+        let query = (!empty(url)     ? url.to_string() :
+        \            filepath !=# '' ? filepath        : expand('<cword>'))
         if query ==# ''
             call s:Msg.error("URL or word is not found under cursor!")
             return
@@ -253,7 +261,7 @@ function! openbrowser#_keymapping_smart_search(mode) "{{{
         let urls = s:extract_urls(text)
         if !empty(urls)
             for url in urls
-                call openbrowser#open(url.str)
+                call openbrowser#open(url.obj)
             endfor
         else
             call openbrowser#search(
@@ -286,7 +294,7 @@ function! s:new_loose_pattern_set() abort
     endif
     let s:LoosePatternSet = s:URI.new_default_pattern_set()
 
-    " Remove "'", "(", ")".
+    " Remove "'", "(", ")" from default sub_delims().
     function! s:LoosePatternSet.sub_delims() abort
         return '[!$&*+,;=]'
     endfunction
@@ -297,40 +305,40 @@ endfunction
 " }}}
 
 
-" @return Dictionary
-"         str url
-"         startidx start index
-"         endidx end index ([startidex, endidx), half-open interval)
-function! s:extract_urls(text) abort
-    let text = a:text
+" @return List of Dictionary.
+"   Empty List means no URLs are found in a:text .
+"   Here are the keys of Dictionary.
+"     'obj' url
+"     'startidx' start index
+"     'endidx' end index ([startidex, endidx), half-open interval)
+function! s:extract_urls(text) abort "{{{
+    " NOTE: 'scheme_pattern' only allows "https", "http", "file"
+    " and the keys of 'openbrowser_fix_schemes'.
+    " However `pattern_set.get('scheme')` would be too tolerant
+    " and useless (what can web browser do for git protocol? :( ).
     let scheme_map = s:get_var('openbrowser_fix_schemes')
-    let schemes_pattern = join(sort(keys(scheme_map), 's:by_length'), '\|')
-    let pattern = '\(https\?\|' . schemes_pattern . '\)'
+    let scheme_list = ['https\?', 'file'] + keys(scheme_map)
+    let scheme_pattern = join(sort(scheme_list, 's:by_length'), '\|')
+    let pattern_set = s:new_loose_pattern_set()
     let urls = []
     let start = 0
-    let len = strlen(text)
+    let end = 0
+    let len = strlen(a:text)
     while start <# len
         " Search scheme.
-        let [start, end] = [match(text, pattern, start), matchend(text, pattern, start)]
+        let start = match(a:text, scheme_pattern, start)
         if start ==# -1
             break
         endif
-        let subtext = text[start :]
-        let scheme = text[start : end - 1]
-        if has_key(scheme_map, scheme)
-            let rep = scheme_map[scheme]
-            let subtext = substitute(subtext, '^'.pattern, rep, '')
-            let results = s:URI.new_from_seq_string(subtext, s:NONE, s:new_loose_pattern_set())
-        else
-            let results = s:URI.new_from_seq_string(subtext, s:NONE, s:new_loose_pattern_set())
-        endif
+        let end = matchend(a:text, scheme_pattern, start)
         " Try to parse string as URI.
+        let results = s:URI.new_from_seq_string(
+        \               a:text[start :], s:NONE, pattern_set)
         if results isnot s:NONE
             let [url, original_url] = results[0:1]
-            let skip_num = len(original_url) + (has_key(scheme_map, scheme) ?
-            \                                   len(rep) - len(scheme) : 0)
+            let skip_num = len(original_url)
             let urls += [{
-            \   'str': url.to_string(),
+            \   'obj': url,
             \   'startidx': start,
             \   'endidx': start + skip_num,
             \}]
@@ -340,7 +348,7 @@ function! s:extract_urls(text) abort
         endif
     endwhile
     return urls
-endfunction
+endfunction "}}}
 
 function! s:seems_path(uri) "{{{
     " - Has no invalid filename character (seeing &isfname)
@@ -355,15 +363,17 @@ function! s:seems_path(uri) "{{{
     return getftype(path) !=# ''
 endfunction "}}}
 
-function! s:seems_uri(uri) "{{{
-    let uri = s:URI.new_from_uri_like_string(a:uri, s:NONE)
-    return uri isnot s:NONE
-    \   && uri.scheme() !=# ''
+function! s:seems_uri(uri, uriobj) "{{{
+    let uriobj = !empty(a:uriobj) ? a:uriobj :
+    \               s:URI.new_from_uri_like_string(a:uri, s:NONE)
+    return uriobj isnot s:NONE
+    \   && uriobj.scheme() !=# ''
 endfunction "}}}
 
-function! s:detect_query_type(query) "{{{
+function! s:detect_query_type(query, ...) "{{{
+    let uriobj = a:0 ? a:1 : {}
     return {
-    \   'uri': s:seems_uri(a:query),
+    \   'uri': s:seems_uri(a:query, uriobj),
     \   'filepath': s:seems_path(a:query),
     \}
 endfunction "}}}
@@ -388,9 +398,9 @@ function! s:expand_format_message(format_message, keywords) "{{{
     if a:format_message.truncate && strlen(expanded_msg) > maxlen
         " Avoid |hit-enter-prompt|.
         let non_uri_len = strlen(expanded_msg) - strlen(a:keywords.uri)
-        " First Try: Remove protocol in URI.
-        let protocol = '\C^https\?://'
-        let matched_len = strlen(matchstr(a:keywords.uri, protocol))
+        " First Try: Remove "https" or "http" scheme in URI.
+        let scheme = '\C^https\?://'
+        let matched_len = strlen(matchstr(a:keywords.uri, scheme))
         if matched_len > 0
             let a:keywords.uri = a:keywords.uri[matched_len :]
         endif
@@ -492,15 +502,16 @@ function! s:open_browser(uri) "{{{
     return 0
 endfunction "}}}
 
-" @return the URL on cursor, or the first URL after cursor
-function! openbrowser#get_url_on_cursor() "{{{
+" @return Dictionary: the URL on cursor, or the first URL after cursor
+"   Empty Dictionary means no URLs found.
+function! s:get_url_on_cursor() "{{{
     let line = s:getconcealedline('.')
     let col = s:getconcealedcol('.')
     if line[col-1] =~# '\s'
         " Skip whitespaces.
         let line = substitute(line[col-1 :], '^\s\+', '', '')
         let urls = s:extract_urls(line)
-        return (!empty(urls) ? urls[0].str : '')
+        return (!empty(urls) ? urls[0].obj : {})
     else
         " If cursor is on URL, return it.
         " Otherwise, find the first URL after cursor.
@@ -508,15 +519,15 @@ function! openbrowser#get_url_on_cursor() "{{{
         for url in s:extract_urls(line)
             if url.startidx <=# idx && idx <# url.endidx
             \   || idx <=# url.startidx
-                return url.str
+                return url.obj
             endif
         endfor
-        return ''
+        return {}
     endif
 endfunction "}}}
 
 " @return the filepath on cursor, or the first filepath after cursor
-function! openbrowser#get_filepath_on_cursor() "{{{
+function! s:get_filepath_on_cursor() "{{{
     let line = s:getconcealedline('.')
     let col = s:getconcealedcol('.')
     if line[col-1] =~# '\s'
