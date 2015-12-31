@@ -96,7 +96,7 @@ function! openbrowser#open(uri) "{{{
     endif
     if !opened
         call s:Msg.warn("open-browser doesn't know how to open '" . uristr . "'.")
-    elseif s:Prelude.is_windows() && g:openbrowser_force_foreground_after_open
+    elseif g:openbrowser_force_foreground_after_open && s:Prelude.is_windows()
         " XXX: Vim looses a focus after opening URI...
         " Is this same as non-Windows platform?
         augroup openbrowser
@@ -288,7 +288,7 @@ endfunction
 
 let s:LoosePatternSet = {}
 
-function! s:new_loose_pattern_set() abort
+function! s:get_loose_pattern_set() abort
     if !empty(s:LoosePatternSet)
         return s:LoosePatternSet
     endif
@@ -319,7 +319,7 @@ function! s:extract_urls(text) abort "{{{
     let scheme_map = s:get_var('openbrowser_fix_schemes')
     let scheme_list = ['https\?', 'file'] + keys(scheme_map)
     let scheme_pattern = join(sort(scheme_list, 's:by_length'), '\|')
-    let pattern_set = s:new_loose_pattern_set()
+    let pattern_set = s:get_loose_pattern_set()
     let urls = []
     let start = 0
     let end = 0
