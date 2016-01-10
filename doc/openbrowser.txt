@@ -85,24 +85,24 @@ INTERFACE							*openbrowser-interface* {{{
 ------------------------------------------------------------------------------
 KEYMAPPINGS					*openbrowser-keymappings* {{{
 
-n <Plug>(openbrowser-open)				|<Plug>(openbrowser-open)|
+n <Plug>(openbrowser-open)				*<Plug>(openbrowser-open)*
 	Open current URL under cursor with |:OpenBrowser|.
 
-v <Plug>(openbrowser-open)				|<Plug>(openbrowser-open)|
+v <Plug>(openbrowser-open)
 	Open selected text with |:OpenBrowser|.
 
 
-n <Plug>(openbrowser-search)				|<Plug>(openbrowser-search)|
+n <Plug>(openbrowser-search)				*<Plug>(openbrowser-search)*
 	Open current <cword> text with |:OpenBrowserSearch|.
 
-v <Plug>(openbrowser-search)				|<Plug>(openbrowser-search)|
+v <Plug>(openbrowser-search)
 	Open selected text with |:OpenBrowserSearch|.
 
 
-n <Plug>(openbrowser-smart-search)	|<Plug>(openbrowser-smart-search)|
+n <Plug>(openbrowser-smart-search)		*<Plug>(openbrowser-smart-search)*
 	Open current <cword> text with |:OpenBrowserSmartSearch|.
 
-v <Plug>(openbrowser-smart-search)	|<Plug>(openbrowser-smart-search)|
+v <Plug>(openbrowser-smart-search)
 	Open selected text with |:OpenBrowserSmartSearch|.
 
 }}}
