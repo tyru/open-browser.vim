@@ -216,22 +216,34 @@ function! openbrowser#_cmd_open_browser_smart_search(cmdline) "{{{
 endfunction "}}}
 
 " <Plug>(openbrowser-open)
-function! openbrowser#_keymapping_open(mode) "{{{
+function! openbrowser#_keymapping_open(mode, ...) "{{{
+    let silent = get(a:000, 0, 0)
     if a:mode ==# 'n'
+        " URL
         let url = s:get_url_on_cursor()
-        let filepath = s:get_filepath_on_cursor()
         if !empty(url)
-            return openbrowser#open(url)
-        elseif filepath != ''
-            return openbrowser#open(filepath)
-        else
-            call s:Msg.error("URL or file path is not found under cursor!")
-            return
+            call openbrowser#open(url)
+            return 1
         endif
+        " FilePath
+        let filepath = s:get_filepath_on_cursor()
+        if !empty(filepath)
+            call openbrowser#open(filepath)
+            return 1
+        endif
+        " Fail!
+        if !silent
+            call s:Msg.error(
+            \   "URL or file path is not found under cursor!")
+        endif
+        return 0
     else
-        for url in s:extract_urls(s:get_selected_text())
+        let text = s:get_selected_text()
+        let urls = s:extract_urls(text)
+        for url in urls
             call openbrowser#open(url.obj)
         endfor
+        return !empty(urls)
     endif
 endfunction "}}}
 
@@ -246,28 +258,21 @@ endfunction "}}}
 
 " <Plug>(openbrowser-smart-search)
 function! openbrowser#_keymapping_smart_search(mode) "{{{
+    if openbrowser#_keymapping_open(a:mode, 1)
+        " Suceeded to open!
+        return
+    endif
+    " If neither URL nor FilePath is found...
     if a:mode ==# 'n'
-        let url = s:get_url_on_cursor()
-        let filepath = s:get_filepath_on_cursor()
-        let query = (!empty(url)     ? url.to_string() :
-        \            filepath !=# '' ? filepath        : expand('<cword>'))
-        if query ==# ''
-            call s:Msg.error("URL or word is not found under cursor!")
-            return
-        endif
-        return openbrowser#smart_search(query)
+        " Search <cword>.
+        call openbrowser#search(
+        \   expand('<cword>'),
+        \   s:get_var('openbrowser_default_search'))
     else
-        let text = s:get_selected_text()
-        let urls = s:extract_urls(text)
-        if !empty(urls)
-            for url in urls
-                call openbrowser#open(url.obj)
-            endfor
-        else
-            call openbrowser#search(
-            \   text, s:get_var('openbrowser_default_search')
-            \)
-        endif
+        " Search selected text.
+        call openbrowser#search(
+        \   s:get_selected_text(),
+        \   s:get_var('openbrowser_default_search'))
     endif
 endfunction "}}}
 
@@ -320,32 +325,38 @@ function! s:extract_urls(text) abort "{{{
     let scheme_list = ['https\?', 'file'] + keys(scheme_map)
     let scheme_pattern = join(sort(scheme_list, 's:by_length'), '\|')
     let pattern_set = s:get_loose_pattern_set()
+    let head_pattern = scheme_pattern . '\|' . pattern_set.host()
     let urls = []
     let start = 0
     let end = 0
     let len = strlen(a:text)
     while start <# len
         " Search scheme.
-        let start = match(a:text, scheme_pattern, start)
+        let start = match(a:text, head_pattern, start)
         if start ==# -1
             break
         endif
-        let end = matchend(a:text, scheme_pattern, start)
+        let end = matchend(a:text, head_pattern, start)
         " Try to parse string as URI.
-        let results = s:URI.new_from_seq_string(
-        \               a:text[start :], s:NONE, pattern_set)
-        if results isnot s:NONE
-            let [url, original_url] = results[0:1]
-            let skip_num = len(original_url)
-            let urls += [{
-            \   'obj': url,
-            \   'startidx': start,
-            \   'endidx': start + skip_num,
-            \}]
-            let start += skip_num
-        else
-            let start = end
+        let substr = a:text[start :]
+        let results = s:URI.new_from_seq_string(substr, s:NONE, pattern_set)
+        if results is s:NONE || !s:seems_uri(results[0])
+            " If failed to parse, try it as a URL without scheme again.
+            let results = s:URI.new_from_seq_string(
+            \               'http://' . substr, s:NONE, pattern_set)
+            if results is s:NONE || !s:seems_uri(results[0])
+                let start = end
+                continue
+            endif
         endif
+        let [url, original_url] = results[0:1]
+        let skip_num = len(original_url)
+        let urls += [{
+        \   'obj': url,
+        \   'startidx': start,
+        \   'endidx': start + skip_num,
+        \}]
+        let start += skip_num
     endwhile
     return urls
 endfunction "}}}
@@ -363,17 +374,19 @@ function! s:seems_path(uri) "{{{
     return getftype(path) !=# ''
 endfunction "}}}
 
-function! s:seems_uri(uri, uriobj) "{{{
-    let uriobj = !empty(a:uriobj) ? a:uriobj :
-    \               s:URI.new_from_uri_like_string(a:uri, s:NONE)
-    return uriobj isnot s:NONE
-    \   && uriobj.scheme() !=# ''
+function! s:seems_uri(uriobj) "{{{
+    return a:uriobj isnot s:NONE
+    \   && a:uriobj.scheme() !=# ''
+    \   && a:uriobj.host() =~# '\.'
 endfunction "}}}
 
 function! s:detect_query_type(query, ...) "{{{
     let uriobj = a:0 ? a:1 : {}
+    if empty(uriobj)
+        let uriobj = s:URI.new_from_uri_like_string(a:uri, s:NONE)
+    endif
     return {
-    \   'uri': s:seems_uri(a:query, uriobj),
+    \   'uri': s:seems_uri(uriobj),
     \   'filepath': s:seems_path(a:query),
     \}
 endfunction "}}}
@@ -504,49 +517,61 @@ endfunction "}}}
 
 " @return Dictionary: the URL on cursor, or the first URL after cursor
 "   Empty Dictionary means no URLs found.
+" :help openbrowser-url-detection
 function! s:get_url_on_cursor() "{{{
-    let line = s:getconcealedline('.')
-    let col = s:getconcealedcol('.')
-    if line[col-1] =~# '\s'
-        " Skip whitespaces.
-        let line = substitute(line[col-1 :], '^\s\+', '', '')
-        let urls = s:extract_urls(line)
-        return (!empty(urls) ? urls[0].obj : {})
-    else
-        " If cursor is on URL, return it.
-        " Otherwise, find the first URL after cursor.
-        let idx = col-1
-        for url in s:extract_urls(line)
-            if url.startidx <=# idx && idx <# url.endidx
-            \   || idx <=# url.startidx
-                return url.obj
-            endif
-        endfor
-        return {}
-    endif
+    let url = s:get_thing_on_cursor('s:detect_url_cb')
+    return url isnot s:NONE ? url : ''
 endfunction "}}}
 
 " @return the filepath on cursor, or the first filepath after cursor
+" :help openbrowser-filepath-detection
 function! s:get_filepath_on_cursor() "{{{
+    let filepath = s:get_thing_on_cursor('s:detect_filepath_cb')
+    return filepath isnot s:NONE ? filepath : ''
+endfunction "}}}
+
+function! s:get_thing_on_cursor(func) abort
     let line = s:getconcealedline('.')
     let col = s:getconcealedcol('.')
     if line[col-1] =~# '\s'
-        let line = substitute(line[col-1 :], '^\s\+', '', '')
-        if line ==# ''
-            return ''
-        endif
+        let pos = getpos('.')
+        try
+            " Search left WORD.
+            if search('\S', 'bnW')[0] ># 0
+                keepjumps normal! B
+                let [found, retval] = call(a:func, [])
+                if found | return retval | endif
+            endif
+            " Search right WORD.
+            if search('\S', 'nW')[0] ># 0
+                keepjumps normal! W
+                let [found, retval] = call(a:func, [])
+                if found | return retval | endif
+            endif
+            " Not found.
+            return s:NONE
+        finally
+            call setpos('.', pos)
+        endtry
     endif
-    " Get continuous non-space string under cursor.
-    let left = col <=# 1 ? '' : line[: col-2]
-    let right = line[col-1 :]
-    let nonspstr = matchstr(left, '\S\+$').matchstr(right, '^\S\+')
-    " Extract file path.
-    if s:seems_path(nonspstr)
-        return nonspstr
-    else
-        return ''
+    let [found, retval] = call(a:func, [])
+    if found | return retval | endif
+    return s:NONE
+endfunction
+
+function! s:detect_url_cb() abort
+    let urls = s:extract_urls(expand('<cWORD>'))
+    if !empty(urls)
+        return [1, urls[0].obj]
     endif
-endfunction "}}}
+    return [0, {}]
+endfunction
+
+function! s:detect_filepath_cb() abort
+    let retval = expand('<cWORD>')
+    let found = s:seems_path(retval)
+    return [found, retval]
+endfunction
 
 " This function is from quickrun.vim (http://github.com/thinca/vim-quickrun)
 " Original function is `s:Runner.expand()`.

@@ -86,11 +86,18 @@ INTERFACE							*openbrowser-interface* {{{
 KEYMAPPINGS					*openbrowser-keymappings* {{{
 
 n <Plug>(openbrowser-open)				*<Plug>(openbrowser-open)*
-	Open current URL under cursor with |:OpenBrowser|.
+	1. If openbrowser finds a URL around cursor,
+	   open the URL with |openbrowser#open()|.
+	2. If openbrowser finds a filepath around cursor,
+	   open the filepath with |openbrowser#open()|.
+
+	See |openbrowser-url-detection| and
+	|openbrowser-filepath-detection| for
+	more URL and filepath detection details.
 
 v <Plug>(openbrowser-open)
-	Open selected text with |:OpenBrowser|.
-
+	If openbrowser finds a URL(s) from selected text,
+	open the all URLs with |openbrowser#open()|.
 
 n <Plug>(openbrowser-search)				*<Plug>(openbrowser-search)*
 	Open current <cword> text with |:OpenBrowserSearch|.
@@ -98,12 +105,13 @@ n <Plug>(openbrowser-search)				*<Plug>(openbrowser-search)*
 v <Plug>(openbrowser-search)
 	Open selected text with |:OpenBrowserSearch|.
 
-
 n <Plug>(openbrowser-smart-search)		*<Plug>(openbrowser-smart-search)*
-	Open current <cword> text with |:OpenBrowserSmartSearch|.
+	Call |<Plug>(openbrowser-open)| and if it fails,
+	call |openbrowser#search()| with `expand('<cword>')`.
 
 v <Plug>(openbrowser-smart-search)
-	Open selected text with |:OpenBrowserSmartSearch|.
+	Call |<Plug>(openbrowser-open)| and if it fails,
+	call |openbrowser#search()| with selected text.
 
 }}}
 ------------------------------------------------------------------------------
@@ -410,6 +418,28 @@ openbrowser#smart_search({query} [, {search-engine}])			*openbrowser#smart_searc
 	|g:openbrowser_default_search| is used instead.
 
 }}}
+}}}
+==============================================================================
+URL DETECTION		*openbrowser-url-detection* {{{
+
+1. If the character under cursor is a WORD and is a URL, return it.
+	1.1. if `expand('<cWORD>')` is an URL, return it.
+2. If the character under cursor is not a WORD,
+	2.1. Go to left WORD, and if `expand('<cWORD>')` is an URL, return it.
+	2.2. Go to right WORD, and if `expand('<cWORD>')` is an URL, return it.
+
+}}}
+==============================================================================
+FILEPATH DETECTION		*openbrowser-filepath-detection* {{{
+
+1. If the character under cursor is a WORD and is a filepath, return it.
+	1.1. if `expand('<cWORD>')` is an filepath, return it.
+2. If the character under cursor is not a WORD,
+	2.1. Go to left WORD, and if `expand('<cWORD>')`
+	     is an filepath, return it.
+	2.2. Go to right WORD, and if `expand('<cWORD>')`
+	     is an filepath, return it.
+
 }}}
 ==============================================================================
 AVAILABLE SYNTAX IN OPTIONS		*openbrowser-option-syntax* {{{
