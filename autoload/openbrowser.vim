@@ -381,7 +381,7 @@ function! s:seems_path(uri) "{{{
 endfunction "}}}
 
 function! s:seems_uri(uriobj) "{{{
-    return a:uriobj isnot s:NONE
+    return !empty(a:uriobj)
     \   && a:uriobj.scheme() !=# ''
     \   && a:uriobj.host() =~# '\.'
 endfunction "}}}
@@ -389,7 +389,7 @@ endfunction "}}}
 function! s:detect_query_type(query, ...) "{{{
     let uriobj = a:0 ? a:1 : {}
     if empty(uriobj)
-        let uriobj = s:URI.new_from_uri_like_string(a:query, s:NONE)
+        let uriobj = s:URI.new_from_uri_like_string(a:query, {})
     endif
     return {
     \   'uri': s:seems_uri(uriobj),
