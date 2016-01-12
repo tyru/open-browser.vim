@@ -47,6 +47,8 @@ function! openbrowser#open(uri) "{{{
         if uriobj is s:NONE
             return
         endif
+    else
+        return
     endif
 
     let opened = 0
@@ -184,7 +186,9 @@ function! openbrowser#_cmd_open_browser_search(cmdline) "{{{
     \   a:cmdline
     \)
 endfunction "}}}
-function! openbrowser#_cmd_complete(unused1, cmdline, unused2) "{{{
+" @vimlint(EVL103, 1, a:arglead)
+" @vimlint(EVL103, 1, a:cursorpos)
+function! openbrowser#_cmd_complete(arglead, cmdline, cursorpos) "{{{
     let excmd = '^\s*OpenBrowser\w\+\s\+'
     if a:cmdline !~# excmd
         return
@@ -204,6 +208,8 @@ function! openbrowser#_cmd_complete(unused1, cmdline, unused2) "{{{
     " Find out which engine.
     return filter(engine_options, 'stridx(v:val, cmdline) is 0')
 endfunction "}}}
+" @vimlint(EVL103, 0, a:arglead)
+" @vimlint(EVL103, 0, a:cursorpos)
 
 " :OpenBrowserSmartSearch
 function! openbrowser#_cmd_open_browser_smart_search(cmdline) "{{{
@@ -383,7 +389,7 @@ endfunction "}}}
 function! s:detect_query_type(query, ...) "{{{
     let uriobj = a:0 ? a:1 : {}
     if empty(uriobj)
-        let uriobj = s:URI.new_from_uri_like_string(a:uri, s:NONE)
+        let uriobj = s:URI.new_from_uri_like_string(a:query, s:NONE)
     endif
     return {
     \   'uri': s:seems_uri(uriobj),
@@ -391,6 +397,7 @@ function! s:detect_query_type(query, ...) "{{{
     \}
 endfunction "}}}
 
+" @vimlint(EVL104, 1, l:save_shellslash)
 function! s:convert_to_fullpath(path) "{{{
     if exists('+shellslash')
         let save_shellslash = &l:shellslash
@@ -404,6 +411,7 @@ function! s:convert_to_fullpath(path) "{{{
         endif
     endtry
 endfunction "}}}
+" @vimlint(EVL104, 0, l:save_shellslash)
 
 function! s:expand_format_message(format_message, keywords) "{{{
     let maxlen = s:Msg.get_hit_enter_max_length()
@@ -703,11 +711,9 @@ function! s:getconcealedcol(expr) "{{{
         return col(a:expr)
     endif
 
-    let line = getline('.')
     let index = 0
     let endidx = col(a:expr)
 
-    let region = -1
     let ret = 0
     let isconceal = 0
 
