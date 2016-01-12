@@ -351,7 +351,9 @@ function! s:extract_urls(text) abort "{{{
             let results = s:URI.new_from_seq_string(
             \               'http://' . substr, s:NONE, pattern_set)
             if results is s:NONE || !s:seems_uri(results[0])
-                let start = end
+                " start ==# end: matching string can be empty string.
+                " e.g.: echo [match('abc', 'd*'), matchend('abc', 'd*')]
+                let start = (start ==# end ? end+1 : end)
                 continue
             endif
         endif
