@@ -385,7 +385,6 @@ endfunction "}}}
 function! s:seems_uri(uriobj) "{{{
     return !empty(a:uriobj)
     \   && a:uriobj.scheme() !=# ''
-    \   && a:uriobj.host() =~# '\.'
 endfunction "}}}
 
 function! s:detect_query_type(query, ...) "{{{
