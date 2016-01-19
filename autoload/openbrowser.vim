@@ -148,6 +148,16 @@ endfunction "}}}
 
 " }}}
 
+" Test {{{
+
+function! openbrowser#__inject__(name, obj) abort
+    if a:name ==# 'Process'
+        let s:[a:name] = a:obj
+    endif
+endfunction
+
+" }}}
+
 " Implementations {{{
 
 let s:NONE = []
