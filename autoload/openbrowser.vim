@@ -357,15 +357,10 @@ function! s:extract_urls(text) abort "{{{
         let substr = a:text[start :]
         let results = s:URI.new_from_seq_string(substr, s:NONE, pattern_set)
         if results is s:NONE || !s:seems_uri(results[0])
-            " If failed to parse, try it as a URL without scheme again.
-            let results = s:URI.new_from_seq_string(
-            \               'http://' . substr, s:NONE, pattern_set)
-            if results is s:NONE || !s:seems_uri(results[0])
-                " start ==# end: matching string can be empty string.
-                " e.g.: echo [match('abc', 'd*'), matchend('abc', 'd*')]
-                let start = (start ==# end ? end+1 : end)
-                continue
-            endif
+            " start ==# end: matching string can be empty string.
+            " e.g.: echo [match('abc', 'd*'), matchend('abc', 'd*')]
+            let start = (start ==# end ? end+1 : end)
+            continue
         endif
         let [url, original_url] = results[0:1]
         let skip_num = len(original_url)
@@ -400,7 +395,7 @@ endfunction "}}}
 function! s:detect_query_type(query, ...) "{{{
     let uriobj = a:0 ? a:1 : {}
     if empty(uriobj)
-        let uriobj = s:URI.new_from_uri_like_string(a:query, {})
+        let uriobj = s:URI.new(a:query, {})
     endif
     return {
     \   'uri': s:seems_uri(uriobj),
