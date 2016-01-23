@@ -133,7 +133,7 @@ g:openbrowser_browser_commands		*g:openbrowser_browser_commands*
 	MS Windows:
 		[
 		\ {"name": "rundll32",
-		\  "args": "rundll32 url.dll,FileProtocolHandler {uri}"}
+		\  "args": "rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}"}
 		\]
 	Unix like environment:
 		[
@@ -167,6 +167,13 @@ g:openbrowser_browser_commands		*g:openbrowser_browser_commands*
 		\   {'name': 'rundll32',
 		\    'args': 'rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
 		\]
+<
+	More example:
+	1. Use Google Chrome instead of default browser: >
+	let g:openbrowser_browser_commands = [
+	\   {'name': 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
+	\    'args': ['start', '{browser}', '{uri}']}
+	\]
 <
 g:openbrowser_open_commands			*g:openbrowser_open_commands*
 g:openbrowser_open_rules			*g:openbrowser_open_rules*
