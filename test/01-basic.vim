@@ -1,7 +1,7 @@
 scriptencoding utf-8
 
 let s:suite = themis#suite('basic')
-let s:assert = themis#suite('assert')
+let s:assert = themis#helper('assert')
 
 
 function! s:suite.system_linux() abort
