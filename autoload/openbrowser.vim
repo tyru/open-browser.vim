@@ -81,7 +81,7 @@ function! openbrowser#open(uri) "{{{
             if !g:__openbrowser_platform.cygwin
                 let fullpath = 'file://' . fullpath
             endif
-            let opened = s:open_browser(fullpath)
+            let opened = openbrowser#__open_browser__(fullpath)
         endif
     elseif type.uri    " other URI
         " Fix scheme, host, path.
@@ -94,7 +94,7 @@ function! openbrowser#open(uri) "{{{
             endif
         endfor
         let uristr = uriobj.to_string()
-        let opened = s:open_browser(uristr)
+        let opened = openbrowser#__open_browser__(uristr)
     endif
     if !opened
         call s:Msg.warn("open-browser doesn't know how to open '" . uristr . "'.")
@@ -145,16 +145,6 @@ endfunction "}}}
 function! openbrowser#shellescape(...) "{{{
     return call(s:Process.shellescape, a:000, s:Process)
 endfunction "}}}
-
-" }}}
-
-" Test {{{
-
-function! openbrowser#__inject__(name, obj) abort
-    if a:name ==# 'Process'
-        let s:[a:name] = a:obj
-    endif
-endfunction
 
 " }}}
 
@@ -456,8 +446,10 @@ function! s:expand_format_message(format_message, keywords) "{{{
     return expanded_msg
 endfunction "}}}
 
-function! s:open_browser(uri) "{{{
-    let uri = a:uri
+" @param uristr String
+" This function is public for testing.
+function! openbrowser#__open_browser__(uristr) "{{{
+    let uri = a:uristr
 
     let format_message = s:get_var('openbrowser_format_message')
     if format_message.msg !=# ''
@@ -496,7 +488,7 @@ function! s:open_browser(uri) "{{{
         \   )'
         \)
         try
-            call s:Process.system(
+            call openbrowser#__system__(
             \   (type(args) is type([]) ? system_args : system_args[0]),
             \   {'use_vimproc': use_vimproc,
             \    'background': get(cmd, 'background')}
@@ -528,6 +520,10 @@ function! s:open_browser(uri) "{{{
     " failed to open
     return 0
 endfunction "}}}
+
+function! openbrowser#__system__(...)
+    return call(s:Process.system, a:000, s:Process)
+endfunction
 
 " @return Dictionary: the URL on cursor, or the first URL after cursor
 "   Empty Dictionary means no URLs found.
