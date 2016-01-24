@@ -6,7 +6,7 @@ let s:assert = themis#helper('assert')
 
 function! s:suite.system_linux() abort
     if !executable('xdg-open')
-        call s:assert.skip()
+        call s:assert.skip('This test is only for Linux')
     endif
     let use_vimproc = 0
     let background = 1
@@ -27,7 +27,7 @@ endfunction
 
 function! s:suite.openbrowser_linux() abort
     if !executable('xdg-open')
-        call s:assert.skip()
+        call s:assert.skip('This test is only for Linux')
     endif
     let use_vimproc = 0
     let background = 1
@@ -35,6 +35,45 @@ function! s:suite.openbrowser_linux() abort
     \   'browser_commands': [
     \       {'background': background, 'name': 'xdg-open',
     \        'args': ['{browser}', '{uri}']}
+    \   ],
+    \   'use_vimproc': use_vimproc,
+    \   'input': 'http://example.com/',
+    \   'args': ['http://example.com/'],
+    \   'return': '',
+    \})
+endfunction
+
+function! s:suite.system_mswin() abort
+    if !executable('rundll32')
+        call s:assert.skip('This test is only for MS Windows')
+    endif
+    let use_vimproc = 0
+    let background = 0
+    call s:system_once({
+    \   'browser_commands': [
+    \       {'name': 'rundll32',
+    \        'args': 'rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
+    \   ],
+    \   'use_vimproc': use_vimproc,
+    \   'input': 'http://example.com/',
+    \   'args': [['xdg-open', 'http://example.com/'], {
+    \      'use_vimproc': use_vimproc,
+    \      'background': background
+    \   }],
+    \   'return': 0,
+    \})
+endfunction
+
+function! s:suite.openbrowser_mswin() abort
+    if !executable('rundll32')
+        call s:assert.skip('This test is only for MS Windows')
+    endif
+    let use_vimproc = 0
+    let background = 0
+    call s:openbrowser_once({
+    \   'browser_commands': [
+    \       {'name': 'rundll32',
+    \        'args': 'rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
     \   ],
     \   'use_vimproc': use_vimproc,
     \   'input': 'http://example.com/',
