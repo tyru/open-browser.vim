@@ -56,7 +56,7 @@ function! s:suite.system_mswin() abort
     \   ],
     \   'use_vimproc': use_vimproc,
     \   'input': 'http://example.com/',
-    \   'args': [['xdg-open', 'http://example.com/'], {
+    \   'args': ['rundll32 url.dll,FileProtocolHandler http://example.com/', {
     \      'use_vimproc': use_vimproc,
     \      'background': background
     \   }],
