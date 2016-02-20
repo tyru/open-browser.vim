@@ -237,11 +237,11 @@ command!
 
 " Key-mapping
 nnoremap <silent> <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymapping_open('n')<CR>
-vnoremap <silent> <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymapping_open('v')<CR>
+xnoremap <silent> <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymapping_open('v')<CR>
 nnoremap <silent> <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymapping_search('n')<CR>
-vnoremap <silent> <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymapping_search('v')<CR>
+xnoremap <silent> <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymapping_search('v')<CR>
 nnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymapping_smart_search('n')<CR>
-vnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymapping_smart_search('v')<CR>
+xnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymapping_smart_search('v')<CR>
 
 
 " Popup menus for Right-Click
@@ -252,13 +252,13 @@ if !get(g:, 'openbrowser_no_default_menus', (&guioptions =~# 'M'))
     endif
 
     nnoremenu PopUp.-OpenBrowserSep- :
-    vnoremenu PopUp.-OpenBrowserSep- :
+    xnoremenu PopUp.-OpenBrowserSep- :
     nmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
-    vmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
+    xmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
     nmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
-    vmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
+    xmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
     nmenu <silent> PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
-    vmenu <silent> PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
+    xmenu <silent> PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
 endif
 
 " }}}
