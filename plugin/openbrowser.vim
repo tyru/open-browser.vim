@@ -246,12 +246,13 @@ vnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keyma
 
 " Popup menus for Right-Click
 if !get(g:, 'openbrowser_no_default_menus', (&guioptions =~# 'M'))
-    nnoremenu PopUp.-OpenBrowserSep- :
-    vnoremenu PopUp.-OpenBrowserSep- :
     if get(g:, 'openbrowser_menu_lang',
     \      &langmenu !=# '' ? &langmenu : v:lang) =~# '^ja'
         runtime! lang/openbrowser_menu_ja.vim
     endif
+
+    nnoremenu PopUp.-OpenBrowserSep- :
+    vnoremenu PopUp.-OpenBrowserSep- :
     nmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
     vmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
     nmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
