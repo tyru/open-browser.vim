@@ -251,8 +251,8 @@ if !get(g:, 'openbrowser_no_default_menus', (&guioptions =~# 'M'))
         runtime! lang/openbrowser_menu_ja.vim
     endif
 
-    nnoremenu PopUp.-OpenBrowserSep- :
-    xnoremenu PopUp.-OpenBrowserSep- :
+    nnoremenu PopUp.-OpenBrowserSep- <Nop>
+    xnoremenu PopUp.-OpenBrowserSep- <Nop>
     nmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
     xmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
     nmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
