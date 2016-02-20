@@ -246,23 +246,18 @@ vnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keyma
 
 " Popup menus for Right-Click
 if !get(g:, 'openbrowser_no_default_menus', (&guioptions =~# 'M'))
-    nmenu PopUp.-OpenBrowserSep- :
-    vmenu PopUp.-OpenBrowserSep- :
-    if get(g:, 'openbrowser_menu_lang', &langmenu !=# '' ? &langmenu : v:lang) ==# 'ja'
-        nmenu <silent> PopUp.カーソル下のURLを開く <Plug>(openbrowser-open)
-        vmenu <silent> PopUp.カーソル下のURLを開く <Plug>(openbrowser-open)
-        nmenu <silent> PopUp.カーソル下の単語を開く <Plug>(openbrowser-search)
-        vmenu <silent> PopUp.カーソル下の単語を開く <Plug>(openbrowser-search)
-        nmenu <silent> PopUp.カーソル下の単語かURLを開く <Plug>(openbrowser-smart-search)
-        vmenu <silent> PopUp.カーソル下の単語かURLを開く <Plug>(openbrowser-smart-search)
-    else
-        nmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
-        vmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
-        nmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
-        vmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
-        nmenu <silent> PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
-        vmenu <silent> PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
+    nnoremenu PopUp.-OpenBrowserSep- :
+    vnoremenu PopUp.-OpenBrowserSep- :
+    if get(g:, 'openbrowser_menu_lang',
+    \      &langmenu !=# '' ? &langmenu : v:lang) =~# '^ja'
+        runtime! lang/openbrowser_menu_ja.vim
     endif
+    nmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
+    vmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
+    nmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
+    vmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
+    nmenu <silent> PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
+    vmenu <silent> PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
 endif
 
 " }}}
