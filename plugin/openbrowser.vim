@@ -245,7 +245,7 @@ vnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keyma
 
 
 " Popup menus for Right-Click
-if !get(g:, 'openbrowser_no_default_menus', 0)
+if !get(g:, 'openbrowser_no_default_menus', (&guioptions =~# 'M'))
     nmenu PopUp.-OpenBrowserSep- :
     vmenu PopUp.-OpenBrowserSep- :
     if get(g:, 'openbrowser_menu_lang', &langmenu !=# '' ? &langmenu : v:lang) ==# 'ja'
