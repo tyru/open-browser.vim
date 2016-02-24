@@ -329,9 +329,11 @@ g:openbrowser_use_vimproc
 
 					*g:openbrowser_no_default_menus*
 g:openbrowser_no_default_menus
-								(default: None)
+								(default: &guioptions =~# 'M')
 	If this value is defined and non-zero,
 	do not define default menus.
+	Default value is non-zero if 'guioptions' includes "M".
+	Otherwise the value is zero.
 	See |openbrowser-menus| for the default menus.
 
 g:openbrowser_menu_lang		*g:openbrowser_menu_lang*
