@@ -4,6 +4,11 @@ let s:suite = themis#suite('basic')
 let s:assert = themis#helper('assert')
 
 
+function! s:suite.after_each() abort
+    call vmock#verify()
+    call vmock#clear()
+endfunction
+
 function! s:suite.system_linux() abort
     if !executable('xdg-open')
         call s:assert.skip('This test is only for Linux')
@@ -95,11 +100,7 @@ function! s:system_once(param) abort
         call mock.return(a:param.return).once()
 
         call openbrowser#open(a:param.input)
-        call vmock#verify()
-    catch
-        echoerr v:exception
     finally
-        call vmock#clear()
         let g:openbrowser_use_vimproc = save_use_vimproc
         let g:openbrowser_browser_commands = save_browser_commands
     endtry
@@ -116,11 +117,7 @@ function! s:openbrowser_once(param) abort
         call mock.return(a:param.return).once()
 
         call openbrowser#open('http://example.com/')
-        call vmock#verify()
-    catch
-        echoerr v:exception
     finally
-        call vmock#clear()
         let g:openbrowser_use_vimproc = save_use_vimproc
     endtry
 endfunction
