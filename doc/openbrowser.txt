@@ -610,6 +610,9 @@ Great thanks for the peoples. (alphabetical order)
 * stardiviner (@stardiviner)
 * toooooooby (@toooooooby)
 
+More people listed in:
+https://github.com/tyru/open-browser.vim/graphs/contributors
+
 }}}
 ==============================================================================
 vim:tw=78:fo=tcq2mM:ts=4:ft=help:norl:noet:fdm=marker:fen
