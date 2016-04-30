@@ -44,9 +44,6 @@ function! openbrowser#open(uri) "{{{
             return
         endif
         let uriobj = s:URI.new_from_uri_like_string(a:uri, s:NONE)
-        if uriobj is s:NONE
-            return
-        endif
     else
         return
     endif
