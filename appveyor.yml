@@ -1,5 +1,5 @@
 version: '{build}'
-clone_depth: 1
+clone_depth: 10
 environment:
   matrix:
    - VIM_URL: http://vim-jp.org/redirects/koron/vim-kaoriya/latest/win64/
