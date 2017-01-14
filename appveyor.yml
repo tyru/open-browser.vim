@@ -21,7 +21,7 @@ install:
   - 'git -c advice.detachedHead=false clone https://github.com/Shougo/vimproc.vim --quiet --branch ver.9.2 --single-branch --depth 1 %TEMP%\vimproc'
   - 'appveyor DownloadFile https://github.com/Shougo/vimproc.vim/releases/download/ver.9.2/vimproc_win64.dll -FileName %TEMP%\vimproc\lib\vimproc_win64.dll'
   # themis
-  - 'git -c advice.detachedHead=false clone https://github.com/thinca/vim-themis --quiet --branch v1.5 --single-branch --depth 1 %TEMP%\vim-themis'
+  - 'git -c advice.detachedHead=false clone https://github.com/thinca/vim-themis --quiet --branch v1.5.1 --single-branch --depth 1 %TEMP%\vim-themis'
   # vmock
   - 'git -c advice.detachedHead=false clone https://github.com/kannokanno/vmock --quiet --single-branch --depth 1 %TEMP%\vmock'
   # https://groups.google.com/forum/#!msg/vim_dev/3AkHqiD1NLE/vFw52yh_AAAJ
