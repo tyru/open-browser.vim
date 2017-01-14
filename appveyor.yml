@@ -1,13 +1,12 @@
 version: '{build}'
-clone_depth: 1
+clone_depth: 10
 environment:
   matrix:
-   - VIM_URL: http://vim-jp.org/redirects/koron/vim-kaoriya/latest/win64/
-   - VIM_URL: http://vim-jp.org/redirects/koron/vim-kaoriya/vim73/oldest/win64/
-   # To test with 7.3 final +kaoriya Vim binary, uncomment below line.
-   #- VIM_URL: http://vim-jp.org/redirects/koron/vim-kaoriya/vim73/final/win64/
-   # To test with latest official Vim binary, uncomment below line.
-   #- VIM_URL: http://vim-jp.org/redirects/vim/vim-win32-installer/latest/x64/
+    - VIM_URL: http://vim-jp.org/redirects/koron/vim-kaoriya/vim74/oldest/win64/
+    - VIM_URL: http://vim-jp.org/redirects/koron/vim-kaoriya/vim80/oldest/win64/
+    - VIM_URL: http://vim-jp.org/redirects/koron/vim-kaoriya/latest/win64/
+    # To test with latest official Vim binary, uncomment below line.
+    #- VIM_URL: http://vim-jp.org/redirects/vim/vim-win32-installer/latest/x64/
 install:
   # Fetch vim
   - ps: |
@@ -22,7 +21,7 @@ install:
   - 'git -c advice.detachedHead=false clone https://github.com/Shougo/vimproc.vim --quiet --branch ver.9.2 --single-branch --depth 1 %TEMP%\vimproc'
   - 'appveyor DownloadFile https://github.com/Shougo/vimproc.vim/releases/download/ver.9.2/vimproc_win64.dll -FileName %TEMP%\vimproc\lib\vimproc_win64.dll'
   # themis
-  - 'git -c advice.detachedHead=false clone https://github.com/thinca/vim-themis --quiet --branch v1.5 --single-branch --depth 1 %TEMP%\vim-themis'
+  - 'git -c advice.detachedHead=false clone https://github.com/thinca/vim-themis --quiet --branch v1.5.1 --single-branch --depth 1 %TEMP%\vim-themis'
   # vmock
   - 'git -c advice.detachedHead=false clone https://github.com/kannokanno/vmock --quiet --single-branch --depth 1 %TEMP%\vmock'
   # https://groups.google.com/forum/#!msg/vim_dev/3AkHqiD1NLE/vFw52yh_AAAJ
