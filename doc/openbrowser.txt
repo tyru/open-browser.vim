@@ -1,4 +1,4 @@
-*openbrowser.txt* *openbrowser* *open-browser*
+*openbrowser.txt*
 
 Author:
   tyru <tyru.exe@gmail.com>
