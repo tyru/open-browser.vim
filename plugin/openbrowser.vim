@@ -3,7 +3,7 @@ scriptencoding utf-8
 
 " Load Once {{{
 if exists('g:loaded_openbrowser') && g:loaded_openbrowser
-    finish
+  finish
 endif
 let g:loaded_openbrowser = 1
 " }}}
@@ -23,10 +23,10 @@ lockvar s:is_cygwin
 lockvar s:is_macunix
 
 if !(s:is_unix || s:is_mswin || s:is_cygwin || s:is_macunix)
-    echohl WarningMsg
-    echomsg 'Your platform is not supported!'
-    echohl None
-    finish
+  echohl WarningMsg
+  echomsg 'Your platform is not supported!'
+  echohl None
+  finish
 endif
 
 " Save booleans for autoload/openbrowser.vim
@@ -40,44 +40,44 @@ let g:__openbrowser_platform = {
 
 " Default values of global variables. "{{{
 if g:__openbrowser_platform.cygwin
-    function! s:get_default_browser_commands()
-        return [
-        \   {'name': 'cygstart',
-        \    'args': ['{browser}', '{uri}']}
-        \]
-    endfunction
+  function! s:get_default_browser_commands()
+    return [
+    \   {'name': 'cygstart',
+    \    'args': ['{browser}', '{uri}']}
+    \]
+  endfunction
 elseif g:__openbrowser_platform.macunix
-    function! s:get_default_browser_commands()
-        return [
-        \   {'name': 'open',
-        \    'args': ['{browser}', '{uri}'],
-        \    'background': 1}
-        \]
-    endfunction
+  function! s:get_default_browser_commands()
+    return [
+    \   {'name': 'open',
+    \    'args': ['{browser}', '{uri}'],
+    \    'background': 1}
+    \]
+  endfunction
 elseif g:__openbrowser_platform.mswin
-    function! s:get_default_browser_commands()
-        return [
-        \   {'name': 'rundll32',
-        \    'args': 'rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
-        \]
-    endfunction
+  function! s:get_default_browser_commands()
+    return [
+    \   {'name': 'rundll32',
+    \    'args': 'rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
+    \]
+  endfunction
 elseif g:__openbrowser_platform.unix
-    function! s:get_default_browser_commands()
-        return [
-        \   {'name': 'xdg-open',
-        \    'args': ['{browser}', '{uri}'],
-        \    'background': 1},
-        \   {'name': 'x-www-browser',
-        \    'args': ['{browser}', '{uri}'],
-        \    'background': 1},
-        \   {'name': 'firefox',
-        \    'args': ['{browser}', '{uri}'],
-        \    'background': 1},
-        \   {'name': 'w3m',
-        \    'args': ['{browser}', '{uri}'],
-        \    'background': 1},
-        \]
-    endfunction
+  function! s:get_default_browser_commands()
+    return [
+    \   {'name': 'xdg-open',
+    \    'args': ['{browser}', '{uri}'],
+    \    'background': 1},
+    \   {'name': 'x-www-browser',
+    \    'args': ['{browser}', '{uri}'],
+    \    'background': 1},
+    \   {'name': 'firefox',
+    \    'args': ['{browser}', '{uri}'],
+    \    'background': 1},
+    \   {'name': 'w3m',
+    \    'args': ['{browser}', '{uri}'],
+    \    'background': 1},
+    \]
+  endfunction
 endif
 
 " Do not remove g:__openbrowser_platform for debug.
@@ -87,58 +87,58 @@ endif
 
 " Global Variables {{{
 function! s:valid_commands_and_rules()
-    let open_commands = g:openbrowser_open_commands
-    let open_rules    = g:openbrowser_open_rules
-    if type(open_commands) isnot type([])
-        return 0
+  let open_commands = g:openbrowser_open_commands
+  let open_rules    = g:openbrowser_open_rules
+  if type(open_commands) isnot type([])
+    return 0
+  endif
+  if type(open_rules) isnot type({})
+    return 0
+  endif
+  for cmd in open_commands
+    if !has_key(open_rules, cmd)
+      return 0
     endif
-    if type(open_rules) isnot type({})
-        return 0
-    endif
-    for cmd in open_commands
-        if !has_key(open_rules, cmd)
-            return 0
-        endif
-    endfor
-    return 1
+  endfor
+  return 1
 endfunction
 function! s:convert_commands_and_rules()
-    let open_commands = g:openbrowser_open_commands
-    let open_rules    = g:openbrowser_open_rules
-    let browser_commands = []
-    for cmd in open_commands
-        call add(browser_commands,{
-        \ 'name': cmd,
-        \ 'args': open_rules[cmd]
-        \})
-    endfor
-    return browser_commands
+  let open_commands = g:openbrowser_open_commands
+  let open_rules    = g:openbrowser_open_rules
+  let browser_commands = []
+  for cmd in open_commands
+    call add(browser_commands,{
+    \ 'name': cmd,
+    \ 'args': open_rules[cmd]
+    \})
+  endfor
+  return browser_commands
 endfunction
 
 if !exists('g:openbrowser_browser_commands')
-    if exists('g:openbrowser_open_commands')
-    \   && exists('g:openbrowser_open_rules')
-    \   && s:valid_commands_and_rules()
-        " Backward compatibility
-        let g:openbrowser_browser_commands = s:convert_commands_and_rules()
-    else
-        let g:openbrowser_browser_commands = s:get_default_browser_commands()
-    endif
+  if exists('g:openbrowser_open_commands')
+  \   && exists('g:openbrowser_open_rules')
+  \   && s:valid_commands_and_rules()
+    " Backward compatibility
+    let g:openbrowser_browser_commands = s:convert_commands_and_rules()
+  else
+    let g:openbrowser_browser_commands = s:get_default_browser_commands()
+  endif
 endif
 if !exists('g:openbrowser_fix_schemes')
-    let g:openbrowser_fix_schemes = {
-    \   'ttp': 'http',
-    \   'ttps': 'https',
-    \}
+  let g:openbrowser_fix_schemes = {
+  \   'ttp': 'http',
+  \   'ttps': 'https',
+  \}
 endif
 if !exists('g:openbrowser_fix_hosts')
-    let g:openbrowser_fix_hosts = {}
+  let g:openbrowser_fix_hosts = {}
 endif
 if !exists('g:openbrowser_fix_paths')
-    let g:openbrowser_fix_paths = {}
+  let g:openbrowser_fix_paths = {}
 endif
 if !exists('g:openbrowser_default_search')
-    let g:openbrowser_default_search = 'google'
+  let g:openbrowser_default_search = 'google'
 endif
 
 let g:openbrowser_search_engines = extend(
@@ -168,10 +168,10 @@ let g:openbrowser_search_engines = extend(
 \)
 
 if !exists('g:openbrowser_open_filepath_in_vim')
-    let g:openbrowser_open_filepath_in_vim = 0
+  let g:openbrowser_open_filepath_in_vim = 0
 endif
 if !exists('g:openbrowser_open_vim_command')
-    let g:openbrowser_open_vim_command = 'vsplit'
+  let g:openbrowser_open_vim_command = 'vsplit'
 endif
 
 let s:FORMAT_MESSAGE_DEFAULT = {
@@ -180,24 +180,24 @@ let s:FORMAT_MESSAGE_DEFAULT = {
 \   'min_uri_len': 15,
 \}
 if !exists('g:openbrowser_format_message')
-    let g:openbrowser_format_message = s:FORMAT_MESSAGE_DEFAULT
+  let g:openbrowser_format_message = s:FORMAT_MESSAGE_DEFAULT
 elseif type(g:openbrowser_format_message) is type("")
-    " Backward-compatibility
-    let s:msg = g:openbrowser_format_message
-    unlet g:openbrowser_format_message
-    let g:openbrowser_format_message = extend(
-    \   s:FORMAT_MESSAGE_DEFAULT, {'msg': s:msg}, 'force')
+  " Backward-compatibility
+  let s:msg = g:openbrowser_format_message
+  unlet g:openbrowser_format_message
+  let g:openbrowser_format_message = extend(
+  \   s:FORMAT_MESSAGE_DEFAULT, {'msg': s:msg}, 'force')
 else
-    let g:openbrowser_format_message = extend(
-    \   g:openbrowser_format_message, s:FORMAT_MESSAGE_DEFAULT, 'keep')
+  let g:openbrowser_format_message = extend(
+  \   g:openbrowser_format_message, s:FORMAT_MESSAGE_DEFAULT, 'keep')
 endif
 unlet s:FORMAT_MESSAGE_DEFAULT
 
 if !exists('g:openbrowser_use_vimproc')
-    let g:openbrowser_use_vimproc = 1
+  let g:openbrowser_use_vimproc = 1
 endif
 if !exists('g:openbrowser_force_foreground_after_open')
-    let g:openbrowser_force_foreground_after_open = 0
+  let g:openbrowser_force_foreground_after_open = 0
 endif
 " }}}
 
@@ -210,11 +210,11 @@ endif
 
 " Open URL with `g:openbrowser_open_commands`.
 function! OpenBrowser(...) "{{{
-    return call('openbrowser#open', a:000)
+  return call('openbrowser#open', a:000)
 endfunction "}}}
 
 function! OpenBrowserSearch(...) "{{{
-    return call('openbrowser#search', a:000)
+  return call('openbrowser#search', a:000)
 endfunction "}}}
 
 
@@ -246,26 +246,26 @@ xnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keyma
 
 " Popup menus for Right-Click
 if !get(g:, 'openbrowser_no_default_menus', (&guioptions =~# 'M'))
-    function! s:add_menu() abort
-        if get(g:, 'openbrowser_menu_lang',
-        \      &langmenu !=# '' ? &langmenu : v:lang) =~# '^ja'
-            runtime! lang/openbrowser_menu_ja.vim
-        endif
+  function! s:add_menu() abort
+    if get(g:, 'openbrowser_menu_lang',
+    \      &langmenu !=# '' ? &langmenu : v:lang) =~# '^ja'
+      runtime! lang/openbrowser_menu_ja.vim
+    endif
 
-        nnoremenu PopUp.-OpenBrowserSep- <Nop>
-        xnoremenu PopUp.-OpenBrowserSep- <Nop>
-        nmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
-        xmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
-        nmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
-        xmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
-        nmenu <silent> PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
-        xmenu <silent> PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
-    endfunction
+    nnoremenu PopUp.-OpenBrowserSep- <Nop>
+    xnoremenu PopUp.-OpenBrowserSep- <Nop>
+    nmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
+    xmenu <silent> PopUp.Open\ URL <Plug>(openbrowser-open)
+    nmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
+    xmenu <silent> PopUp.Open\ Word(s) <Plug>(openbrowser-search)
+    nmenu <silent> PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
+    xmenu <silent> PopUp.Open\ URL\ or\ Word(s) <Plug>(openbrowser-smart-search)
+  endfunction
 
-    augroup openbrowser-menu
-        autocmd!
-        autocmd GUIEnter * call s:add_menu()
-    augroup END
+  augroup openbrowser-menu
+    autocmd!
+    autocmd GUIEnter * call s:add_menu()
+  augroup END
 endif
 
 " }}}

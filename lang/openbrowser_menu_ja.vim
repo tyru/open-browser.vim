@@ -1,6 +1,6 @@
 
 if exists("did_openbrowser_menu_trans")
-    finish
+  finish
 endif
 let did_openbrowser_menu_trans = 1
 let s:save_cpo = &cpo
