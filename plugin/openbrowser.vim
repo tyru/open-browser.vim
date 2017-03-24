@@ -40,12 +40,23 @@ let g:__openbrowser_platform = {
 
 " Default values of global variables. "{{{
 if g:__openbrowser_platform.cygwin
-  function! s:get_default_browser_commands()
-    return [
-    \   {'name': 'cygstart',
-    \    'args': ['{browser}', '{uri}']}
-    \]
-  endfunction
+  if executable('cygstart')
+    " Cygwin
+    function! s:get_default_browser_commands()
+      return [
+      \   {'name': 'cygstart',
+      \    'args': ['{browser}', '{uri}']}
+      \]
+    endfunction
+  else
+    " MSYS, MSYS2, ...
+    function! s:get_default_browser_commands()
+      return [
+      \   {'name': 'rundll32',
+      \    'args': 'rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
+      \]
+    endfunction
+  endif
 elseif g:__openbrowser_platform.macunix
   function! s:get_default_browser_commands()
     return [
