@@ -12,3 +12,6 @@ script:
   - vim --cmd "try | helptags doc/ | catch | cquit | endtry" --cmd quit
   - sh /tmp/vim-vimlint/bin/vimlint.sh -l /tmp/vim-vimlint -p /tmp/vim-vimlparser -e EVL103=1 -e EVL102.l:_=1 autoload plugin
   - /tmp/vim-themis/bin/themis --runtimepath /tmp/vimproc --runtimepath /tmp/vmock --reporter dot
+
+git:
+  depth: 10
