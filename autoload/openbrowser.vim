@@ -94,7 +94,9 @@ function! openbrowser#open(uri) "{{{
     let opened = openbrowser#__open_browser__(uristr)
   endif
   if !opened
-    call s:Msg.warn("open-browser doesn't know how to open '" . uristr . "'.")
+    if s:get_var('openbrowser_message_verbosity') >= 1
+      call s:Msg.warn("open-browser doesn't know how to open '" . uristr . "'.")
+    endif
   elseif g:openbrowser_force_foreground_after_open && s:Prelude.is_windows()
     " XXX: Vim looses a focus after opening URI...
     " Is this same as non-Windows platform?
@@ -116,7 +118,7 @@ function! openbrowser#search(query, ...) "{{{
   let search_engines =
   \   s:get_var('openbrowser_search_engines')
   if !has_key(search_engines, engine)
-    call s:Msg.warn("Unknown search engine '" . engine . "'.")
+    call s:Msg.error("Unknown search engine '" . engine . "'.")
     return
   endif
 
@@ -158,7 +160,7 @@ function! s:parse_and_delegate(excmd, parse, delegate, cmdline) "{{{
   try
     let [engine, cmdline] = {a:parse}(cmdline)
   catch /^parse error/
-    call s:Msg.warn(
+    call s:Msg.error(
     \   a:excmd
     \   . ' [-{search-engine}]'
     \   . ' {query}'
@@ -220,7 +222,7 @@ endfunction "}}}
 
 " <Plug>(openbrowser-open)
 function! openbrowser#_keymapping_open(mode, ...) "{{{
-  let silent = get(a:000, 0, 0)
+  let silent = get(a:000, 0, s:get_var('openbrowser_message_verbosity') ==# 0)
   if a:mode ==# 'n'
     " URL
     let url = s:get_url_on_cursor()
@@ -451,8 +453,9 @@ function! openbrowser#__open_browser__(uristr) "{{{
   " Clear previous message
   redraw!
 
+  let message_verbosity = s:get_var('openbrowser_message_verbosity')
   let format_message = s:get_var('openbrowser_format_message')
-  if format_message.msg !=# ''
+  if message_verbosity >= 2 && format_message.msg !=# ''
     let msg = s:expand_format_message(format_message,
     \   {
     \      'uri' : uri,
@@ -503,7 +506,7 @@ function! openbrowser#__open_browser__(uristr) "{{{
     " because browser is spawned in background process
     " so can't check its return value.
 
-    if format_message.msg !=# ''
+    if message_verbosity >= 2 && format_message.msg !=# ''
       redraw
       let msg = s:expand_format_message(format_message,
       \   {
@@ -659,7 +662,7 @@ function! s:expand_keywords(str, options)  " {{{
       let result .= rest[: braindex]
       let rest = rest[braindex+1 :]
     else
-      call s:Msg.warn('parse error: rest = '.rest.', result = '.result)
+      call s:Msg.error('parse error: rest = '.rest.', result = '.result)
     endif
   endwhile
   return result

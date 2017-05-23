@@ -195,6 +195,8 @@ else
 endif
 unlet s:FORMAT_MESSAGE_DEFAULT
 
+let g:openbrowser_message_verbosity = get(g:, 'openbrowser_message_verbosity', 2)
+
 let g:openbrowser_use_vimproc = get(g:, 'openbrowser_use_vimproc', 1)
 let g:openbrowser_force_foreground_after_open = get(g:, 'openbrowser_force_foreground_after_open', 0)
 " }}}
