@@ -142,15 +142,10 @@ if !exists('g:openbrowser_fix_schemes')
   \   'ttps': 'https',
   \}
 endif
-if !exists('g:openbrowser_fix_hosts')
-  let g:openbrowser_fix_hosts = {}
-endif
-if !exists('g:openbrowser_fix_paths')
-  let g:openbrowser_fix_paths = {}
-endif
-if !exists('g:openbrowser_default_search')
-  let g:openbrowser_default_search = 'google'
-endif
+
+let g:openbrowser_fix_hosts = get(g:, 'openbrowser_fix_hosts', {})
+let g:openbrowser_fix_paths = get(g:, 'openbrowser_fix_paths', {})
+let g:openbrowser_default_search = get(g:, 'openbrowser_default_search', 'google')
 
 let g:openbrowser_search_engines = extend(
 \   get(g:, 'openbrowser_search_engines', {}),
@@ -178,12 +173,8 @@ let g:openbrowser_search_engines = extend(
 \   'keep'
 \)
 
-if !exists('g:openbrowser_open_filepath_in_vim')
-  let g:openbrowser_open_filepath_in_vim = 0
-endif
-if !exists('g:openbrowser_open_vim_command')
-  let g:openbrowser_open_vim_command = 'vsplit'
-endif
+let g:openbrowser_open_filepath_in_vim = get(g:, 'openbrowser_open_filepath_in_vim', 0)
+let g:openbrowser_open_vim_command = get(g:, 'openbrowser_open_vim_command', 'vsplit')
 
 let s:FORMAT_MESSAGE_DEFAULT = {
 \   'msg': "opening '{uri}' ... {done ? 'done! ({command})' : ''}",
@@ -204,12 +195,8 @@ else
 endif
 unlet s:FORMAT_MESSAGE_DEFAULT
 
-if !exists('g:openbrowser_use_vimproc')
-  let g:openbrowser_use_vimproc = 1
-endif
-if !exists('g:openbrowser_force_foreground_after_open')
-  let g:openbrowser_force_foreground_after_open = 0
-endif
+let g:openbrowser_use_vimproc = get(g:, 'openbrowser_use_vimproc', 1)
+let g:openbrowser_force_foreground_after_open = get(g:, 'openbrowser_force_foreground_after_open', 0)
 " }}}
 
 
