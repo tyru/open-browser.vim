@@ -448,9 +448,11 @@ endfunction "}}}
 function! openbrowser#__open_browser__(uristr) "{{{
   let uri = a:uristr
 
+  " Clear previous message
+  redraw!
+
   let format_message = s:get_var('openbrowser_format_message')
   if format_message.msg !=# ''
-    redraw
     let msg = s:expand_format_message(format_message,
     \   {
     \      'uri' : uri,
