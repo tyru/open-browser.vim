@@ -321,6 +321,17 @@ g:openbrowser_format_message
 		2.2. After 2.1, if URI is longer than command-line, then
 			2.2.1. Truncate whole string.
 
+					*g:openbrowser_message_verbosity*
+g:openbrowser_message_verbosity
+								(default: 2)
+	value meaning ~
+	0     no messages / no error messages
+	1     no messages / show error messages
+	2     show messages / show error messages
+
+	NOTE: Even if this value is 2, no messages are echoed when
+	|g:openbrowser_format_message|.msg is empty value.
+
 					*g:openbrowser_use_vimproc*
 g:openbrowser_use_vimproc
 								(default: 1)
