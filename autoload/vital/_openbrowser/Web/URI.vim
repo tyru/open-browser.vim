@@ -117,7 +117,7 @@ function! s:_uri_new_sandbox(uri, ignore_rest, pattern_set, retall, NothrowValue
 endfunction
 
 function! s:_is_own_exception(str) abort
-  return a:str =~# '^uri parse error\%(([^)]\+)\)\?:'
+  return a:str =~# '^vital: Web.URI: uri parse error\%(([^)]\+)\)\?:'
 endfunction
 
 
@@ -160,7 +160,7 @@ function! s:_parse_uri(str, ignore_rest, pattern_set) abort
   endif
 
   if !a:ignore_rest && rest !=# ''
-    throw 'uri parse error: unnecessary string at the end.'
+    throw 'vital: Web.URI: uri parse error: unnecessary string at the end.'
   endif
 
   let obj = deepcopy(s:URI)
@@ -195,7 +195,7 @@ function! s:_eat_em(str, pat, ...) abort
   if empty(m)
     let prefix = printf('uri parse error%s: ', (a:0 ? '('.a:1.')' : ''))
     let msg = printf("can't parse '%s' with '%s'.", a:str, pat)
-    throw prefix . msg
+    throw 'vital: Web.URI: ' . prefix . msg
   endif
   let rest = strpart(a:str, strlen(m[0]))
   return [m[0], rest]
@@ -217,7 +217,7 @@ function! s:_eat_hier_part(rest, pattern_set) abort
     let port = authority.port
     " path
     let [path, rest] = s:_eat_path_abempty(rest, a:pattern_set)
-  elseif rest =~# ':'
+  elseif rest =~# '^:'
     let rest = rest[1:]
     let userinfo = ''
     let host = ''
@@ -232,10 +232,10 @@ function! s:_eat_hier_part(rest, pattern_set) abort
     elseif rest ==# '' || rest =~# '^[?#]'    " zero characters
       let path = ''
     else
-      throw printf("uri parse error(hier-part): can't parse '%s'.", rest)
+      throw printf("vital: Web.URI: uri parse error(hier-part): can't parse '%s'.", rest)
     endif
   else
-    throw printf("uri parse error(hier-part): can't parse '%s'.", rest)
+    throw printf("vital: Web.URI: uri parse error(hier-part): can't parse '%s'.", rest)
   endif
   return [{
   \ 'userinfo': userinfo,
@@ -454,8 +454,8 @@ function! s:_parse_relative_ref(relstr, pattern_set) abort
     let fragment = ''
   endif
   " no trailing string allowed.
-  if rest != ''
-    throw 'uri parse error(relative-ref): unnecessary string at the end.'
+  if rest !=# ''
+    throw 'vital: Web.URI: uri parse error(relative-ref): unnecessary string at the end.'
   endif
 
   let obj = deepcopy(s:URI)
@@ -501,7 +501,7 @@ function! s:_parse_relative_part(rel_uri, pattern_set) abort
     elseif rest ==# '' || rest =~# '^[?#]'    " zero characters
       let path = ''
     else
-      throw printf("uri parse error(relative-part): can't parse '%s'.", rest)
+      throw printf("vital: Web.URI: uri parse error(relative-part): can't parse '%s'.", rest)
     endif
   endif
   return [{
@@ -717,7 +717,7 @@ let s:URI = {
 " Thus it shares this instance also cache.
 " But it is no problem because of the following reasons.
 " 1. Each component's return value doesn't change
-"    unless it is overriden by a user. but...
+"    unless it is overridden by a user. but...
 " 2. s:DefaultPatternSet can't be accessed by a user.
 let s:DefaultPatternSet = {'_cache': {}}
 
