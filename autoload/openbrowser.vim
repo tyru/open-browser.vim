@@ -6,7 +6,7 @@ let s:save_cpo = &cpo
 set cpo&vim
 " }}}
 
-let s:V = vital#openbrowser#of()
+let s:V = vital#openbrowser#new()
 let s:Prelude = s:V.import('Prelude')
 let s:String = s:V.import('Data.String')
 let s:Process = s:V.import('Process')
