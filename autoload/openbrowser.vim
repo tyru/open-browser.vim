@@ -8,7 +8,7 @@ set cpo&vim
 
 let s:Prelude = vital#openbrowser#import('Prelude')
 let s:String = vital#openbrowser#import('Data.String')
-let s:Process = vital#openbrowser#import('Process')
+let s:Process = vital#openbrowser#import('System.Process')
 let s:URI = vital#openbrowser#import('Web.URI')
 let s:HTTP = vital#openbrowser#import('Web.HTTP')
 let s:Buffer = vital#openbrowser#import('Vim.Buffer')
@@ -492,7 +492,7 @@ function! openbrowser#__open_browser__(uristr) abort "{{{
     \   )'
     \)
     try
-      call openbrowser#__system__(
+      call s:Process.execute(
       \   (type(args) is s:t_list ? system_args : system_args[0]),
       \   {'use_vimproc': use_vimproc,
       \    'background': get(cmd, 'background')}
@@ -524,10 +524,6 @@ function! openbrowser#__open_browser__(uristr) abort "{{{
   " failed to open
   return 0
 endfunction "}}}
-
-function! openbrowser#__system__(...) abort
-  return call(s:Process.system, a:000, s:Process)
-endfunction
 
 " @return Dictionary: the URL on cursor, or the first URL after cursor
 "   Empty Dictionary means no URLs found.
