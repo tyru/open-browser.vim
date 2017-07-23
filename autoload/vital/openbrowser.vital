@@ -7,3 +7,4 @@ Vim.Buffer
 Prelude
 Vim.Message
 System.Process
+Process
