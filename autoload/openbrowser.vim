@@ -6,15 +6,13 @@ let s:save_cpo = &cpo
 set cpo&vim
 " }}}
 
-let s:V = vital#openbrowser#new()
-let s:Prelude = s:V.import('Prelude')
-let s:String = s:V.import('Data.String')
-let s:Process = s:V.import('Process')
-let s:URI = s:V.import('Web.URI')
-let s:HTTP = s:V.import('Web.HTTP')
-let s:Buffer = s:V.import('Vim.Buffer')
-let s:Msg = s:V.import('Vim.Message')
-unlet s:V
+let s:Prelude = vital#openbrowser#import('Prelude')
+let s:String = vital#openbrowser#import('Data.String')
+let s:Process = vital#openbrowser#import('Process')
+let s:URI = vital#openbrowser#import('Web.URI')
+let s:HTTP = vital#openbrowser#import('Web.HTTP')
+let s:Buffer = vital#openbrowser#import('Vim.Buffer')
+let s:Msg = vital#openbrowser#import('Vim.Message')
 
 let s:t_string = type('')
 
