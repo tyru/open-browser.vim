@@ -15,6 +15,8 @@ let s:Buffer = vital#openbrowser#import('Vim.Buffer')
 let s:Msg = vital#openbrowser#import('Vim.Message')
 
 let s:t_string = type('')
+let s:t_dict = type({})
+let s:t_list = type([])
 
 
 " Save/Determine global variable values.
@@ -32,7 +34,7 @@ endfunction "}}}
 " :OpenBrowser
 " @param uri URI object or String
 function! openbrowser#open(uri) abort "{{{
-  if type(a:uri) is type({})
+  if type(a:uri) is s:t_list
   \   && has_key(a:uri, '__pattern_set')    " URI object
     " Trust URI object value because
     " it must be validated by parser.
@@ -473,11 +475,11 @@ function! openbrowser#__open_browser__(uristr) abort "{{{
     " If args is not List, need to escape by open-browser,
     " not s:Process.system().
     let args = deepcopy(cmd.args)
-    let need_escape = type(args) isnot type([])
+    let need_escape = type(args) isnot s:t_list
     let quote = need_escape ? "'" : ''
     let use_vimproc = (g:openbrowser_use_vimproc && s:vimproc_is_installed)
     let system_args = map(
-    \   (type(args) is type([]) ? copy(args) : [args]),
+    \   (type(args) is s:t_list ? copy(args) : [args]),
     \   's:expand_keywords(
     \      v:val,
     \      {
@@ -491,7 +493,7 @@ function! openbrowser#__open_browser__(uristr) abort "{{{
     \)
     try
       call openbrowser#__system__(
-      \   (type(args) is type([]) ? system_args : system_args[0]),
+      \   (type(args) is s:t_list ? system_args : system_args[0]),
       \   {'use_vimproc': use_vimproc,
       \    'background': get(cmd, 'background')}
       \)
@@ -601,7 +603,7 @@ endfunction
 " - "\{keyword}" => "{keyword}", not expression `keyword`.
 "   it does not expand vim variable `keyword`.
 function! s:expand_keywords(str, options) abort " {{{
-  if type(a:str) != type('') || type(a:options) != type({})
+  if type(a:str) isnot s:t_string || type(a:options) isnot s:t_dict
     echoerr 's:expand_keywords(): invalid arguments. (a:str = '.string(a:str).', a:options = '.string(a:options).')'
     return ''
   endif
