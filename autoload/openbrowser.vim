@@ -142,11 +142,6 @@ function! openbrowser#smart_search(query, ...) abort "{{{
   endif
 endfunction "}}}
 
-" Escape one argument.
-function! openbrowser#shellescape(...) abort "{{{
-  return call(s:Process.shellescape, a:000, s:Process)
-endfunction "}}}
-
 " }}}
 
 " Implementations {{{
