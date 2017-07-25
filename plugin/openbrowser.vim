@@ -61,8 +61,7 @@ elseif g:__openbrowser_platform.macunix
   function! s:get_default_browser_commands()
     return [
     \   {'name': 'open',
-    \    'args': ['{browser}', '{uri}'],
-    \    'background': 1}
+    \    'args': ['{browser}', '{uri}']}
     \]
   endfunction
 elseif g:__openbrowser_platform.mswin
