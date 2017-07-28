@@ -487,7 +487,7 @@ function! openbrowser#__open_browser__(uristr) abort "{{{
     \   )'
     \)
     try
-      call s:Process.execute(
+      call openbrowser#__system__(
       \   (type(args) is s:t_list ? system_args : system_args[0]),
       \   {'use_vimproc': use_vimproc,
       \    'background': get(cmd, 'background')}
@@ -519,6 +519,10 @@ function! openbrowser#__open_browser__(uristr) abort "{{{
   " failed to open
   return 0
 endfunction "}}}
+
+function! openbrowser#__system__(...) abort
+  return call(s:Process.execute, a:000, s:Process)
+endfunction
 
 " @return Dictionary: the URL on cursor, or the first URL after cursor
 "   Empty Dictionary means no URLs found.
