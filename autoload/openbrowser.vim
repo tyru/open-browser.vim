@@ -6,15 +6,17 @@ let s:save_cpo = &cpo
 set cpo&vim
 " }}}
 
-let s:V = vital#openbrowser#new()
-let s:Prelude = s:V.import('Prelude')
-let s:String = s:V.import('Data.String')
-let s:Process = s:V.import('Process')
-let s:URI = s:V.import('Web.URI')
-let s:HTTP = s:V.import('Web.HTTP')
-let s:Buffer = s:V.import('Vim.Buffer')
-let s:Msg = s:V.import('Vim.Message')
-unlet s:V
+let s:Prelude = vital#openbrowser#import('Prelude')
+let s:String = vital#openbrowser#import('Data.String')
+let s:Process = vital#openbrowser#import('System.Process')
+let s:URI = vital#openbrowser#import('Web.URI')
+let s:HTTP = vital#openbrowser#import('Web.HTTP')
+let s:Buffer = vital#openbrowser#import('Vim.Buffer')
+let s:Msg = vital#openbrowser#import('Vim.Message')
+
+let s:t_string = type('')
+let s:t_dict = type({})
+let s:t_list = type([])
 
 
 " Save/Determine global variable values.
@@ -23,7 +25,7 @@ let s:vimproc_is_installed = globpath(&rtp, 'autoload/vimproc.vim') !=# ''
 
 " Interfaces {{{
 
-function! openbrowser#load() "{{{
+function! openbrowser#load() abort "{{{
   " dummy function to load this file.
 endfunction "}}}
 
@@ -31,14 +33,14 @@ endfunction "}}}
 
 " :OpenBrowser
 " @param uri URI object or String
-function! openbrowser#open(uri) "{{{
-  if type(a:uri) is type({})
+function! openbrowser#open(uri) abort "{{{
+  if type(a:uri) is s:t_list
   \   && has_key(a:uri, '__pattern_set')    " URI object
     " Trust URI object value because
     " it must be validated by parser.
     let uriobj = a:uri
     let uristr = a:uri.to_string()
-  elseif type(a:uri) is type("")
+  elseif type(a:uri) is s:t_string
     let uristr = a:uri
     if uristr =~# '^\s*$'
       return
@@ -108,7 +110,7 @@ function! openbrowser#open(uri) "{{{
 endfunction "}}}
 
 " :OpenBrowserSearch
-function! openbrowser#search(query, ...) "{{{
+function! openbrowser#search(query, ...) abort "{{{
   if a:query =~# '^\s*$'
     return
   endif
@@ -128,7 +130,7 @@ function! openbrowser#search(query, ...) "{{{
 endfunction "}}}
 
 " :OpenBrowserSmartSearch
-function! openbrowser#smart_search(query, ...) "{{{
+function! openbrowser#smart_search(query, ...) abort "{{{
   let type = s:detect_query_type(a:query)
   if type.uri || type.filepath
     return openbrowser#open(a:query)
@@ -140,11 +142,6 @@ function! openbrowser#smart_search(query, ...) "{{{
   endif
 endfunction "}}}
 
-" Escape one argument.
-function! openbrowser#shellescape(...) "{{{
-  return call(s:Process.shellescape, a:000, s:Process)
-endfunction "}}}
-
 " }}}
 
 " Implementations {{{
@@ -154,7 +151,7 @@ lockvar s:NONE
 
 
 
-function! s:parse_and_delegate(excmd, parse, delegate, cmdline) "{{{
+function! s:parse_and_delegate(excmd, parse, delegate, cmdline) abort "{{{
   let cmdline = substitute(a:cmdline, '^\s\+', '', '')
 
   try
@@ -171,13 +168,13 @@ function! s:parse_and_delegate(excmd, parse, delegate, cmdline) "{{{
   let args = [cmdline] + (engine is s:NONE ? [] : [engine])
   return call(a:delegate, args)
 endfunction "}}}
-function! s:parse_cmdline(cmdline) "{{{
+function! s:parse_cmdline(cmdline) abort "{{{
   let m = matchlist(a:cmdline, '^-\(\S\+\)\s\+\(.*\)')
   return !empty(m) ? m[1:2] : [s:NONE, a:cmdline]
 endfunction "}}}
 
 " :OpenBrowserSearch
-function! openbrowser#_cmd_open_browser_search(cmdline) "{{{
+function! openbrowser#_cmd_open_browser_search(cmdline) abort "{{{
   return s:parse_and_delegate(
   \   ':OpenBrowserSearch',
   \   's:parse_cmdline',
@@ -187,7 +184,7 @@ function! openbrowser#_cmd_open_browser_search(cmdline) "{{{
 endfunction "}}}
 " @vimlint(EVL103, 1, a:arglead)
 " @vimlint(EVL103, 1, a:cursorpos)
-function! openbrowser#_cmd_complete(arglead, cmdline, cursorpos) "{{{
+function! openbrowser#_cmd_complete(arglead, cmdline, cursorpos) abort "{{{
   let excmd = '^\s*OpenBrowser\w\+\s\+'
   if a:cmdline !~# excmd
     return
@@ -196,7 +193,7 @@ function! openbrowser#_cmd_complete(arglead, cmdline, cursorpos) "{{{
 
   let engine_options = map(
   \   sort(keys(s:get_var('openbrowser_search_engines'))),
-  \   '"-" . v:val'
+  \   '''-'' . v:val'
   \)
   if cmdline ==# '' || cmdline ==# '-'
     " Return all search engines.
@@ -211,7 +208,7 @@ endfunction "}}}
 " @vimlint(EVL103, 0, a:cursorpos)
 
 " :OpenBrowserSmartSearch
-function! openbrowser#_cmd_open_browser_smart_search(cmdline) "{{{
+function! openbrowser#_cmd_open_browser_smart_search(cmdline) abort "{{{
   return s:parse_and_delegate(
   \   ':OpenBrowserSmartSearch',
   \   's:parse_cmdline',
@@ -221,7 +218,7 @@ function! openbrowser#_cmd_open_browser_smart_search(cmdline) "{{{
 endfunction "}}}
 
 " <Plug>(openbrowser-open)
-function! openbrowser#_keymapping_open(mode, ...) "{{{
+function! openbrowser#_keymapping_open(mode, ...) abort "{{{
   let silent = get(a:000, 0, s:get_var('openbrowser_message_verbosity') ==# 0)
   if a:mode ==# 'n'
     " URL
@@ -239,7 +236,7 @@ function! openbrowser#_keymapping_open(mode, ...) "{{{
     " Fail!
     if !silent
       call s:Msg.error(
-      \   "URL or file path is not found under cursor!")
+      \   'URL or file path is not found under cursor!')
     endif
     return 0
   else
@@ -253,7 +250,7 @@ function! openbrowser#_keymapping_open(mode, ...) "{{{
 endfunction "}}}
 
 " <Plug>(openbrowser-search)
-function! openbrowser#_keymapping_search(mode) "{{{
+function! openbrowser#_keymapping_search(mode) abort "{{{
   if a:mode ==# 'n'
     return openbrowser#search(expand('<cword>'))
   else
@@ -262,7 +259,7 @@ function! openbrowser#_keymapping_search(mode) "{{{
 endfunction "}}}
 
 " <Plug>(openbrowser-smart-search)
-function! openbrowser#_keymapping_smart_search(mode) "{{{
+function! openbrowser#_keymapping_smart_search(mode) abort "{{{
   if openbrowser#_keymapping_open(a:mode, 1)
     " Suceeded to open!
     return
@@ -281,7 +278,7 @@ function! openbrowser#_keymapping_smart_search(mode) "{{{
   endif
 endfunction "}}}
 
-function! s:get_selected_text() "{{{
+function! s:get_selected_text() abort "{{{
   let selected_text = s:Buffer.get_last_selected()
   let text = substitute(selected_text, '[\n\r]\+', ' ', 'g')
   return substitute(text, '^\s*\|\s*$', '', 'g')
@@ -363,7 +360,7 @@ function! s:extract_urls(text) abort "{{{
   return urls
 endfunction "}}}
 
-function! s:seems_path(uri) "{{{
+function! s:seems_path(uri) abort "{{{
   " - Has no invalid filename character (seeing &isfname)
   " and, either
   " - file:// prefixed string and existed file path
@@ -376,12 +373,12 @@ function! s:seems_path(uri) "{{{
   return getftype(path) !=# ''
 endfunction "}}}
 
-function! s:seems_uri(uriobj) "{{{
+function! s:seems_uri(uriobj) abort "{{{
   return !empty(a:uriobj)
   \   && a:uriobj.scheme() !=# ''
 endfunction "}}}
 
-function! s:detect_query_type(query, ...) "{{{
+function! s:detect_query_type(query, ...) abort "{{{
   let uriobj = a:0 ? a:1 : {}
   if empty(uriobj)
     let uriobj = s:URI.new(a:query, {})
@@ -393,7 +390,7 @@ function! s:detect_query_type(query, ...) "{{{
 endfunction "}}}
 
 " @vimlint(EVL104, 1, l:save_shellslash)
-function! s:convert_to_fullpath(path) "{{{
+function! s:convert_to_fullpath(path) abort "{{{
   if exists('+shellslash')
     let save_shellslash = &l:shellslash
     let &l:shellslash = 1
@@ -408,7 +405,7 @@ function! s:convert_to_fullpath(path) "{{{
 endfunction "}}}
 " @vimlint(EVL104, 0, l:save_shellslash)
 
-function! s:expand_format_message(format_message, keywords) "{{{
+function! s:expand_format_message(format_message, keywords) abort "{{{
   let maxlen = s:Msg.get_hit_enter_max_length()
   let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
   if a:format_message.truncate && strlen(expanded_msg) > maxlen
@@ -447,7 +444,7 @@ endfunction "}}}
 
 " @param uristr String
 " This function is public for testing.
-function! openbrowser#__open_browser__(uristr) "{{{
+function! openbrowser#__open_browser__(uristr) abort "{{{
   let uri = a:uristr
 
   " Clear previous message
@@ -473,25 +470,25 @@ function! openbrowser#__open_browser__(uristr) "{{{
     " If args is not List, need to escape by open-browser,
     " not s:Process.system().
     let args = deepcopy(cmd.args)
-    let need_escape = type(args) isnot type([])
+    let need_escape = type(args) isnot s:t_list
     let quote = need_escape ? "'" : ''
     let use_vimproc = (g:openbrowser_use_vimproc && s:vimproc_is_installed)
     let system_args = map(
-    \   (type(args) is type([]) ? copy(args) : [args]),
+    \   (type(args) is s:t_list ? copy(args) : [args]),
     \   's:expand_keywords(
     \      v:val,
     \      {
-    \           "browser"      : quote . cmd.name . quote,
-    \           "browser_noesc": cmd.name,
-    \           "uri"          : quote . uri . quote,
-    \           "uri_noesc"    : uri,
-    \           "use_vimproc"  : use_vimproc,
+    \           ''browser''      : quote . cmd.name . quote,
+    \           ''browser_noesc'': cmd.name,
+    \           ''uri''          : quote . uri . quote,
+    \           ''uri_noesc''    : uri,
+    \           ''use_vimproc''  : use_vimproc,
     \       }
     \   )'
     \)
     try
       call openbrowser#__system__(
-      \   (type(args) is type([]) ? system_args : system_args[0]),
+      \   (type(args) is s:t_list ? system_args : system_args[0]),
       \   {'use_vimproc': use_vimproc,
       \    'background': get(cmd, 'background')}
       \)
@@ -523,21 +520,21 @@ function! openbrowser#__open_browser__(uristr) "{{{
   return 0
 endfunction "}}}
 
-function! openbrowser#__system__(...)
-  return call(s:Process.system, a:000, s:Process)
+function! openbrowser#__system__(...) abort
+  return call(s:Process.execute, a:000, s:Process)
 endfunction
 
 " @return Dictionary: the URL on cursor, or the first URL after cursor
 "   Empty Dictionary means no URLs found.
 " :help openbrowser-url-detection
-function! s:get_url_on_cursor() "{{{
+function! s:get_url_on_cursor() abort "{{{
   let url = s:get_thing_on_cursor('s:detect_url_cb')
   return url isnot s:NONE ? url : ''
 endfunction "}}}
 
 " @return the filepath on cursor, or the first filepath after cursor
 " :help openbrowser-filepath-detection
-function! s:get_filepath_on_cursor() "{{{
+function! s:get_filepath_on_cursor() abort "{{{
   let filepath = s:get_thing_on_cursor('s:detect_filepath_cb')
   return filepath isnot s:NONE ? filepath : ''
 endfunction "}}}
@@ -600,8 +597,8 @@ endfunction
 " Escape by \ if you does not want to expand.
 " - "\{keyword}" => "{keyword}", not expression `keyword`.
 "   it does not expand vim variable `keyword`.
-function! s:expand_keywords(str, options)  " {{{
-  if type(a:str) != type('') || type(a:options) != type({})
+function! s:expand_keywords(str, options) abort " {{{
+  if type(a:str) isnot s:t_string || type(a:options) isnot s:t_dict
     echoerr 's:expand_keywords(): invalid arguments. (a:str = '.string(a:str).', a:options = '.string(a:options).')'
     return ''
   endif
@@ -631,10 +628,10 @@ function! s:expand_keywords(str, options)  " {{{
     endif
 
     " Process special string.
-    if rest[0] == '\'
+    if rest[0] ==# '\'
       let result .= rest[1]
       let rest = rest[2 :]
-    elseif rest[0] == '{'
+    elseif rest[0] ==# '{'
       " NOTE: braindex + 1 == 1, it skips first bracket (rest[0])
       let braindex = 0
       let braindex_stack = [braindex]
@@ -654,7 +651,7 @@ function! s:expand_keywords(str, options)  " {{{
           let right = rest[braindex+1 :]
           " Remove(unescape) backslashes.
           let expr = substitute(expr, '\\\([{}]\)', '\1', 'g')
-          let value = eval(expr) . ""
+          let value = eval(expr) . ''
           let rest = left . value . right
           let braindex -= len(expr) - len(value)
         endif
@@ -668,7 +665,7 @@ function! s:expand_keywords(str, options)  " {{{
   return result
 endfunction "}}}
 
-function! s:get_var(varname) "{{{
+function! s:get_var(varname) abort "{{{
   for ns in [b:, w:, t:, g:]
     if has_key(ns, a:varname)
       return ns[a:varname]
@@ -679,7 +676,7 @@ function! s:get_var(varname) "{{{
 endfunction "}}}
 
 " From https://github.com/chikatoike/concealedyank.vim
-function! s:getconcealedline(lnum, ...) "{{{
+function! s:getconcealedline(lnum, ...) abort "{{{
   if !has('conceal')
     return getline(a:lnum)
   endif
@@ -710,7 +707,7 @@ function! s:getconcealedline(lnum, ...) "{{{
   return ret
 endfunction "}}}
 
-function! s:getconcealedcol(expr) "{{{
+function! s:getconcealedcol(expr) abort "{{{
   if !has('conceal')
     return col(a:expr)
   endif
@@ -741,7 +738,7 @@ function! s:getconcealedcol(expr) "{{{
   return ret
 endfunction "}}}
 
-function! s:shellslash()
+function! s:shellslash() abort
   return exists('+shellslash') && &l:shellslash
 endfunction "}}}
 

@@ -13,6 +13,7 @@ set cpo&vim
 " }}}
 
 
+let s:t_string = type('')
 let s:is_unix = has('unix')
 let s:is_mswin = has('win16') || has('win32') || has('win64')
 let s:is_cygwin = has('win32unix')
@@ -188,7 +189,7 @@ let s:FORMAT_MESSAGE_DEFAULT = {
 \}
 if !exists('g:openbrowser_format_message')
   let g:openbrowser_format_message = s:FORMAT_MESSAGE_DEFAULT
-elseif type(g:openbrowser_format_message) is type("")
+elseif type(g:openbrowser_format_message) is s:t_string
   " Backward-compatibility
   let s:msg = g:openbrowser_format_message
   unlet g:openbrowser_format_message
