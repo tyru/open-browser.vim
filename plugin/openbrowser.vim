@@ -39,6 +39,11 @@ let g:__openbrowser_platform = {
 
 
 " Default values of global variables. "{{{
+
+" FIXME: 'background' doesn't work now on neovim.
+" https://github.com/tyru/open-browser.vim/issues/102
+let s:background = has('nvim') ? 0 : 1
+
 if g:__openbrowser_platform.cygwin
   if executable('cygstart')
     " Cygwin
@@ -62,7 +67,7 @@ elseif g:__openbrowser_platform.macunix
     return [
     \   {'name': 'open',
     \    'args': ['{browser}', '{uri}'],
-    \    'background': 1}
+    \    'background': s:background}
     \]
   endfunction
 elseif g:__openbrowser_platform.mswin
@@ -77,16 +82,16 @@ elseif g:__openbrowser_platform.unix
     return [
     \   {'name': 'xdg-open',
     \    'args': ['{browser}', '{uri}'],
-    \    'background': 1},
+    \    'background': s:background},
     \   {'name': 'x-www-browser',
     \    'args': ['{browser}', '{uri}'],
-    \    'background': 1},
+    \    'background': s:background},
     \   {'name': 'firefox',
     \    'args': ['{browser}', '{uri}'],
-    \    'background': 1},
+    \    'background': s:background},
     \   {'name': 'w3m',
     \    'args': ['{browser}', '{uri}'],
-    \    'background': 1},
+    \    'background': s:background},
     \]
   endfunction
 endif
