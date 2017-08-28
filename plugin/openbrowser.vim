@@ -83,6 +83,15 @@ elseif g:__openbrowser_platform.mswin
   endfunction
 elseif g:__openbrowser_platform.unix
   function! s:get_default_browser_commands()
+    if filereadable('/proc/version_signature') &&
+    \ get(readfile('/proc/version_signature', 'b', 1), 0, '') =~# '^Microsoft'
+      " Windows Subsystem for Linux
+      return [
+      \   {'name': 'rundll32',
+      \    'cmd': '/mnt/c/Windows/System32/rundll32.exe',
+      \    'args': '/mnt/c/Windows/System32/rundll32.exe url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
+      \]
+    endif
     return [
     \   {'name': 'xdg-open',
     \    'cmd': 'xdg-open',
