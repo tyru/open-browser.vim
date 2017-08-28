@@ -50,6 +50,7 @@ if g:__openbrowser_platform.cygwin
     function! s:get_default_browser_commands()
       return [
       \   {'name': 'cygstart',
+      \    'cmd': 'cygstart',
       \    'args': ['{browser}', '{uri}']}
       \]
     endfunction
@@ -58,6 +59,7 @@ if g:__openbrowser_platform.cygwin
     function! s:get_default_browser_commands()
       return [
       \   {'name': 'rundll32',
+      \    'cmd': 'rundll32',
       \    'args': 'rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
       \]
     endfunction
@@ -66,6 +68,7 @@ elseif g:__openbrowser_platform.macunix
   function! s:get_default_browser_commands()
     return [
     \   {'name': 'open',
+    \    'cmd': 'open',
     \    'args': ['{browser}', '{uri}'],
     \    'background': s:background}
     \]
@@ -74,6 +77,7 @@ elseif g:__openbrowser_platform.mswin
   function! s:get_default_browser_commands()
     return [
     \   {'name': 'rundll32',
+    \    'cmd': 'rundll32',
     \    'args': 'rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
     \]
   endfunction
@@ -81,15 +85,19 @@ elseif g:__openbrowser_platform.unix
   function! s:get_default_browser_commands()
     return [
     \   {'name': 'xdg-open',
+    \    'cmd': 'xdg-open',
     \    'args': ['{browser}', '{uri}'],
     \    'background': s:background},
     \   {'name': 'x-www-browser',
+    \    'cmd': 'x-www-browser',
     \    'args': ['{browser}', '{uri}'],
     \    'background': s:background},
     \   {'name': 'firefox',
+    \    'cmd': 'firefox',
     \    'args': ['{browser}', '{uri}'],
     \    'background': s:background},
     \   {'name': 'w3m',
+    \    'cmd': 'w3m',
     \    'args': ['{browser}', '{uri}'],
     \    'background': s:background},
     \]

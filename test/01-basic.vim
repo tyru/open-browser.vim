@@ -18,7 +18,7 @@ function! s:suite.system_linux() abort
   call s:system_once({
   \   'browser_commands': [
   \       {'background': background, 'name': 'xdg-open',
-  \        'args': ['{browser}', '{uri}']}
+  \        'cmd': 'xdg-open', 'args': ['{browser}', '{uri}']}
   \   ],
   \   'use_vimproc': use_vimproc,
   \   'input': 'http://example.com/',
@@ -39,7 +39,7 @@ function! s:suite.openbrowser_linux() abort
   call s:openbrowser_once({
   \   'browser_commands': [
   \       {'background': background, 'name': 'xdg-open',
-  \        'args': ['{browser}', '{uri}']}
+  \        'cmd': 'xdg-open', 'args': ['{browser}', '{uri}']}
   \   ],
   \   'use_vimproc': use_vimproc,
   \   'input': 'http://example.com/',
@@ -56,7 +56,7 @@ function! s:suite.system_mswin() abort
   let background = 0
   call s:system_once({
   \   'browser_commands': [
-  \       {'name': 'rundll32',
+  \       {'name': 'rundll32', 'cmd': 'rundll32',
   \        'args': 'rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
   \   ],
   \   'use_vimproc': use_vimproc,
@@ -77,7 +77,7 @@ function! s:suite.openbrowser_mswin() abort
   let background = 0
   call s:openbrowser_once({
   \   'browser_commands': [
-  \       {'name': 'rundll32',
+  \       {'name': 'rundll32', 'cmd': 'rundll32',
   \        'args': 'rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
   \   ],
   \   'use_vimproc': use_vimproc,
