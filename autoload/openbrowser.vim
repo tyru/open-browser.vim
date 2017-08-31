@@ -466,7 +466,8 @@ function! openbrowser#__open_browser__(uristr) "{{{
   endif
 
   for cmd in s:get_var('openbrowser_browser_commands')
-    if !executable(cmd.cmd)
+    let execmd = get(cmd, 'cmd', cmd.name)
+    if !executable(execmd)
       continue
     endif
 
@@ -481,8 +482,8 @@ function! openbrowser#__open_browser__(uristr) "{{{
     \   's:expand_keywords(
     \      v:val,
     \      {
-    \           "browser"      : quote . cmd.cmd . quote,
-    \           "browser_noesc": cmd.cmd,
+    \           "browser"      : quote . execmd . quote,
+    \           "browser_noesc": execmd,
     \           "uri"          : quote . uri . quote,
     \           "uri_noesc"    : uri,
     \           "use_vimproc"  : use_vimproc,
