@@ -391,17 +391,17 @@ PopUp.Open URL or Word(s)	(modes: n, v)
 ------------------------------------------------------------------------------
 COMMANDS					*openbrowser-commands* {{{
 
-:OpenBrowser {uri}				*:OpenBrowser*
+:OpenBrowser [++clip | ++reg={regnames}] {uri}				*:OpenBrowser*
 	Opens URI with your favorite browser.
 
-:OpenBrowserSearch [-{search-engine}] {query}		*:OpenBrowserSearch*
+:OpenBrowserSearch [++clip | ++reg={regnames}] [-{search-engine}] {query}		*:OpenBrowserSearch*
 	{query}: Query string
 	{search-engine}: >
 		:OpenBrowserSearch -yahoo word
 <	This opens http://search.yahoo.com/search?p=word as default.
 	You can change this URI with |g:openbrowser_search_engines|.
 
-:OpenBrowserSmartSearch {uri-or-query}	*:OpenBrowserSmartSearch*
+:OpenBrowserSmartSearch [++clip | ++reg={regnames}] [-{search-engine}] {uri-or-query}	*:OpenBrowserSmartSearch*
 	This is wrapper for two above Ex commands.
 	If {uri-or-query} _seems_ like URI, open the URI.
 	If {uri-or-query} _seems_ like query, search the query.
@@ -419,7 +419,7 @@ OpenBrowser({uri})				*OpenBrowser()*
 	Now it's same as |openbrowser#open()|.
 	Use |openbrowser#open()| instead.
 
-openbrowser#open({uri})			*openbrowser#open()*
+openbrowser#open({uri} [, {regnames}])			*openbrowser#open()*
 	Function version of |:OpenBrowser|.
 
 OpenBrowserSearch({query} [, {search-engine}])		*OpenBrowserSearch()*
@@ -427,12 +427,12 @@ OpenBrowserSearch({query} [, {search-engine}])		*OpenBrowserSearch()*
 	Now it's same as |openbrowser#search()|.
 	Use |openbrowser#search()| instead.
 
-openbrowser#search({query} [, {search-engine}])			*openbrowser#search()*
+openbrowser#search({query} [, {search-engine} [, {regnames}]])			*openbrowser#search()*
 	Function version of |:OpenBrowserSearch|.
 	If {search-engine} is omitted,
 	|g:openbrowser_default_search| is used instead.
 
-openbrowser#smart_search({query} [, {search-engine}])			*openbrowser#smart_search()*
+openbrowser#smart_search({query} [, {search-engine} [, {regnames}]])			*openbrowser#smart_search()*
 	Function version of |:OpenBrowserSmartSearch|.
 	If {search-engine} is omitted,
 	|g:openbrowser_default_search| is used instead.
