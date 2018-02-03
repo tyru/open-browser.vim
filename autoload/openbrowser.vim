@@ -29,9 +29,9 @@ endfunction "}}}
 
 
 
-" :OpenBrowser
 " @param uri URI object or String
-function! openbrowser#open(uri) "{{{
+function! openbrowser#open(uri, ...) "{{{
+  let regnames = a:0 && type(a:1) is type([]) ? a:1 : []
   if type(a:uri) is type({})
   \   && has_key(a:uri, '__pattern_set')    " URI object
     " Trust URI object value because
@@ -48,7 +48,41 @@ function! openbrowser#open(uri) "{{{
     return
   endif
 
-  let opened = 0
+  let opener = s:get_opener(uristr, uriobj)
+  let failed = 0
+  if opener is s:NONE
+    let failed = 1
+  elseif !empty(regnames)
+    " Yank URI to registers
+    let uri = opener.get_uri()
+    if uri is ''
+      call s:Msg.error('open-browser failed to yank URI')
+      return
+    endif
+    for reg in regnames
+      call setreg(reg, uri, 'v')
+    endfor
+  else
+    " Open URI in a browser
+    let failed = !opener.open()
+    if !failed && g:openbrowser_force_foreground_after_open && s:Prelude.is_windows()
+      " XXX: Vim looses a focus after opening URI...
+      " Is this same as non-Windows platform?
+      augroup openbrowser-focuslost
+        autocmd!
+        autocmd FocusLost * call foreground() | autocmd! openbrowser FocusLost
+      augroup END
+    endif
+  endif
+  if failed
+    if s:get_var('openbrowser_message_verbosity') >= 1
+      call s:Msg.warn("open-browser doesn't know how to open '" . uristr . "'.")
+    endif
+  endif
+endfunction "}}}
+
+function! s:get_opener(uristr, uriobj) abort
+  let [uristr, uriobj] = [a:uristr, a:uriobj]
   let type = s:detect_query_type(uristr, uriobj)
   if type.filepath    " Existed file path or 'file://'
     " Convert to full path.
@@ -61,15 +95,8 @@ function! openbrowser#open(uri) "{{{
     endif
     if s:get_var('openbrowser_open_filepath_in_vim')
       let fullpath = tr(fullpath, '\', '/')
-      try
-        let command = s:get_var('openbrowser_open_vim_command')
-        execute command fullpath
-        let opened = 1
-      catch
-        call s:Msg.error('open-browser failed to open in vim...: '
-        \          . 'v:exception = ' . v:exception
-        \          . ', v:throwpoint = ' . v:throwpoint)
-      endtry
+      let command = s:get_var('openbrowser_open_vim_command')
+      return s:new_ex_command_opener(join([command, fullpath]))
     else
       let fullpath = tr(fullpath, '\', '/')
       " Convert to file:// string.
@@ -78,7 +105,7 @@ function! openbrowser#open(uri) "{{{
       if !g:__openbrowser_platform.cygwin
         let fullpath = 'file://' . fullpath
       endif
-      let opened = openbrowser#__open_browser__(fullpath)
+      return s:new_uri_opener(fullpath)
     endif
   elseif type.uri    " other URI
     " Fix scheme, host, path.
@@ -91,21 +118,56 @@ function! openbrowser#open(uri) "{{{
       endif
     endfor
     let uristr = uriobj.to_string()
-    let opened = openbrowser#__open_browser__(uristr)
+    return s:new_uri_opener(uristr)
   endif
-  if !opened
-    if s:get_var('openbrowser_message_verbosity') >= 1
-      call s:Msg.warn("open-browser doesn't know how to open '" . uristr . "'.")
-    endif
-  elseif g:openbrowser_force_foreground_after_open && s:Prelude.is_windows()
-    " XXX: Vim looses a focus after opening URI...
-    " Is this same as non-Windows platform?
-    augroup openbrowser
-      autocmd!
-      autocmd FocusLost * call foreground() | autocmd! openbrowser FocusLost
-    augroup END
-  endif
-endfunction "}}}
+  return s:NONE
+endfunction
+
+function! s:new_ex_command_opener(excmd) abort
+  let opener = deepcopy(s:ExCommandOpener)
+  let opener.excmd = a:excmd
+  return opener
+endfunction
+
+function! s:ExCommandOpener_open() abort dict
+  try
+    execute self.excmd
+    return 1
+  catch
+    call s:Msg.error('open-browser failed to open in vim...: '
+    \          . 'v:exception = ' . v:exception
+    \          . ', v:throwpoint = ' . v:throwpoint)
+    return 0
+  endtry
+endfunction
+
+function! s:ExCommandOpener_get_uri() abort dict
+  return ''
+endfunction
+
+let s:ExCommandOpener = {
+\ 'open': function('s:ExCommandOpener_open'),
+\ 'get_uri': function('s:ExCommandOpener_get_uri'),
+\}
+
+function! s:new_uri_opener(uri) abort
+  let opener = deepcopy(s:UriOpener)
+  let opener.uri = a:uri
+  return opener
+endfunction
+
+function! s:UriOpener_open() abort dict
+  return openbrowser#__open_browser__(self.uri)
+endfunction
+
+function! s:UriOpener_get_uri() abort dict
+  return self.uri
+endfunction
+
+let s:UriOpener = {
+\ 'open': function('s:UriOpener_open'),
+\ 'get_uri': function('s:UriOpener_get_uri'),
+\}
 
 " :OpenBrowserSearch
 function! openbrowser#search(query, ...) "{{{
@@ -113,10 +175,12 @@ function! openbrowser#search(query, ...) "{{{
     return
   endif
 
-  let engine = a:0 ? a:1 :
-  \   s:get_var('openbrowser_default_search')
-  let search_engines =
-  \   s:get_var('openbrowser_search_engines')
+  let default_search = s:get_var('openbrowser_default_search')
+  let engine = get(a:000, 0, default_search)
+  let engine = engine is '' ? default_search : engine
+  let regnames = get(a:000, 1, [])
+
+  let search_engines = s:get_var('openbrowser_search_engines')
   if !has_key(search_engines, engine)
     call s:Msg.error("Unknown search engine '" . engine . "'.")
     return
@@ -124,19 +188,21 @@ function! openbrowser#search(query, ...) "{{{
 
   let query = s:HTTP.encodeURIComponent(a:query)
   let uri = s:expand_keywords(search_engines[engine], {'query': query})
-  call openbrowser#open(uri)
+  call openbrowser#open(uri, regnames)
 endfunction "}}}
 
 " :OpenBrowserSmartSearch
 function! openbrowser#smart_search(query, ...) "{{{
+  let default_search = s:get_var('openbrowser_default_search')
+  let engine = get(a:000, 0, default_search)
+  let engine = engine is '' ? default_search : engine
+  let regnames = get(a:000, 1, [])
+
   let type = s:detect_query_type(a:query)
   if type.uri || type.filepath
-    return openbrowser#open(a:query)
+    return openbrowser#open(a:query, regnames)
   else
-    return openbrowser#search(
-    \   a:query,
-    \   (a:0 ? a:1 : s:get_var('openbrowser_default_search'))
-    \)
+    return openbrowser#search(a:query, engine, regnames)
   endif
 endfunction "}}}
 
@@ -153,37 +219,53 @@ let s:NONE = []
 lockvar s:NONE
 
 
-
-function! s:parse_and_delegate(excmd, parse, delegate, cmdline) "{{{
-  let cmdline = substitute(a:cmdline, '^\s\+', '', '')
-
-  try
-    let [engine, cmdline] = {a:parse}(cmdline)
-  catch /^parse error/
-    call s:Msg.error(
-    \   a:excmd
-    \   . ' [-{search-engine}]'
-    \   . ' {query}'
-    \)
-    return
-  endtry
-
-  let args = [cmdline] + (engine is s:NONE ? [] : [engine])
-  return call(a:delegate, args)
+function! s:parse_spaces(cmdline) abort "{{{
+  return substitute(a:cmdline, '^\s\+', '', '')
 endfunction "}}}
-function! s:parse_cmdline(cmdline) "{{{
-  let m = matchlist(a:cmdline, '^-\(\S\+\)\s\+\(.*\)')
-  return !empty(m) ? m[1:2] : [s:NONE, a:cmdline]
+
+" Parse engine if specified
+function! s:parse_engine(cmdline) abort "{{{
+  let c = s:parse_spaces(a:cmdline)
+  let engine = ''
+  let m = matchlist(c, '^-\(\S\+\)\s\+\(.*\)')
+  if !empty(m)
+    let engine = m[1]
+    let c = m[2]
+  endif
+  return [engine, c]
+endfunction "}}}
+
+" Parse regnames if specified
+function! s:parse_regnames(cmdline) abort "{{{
+  let c = s:parse_spaces(a:cmdline)
+  if c =~# '^++clip\%(\s\|$\)'
+    let regnames = ['+', '*']
+    let c = matchstr(c, '^++clip\s*\zs.*')
+  elseif c =~# '^++reg=\S\+'
+    let [arg, c] = matchlist(c, '^++reg=\(\S\+\)\s*\(.*\)')[1:2]
+    let regnames = split(arg, ',')
+  else
+    let regnames = []
+  endif
+  return [regnames, c]
+endfunction "}}}
+
+" :OpenBrowser
+function! openbrowser#_cmd_open(cmdline) "{{{
+  let [regnames, uri] = s:parse_regnames(a:cmdline)
+  call openbrowser#open(uri, regnames)
 endfunction "}}}
 
 " :OpenBrowserSearch
 function! openbrowser#_cmd_open_browser_search(cmdline) "{{{
-  return s:parse_and_delegate(
-  \   ':OpenBrowserSearch',
-  \   's:parse_cmdline',
-  \   'openbrowser#search',
-  \   a:cmdline
-  \)
+  let [engine, c] = s:parse_engine(a:cmdline)
+  let [regnames, c] = s:parse_regnames(c)
+  let c = s:parse_spaces(c)
+  if c is ''
+    call s:Msg.error(':OpenBrowserSearch [++clip | ++reg={regnames}] [-{search-engine}] {query}')
+    return
+  endif
+  return openbrowser#search(c, engine, regnames)
 endfunction "}}}
 " @vimlint(EVL103, 1, a:arglead)
 " @vimlint(EVL103, 1, a:cursorpos)
@@ -194,30 +276,31 @@ function! openbrowser#_cmd_complete(arglead, cmdline, cursorpos) "{{{
   endif
   let cmdline = substitute(a:cmdline, excmd, '', '')
 
-  let engine_options = map(
+  let engine_opts = map(
   \   sort(keys(s:get_var('openbrowser_search_engines'))),
   \   '"-" . v:val'
   \)
-  if cmdline ==# '' || cmdline ==# '-'
-    " Return all search engines.
-    return engine_options
-  endif
+  let reg_opts = ['++clip', '++reg=']
+  let all_opts = engine_opts + reg_opts
 
-  " Inputting search engine.
-  " Find out which engine.
-  return filter(engine_options, 'stridx(v:val, cmdline) is 0')
+  if cmdline ==# ''
+    return all_opts
+  endif
+  return filter(all_opts, 'stridx(v:val, cmdline) is 0')
 endfunction "}}}
 " @vimlint(EVL103, 0, a:arglead)
 " @vimlint(EVL103, 0, a:cursorpos)
 
 " :OpenBrowserSmartSearch
 function! openbrowser#_cmd_open_browser_smart_search(cmdline) "{{{
-  return s:parse_and_delegate(
-  \   ':OpenBrowserSmartSearch',
-  \   's:parse_cmdline',
-  \   'openbrowser#smart_search',
-  \   a:cmdline
-  \)
+  let [engine, c] = s:parse_engine(a:cmdline)
+  let [regnames, c] = s:parse_regnames(c)
+  let c = s:parse_spaces(c)
+  if c is ''
+    call s:Msg.error(':OpenBrowserSmartSearch [++clip | ++reg={regnames}] [-{search-engine}] {query}')
+    return
+  endif
+  return openbrowser#smart_search(c, engine, regnames)
 endfunction "}}}
 
 " <Plug>(openbrowser-open)
@@ -603,8 +686,7 @@ endfunction
 "   it does not expand vim variable `keyword`.
 function! s:expand_keywords(str, options)  " {{{
   if type(a:str) != type('') || type(a:options) != type({})
-    echoerr 's:expand_keywords(): invalid arguments. (a:str = '.string(a:str).', a:options = '.string(a:options).')'
-    return ''
+    call s:throw('s:expand_keywords(): invalid arguments. (a:str = '.string(a:str).', a:options = '.string(a:options).')')
   endif
   let rest = a:str
   let result = ''
@@ -663,11 +745,15 @@ function! s:expand_keywords(str, options)  " {{{
       let result .= rest[: braindex]
       let rest = rest[braindex+1 :]
     else
-      call s:Msg.error('parse error: rest = '.rest.', result = '.result)
+      call s:throw('parse error: rest = ' . rest . ', result = ' . result)
     endif
   endwhile
   return result
 endfunction "}}}
+
+function! s:throw(msg) abort
+  throw 'openbrowser: ' . a:msg
+endfunction
 
 function! s:get_var(varname) "{{{
   for ns in [b:, w:, t:, g:]
