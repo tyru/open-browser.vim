@@ -190,6 +190,7 @@ let g:openbrowser_search_engines = extend(
 \       'wikipedia': 'http://en.wikipedia.org/wiki/{query}',
 \       'wikipedia-ja': 'http://ja.wikipedia.org/wiki/{query}',
 \       'yahoo': 'http://search.yahoo.com/search?p={query}',
+\       'fileformat': 'https://www.fileformat.info/info/unicode/char/{query}/',
 \   },
 \   'keep'
 \)
