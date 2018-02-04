@@ -205,7 +205,7 @@ let s:FORMAT_MESSAGE_DEFAULT = {
 \}
 if !exists('g:openbrowser_format_message')
   let g:openbrowser_format_message = s:FORMAT_MESSAGE_DEFAULT
-elseif type(g:openbrowser_format_message) is type("")
+elseif type(g:openbrowser_format_message) is type('')
   " Backward-compatibility
   let s:msg = g:openbrowser_format_message
   unlet g:openbrowser_format_message
