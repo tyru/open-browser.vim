@@ -245,7 +245,7 @@ endfunction "}}}
 command!
 \   -nargs=+
 \   OpenBrowser
-\   call openbrowser#open(<q-args>)
+\   call openbrowser#_cmd_open(<q-args>)
 command!
 \   -nargs=+ -complete=customlist,openbrowser#_cmd_complete
 \   OpenBrowserSearch
