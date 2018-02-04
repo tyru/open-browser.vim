@@ -249,23 +249,23 @@ command!
 \   OpenBrowser
 \   call openbrowser#_cmd_open(<q-args>)
 command!
-\   -nargs=+ -complete=customlist,openbrowser#_cmd_complete
+\   -nargs=+ -complete=customlist,openbrowser#_cmd_search_complete
 \   OpenBrowserSearch
-\   call openbrowser#_cmd_open_browser_search(<q-args>)
+\   call openbrowser#_cmd_search(<q-args>)
 command!
-\   -nargs=+ -complete=customlist,openbrowser#_cmd_complete
+\   -nargs=+ -complete=customlist,openbrowser#_cmd_search_complete
 \   OpenBrowserSmartSearch
-\   call openbrowser#_cmd_open_browser_smart_search(<q-args>)
+\   call openbrowser#_cmd_smart_search(<q-args>)
 
 
 
 " Key-mapping
-nnoremap <silent> <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymapping_open('n')<CR>
-xnoremap <silent> <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymapping_open('v')<CR>
-nnoremap <silent> <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymapping_search('n')<CR>
-xnoremap <silent> <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymapping_search('v')<CR>
-nnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymapping_smart_search('n')<CR>
-xnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymapping_smart_search('v')<CR>
+nnoremap <silent> <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymap_open('n')<CR>
+xnoremap <silent> <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymap_open('v')<CR>
+nnoremap <silent> <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymap_search('n')<CR>
+xnoremap <silent> <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymap_search('v')<CR>
+nnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymap_smart_search('n')<CR>
+xnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymap_smart_search('v')<CR>
 
 
 " Popup menus for Right-Click

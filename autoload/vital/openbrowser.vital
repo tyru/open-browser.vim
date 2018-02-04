@@ -1,9 +1,4 @@
 openbrowser
 5d99e3374881a598a9bd3f7d32f0b2137b489b49
 
-Data.String
-Process
-Web.URI
-Web.HTTP
-Vim.Buffer
-Vim.Message
+OpenBrowser
