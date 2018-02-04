@@ -285,10 +285,10 @@ endfunction
 " Parse engine if specified
 function! s:parse_engine(cmdline) abort
   let c = s:parse_spaces(a:cmdline)
-  let engine = ''
+  let engine = s:Optional.none()
   let m = matchlist(c, '^-\(\S\+\)\s\+\(.*\)')
   if !empty(m)
-    let engine = m[1]
+    let engine = s:Optional.some(m[1])
     let c = m[2]
   endif
   return [engine, c]
@@ -322,15 +322,40 @@ endfunction
 
 " :OpenBrowserSearch
 function! s:cmd_search(cmdline) abort
-  let [engine, c] = s:parse_engine(a:cmdline)
-  let [regnames, c] = s:parse_regnames(c)
+  let [engine, regnames, c] = s:parse_search_args(a:cmdline)
   let c = s:parse_spaces(c)
   if c is# ''
     call s:Msg.error(':OpenBrowserSearch [++clip | ++reg={regnames}] [-{search-engine}] {query}')
     return
   endif
-  return s:search(c, engine, regnames)
+  return s:search(c, s:Optional.get_or(engine, ''), regnames)
 endfunction
+
+" Parse command-line arguments of:
+" * :OpenBrowserSearch
+" * :OpenBrowserSmartSearch
+function! s:parse_search_args(cmdline) abort
+  let c = s:parse_spaces(a:cmdline)
+  let engine = s:Optional.none()
+  let regnames = []
+  while 1
+    if c =~# '^-'
+      let [engine, c] = s:parse_engine(c)
+      if s:Optional.empty(engine)
+        break
+      endif
+    elseif c =~# '^++'
+      let [regnames, c] = s:parse_regnames(c)
+      if empty(regnames)
+        break
+      endif
+    else
+      break
+    endif
+  endwhile
+  return [engine, regnames, c]
+endfunction
+
 " @vimlint(EVL103, 1, a:arglead)
 " @vimlint(EVL103, 1, a:cursorpos)
 function! s:cmd_search_complete(arglead, cmdline, cursorpos) abort
@@ -357,14 +382,13 @@ endfunction
 
 " :OpenBrowserSmartSearch
 function! s:cmd_smart_search(cmdline) abort
-  let [engine, c] = s:parse_engine(a:cmdline)
-  let [regnames, c] = s:parse_regnames(c)
+  let [engine, regnames, c] = s:parse_search_args(a:cmdline)
   let c = s:parse_spaces(c)
   if c is# ''
     call s:Msg.error(':OpenBrowserSmartSearch [++clip | ++reg={regnames}] [-{search-engine}] {query}')
     return
   endif
-  return s:smart_search(c, engine, regnames)
+  return s:smart_search(c, s:Optional.get_or(engine, ''), regnames)
 endfunction
 
 " <Plug>(openbrowser-open)
