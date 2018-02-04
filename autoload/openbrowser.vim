@@ -7,11 +7,11 @@ set cpo&vim
 " }}}
 
 let s:V = vital#openbrowser#new()
-let s:String = s:V.import('Data.String')
+let s:truncate_skipping = s:V.import('Data.String').truncate_skipping
 let s:Process = s:V.import('Process')
 let s:URI = s:V.import('Web.URI')
-let s:HTTP = s:V.import('Web.HTTP')
-let s:Buffer = s:V.import('Vim.Buffer')
+let s:encodeURIComponent = s:V.import('Web.HTTP').encodeURIComponent
+let s:get_last_selected = s:V.import('Vim.Buffer').get_last_selected
 let s:Msg = s:V.import('Vim.Message')
 unlet s:V
 
@@ -185,7 +185,7 @@ function! openbrowser#search(query, ...) abort
     return
   endif
 
-  let query = s:HTTP.encodeURIComponent(a:query)
+  let query = s:encodeURIComponent(a:query)
   let uri = s:expand_keywords(search_engines[engine], {'query': query})
   call openbrowser#open(uri, regnames)
 endfunction
@@ -203,11 +203,6 @@ function! openbrowser#smart_search(query, ...) abort
   else
     return openbrowser#search(a:query, engine, regnames)
   endif
-endfunction
-
-" Escape one argument.
-function! openbrowser#shellescape(...) abort
-  return call(s:Process.shellescape, a:000, s:Process)
 endfunction
 
 " }}}
@@ -368,7 +363,7 @@ function! openbrowser#_keymapping_smart_search(mode) abort
 endfunction
 
 function! s:get_selected_text() abort
-  let selected_text = s:Buffer.get_last_selected()
+  let selected_text = s:get_last_selected()
   let text = substitute(selected_text, '[\n\r]\+', ' ', 'g')
   return substitute(text, '^\s*\|\s*$', '', 'g')
 endfunction
@@ -514,16 +509,16 @@ function! s:expand_format_message(format_message, keywords) abort
       let min_uri_len = a:format_message.min_uri_len
       if non_uri_len + min_uri_len <= maxlen
         " Truncate only URI.
-        let a:keywords.uri = s:String.truncate_skipping(
+        let a:keywords.uri = s:truncate_skipping(
         \           a:keywords.uri, maxlen - 4 - non_uri_len, 0, '...')
         let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
       else
         " Third, Fallback: Even if expanded_msg is longer than command-line
         " after "Second Try", truncate whole string.
-        let a:keywords.uri = s:String.truncate_skipping(
+        let a:keywords.uri = s:truncate_skipping(
         \                   a:keywords.uri, min_uri_len, 0, '...')
         let expanded_msg = s:expand_keywords(a:format_message.msg, a:keywords)
-        let expanded_msg = s:String.truncate_skipping(
+        let expanded_msg = s:truncate_skipping(
         \                   expanded_msg, maxlen - 4, 0, '...')
       endif
     endif
