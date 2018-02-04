@@ -635,13 +635,13 @@ function! s:get_thing_on_cursor(func) abort
     try
       " Search left WORD.
       if search('\S', 'bnW')[0] ># 0
-        keepjumps normal! B
+        normal! B
         let [found, retval] = call(a:func, [])
         if found | return retval | endif
       endif
       " Search right WORD.
       if search('\S', 'nW')[0] ># 0
-        keepjumps normal! W
+        normal! W
         let [found, retval] = call(a:func, [])
         if found | return retval | endif
       endif
