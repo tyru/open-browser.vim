@@ -725,8 +725,7 @@ function! s:expand_keywords(str, options) abort  " {{{
       while !empty(braindex_stack)
         let braindex = match(rest, '\\\@<![{}]', braindex + 1)
         if braindex is# -1
-          echoerr 'expression is invalid: curly bracket is not closed.'
-          return ''
+          call s:throw('expression is invalid: curly bracket is not closed.')
         elseif rest[braindex] is# '{'
           call add(braindex_stack, braindex)
         else    " '}'
