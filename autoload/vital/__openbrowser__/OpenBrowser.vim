@@ -41,6 +41,8 @@ lockvar s:NONE
 " @param uri URI object or String
 function! s:open(uri, ...) abort
   let regnames = a:0 && type(a:1) is# type([]) ? a:1 : []
+
+  " FIXME: Caller should pass URI as *string* always
   if type(a:uri) is# type({})
   \   && has_key(a:uri, '__pattern_set')    " URI object
     " Trust URI object value because
@@ -73,8 +75,9 @@ function! s:open(uri, ...) abort
       call setreg(reg, uri, 'v')
     endfor
   else
-    " Open URI in a browser
+    " Open URI in a browser / Open a file in Vim
     let b = s:Optional.get(builder)
+
     " Show message
     if b.type is# 'shellcmd'
       redraw!
@@ -89,11 +92,13 @@ function! s:open(uri, ...) abort
         echo msg
       endif
     endif
-    " Open URI
+
     let opener = b.build()
     let failed = !opener.open()
-    if !failed
-      if b.type is# 'shellcmd' && s:Config.get('message_verbosity') >= 2 && format_message.msg isnot# ''
+
+    if !failed && b.type is# 'shellcmd'
+      " Show message
+      if s:Config.get('message_verbosity') >= 2 && format_message.msg isnot# ''
         redraw
         let msg = s:expand_format_message(format_message,
         \   {
@@ -103,9 +108,10 @@ function! s:open(uri, ...) abort
         \   })
         echo msg
       endif
+
+      " XXX: Vim looses a focus after opening URI...
+      " Is this same as non-Windows platform?
       if g:openbrowser_force_foreground_after_open && g:__openbrowser_platform.mswin
-        " XXX: Vim looses a focus after opening URI...
-        " Is this same as non-Windows platform?
         augroup openbrowser-focuslost
           autocmd!
           autocmd FocusLost * call foreground() | autocmd! openbrowser FocusLost
@@ -113,6 +119,7 @@ function! s:open(uri, ...) abort
       endif
     endif
   endif
+
   if failed
     if s:Config.get('message_verbosity') >= 1
       call s:Msg.warn("open-browser doesn't know how to open '" . uristr . "'.")
