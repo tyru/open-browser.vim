@@ -40,39 +40,25 @@ lockvar s:NONE
 
 " @param uri URI object or String
 function! s:open(uri, ...) abort
-  let regnames = a:0 && type(a:1) is# type([]) ? a:1 : []
-
-  " FIXME: Caller should pass URI as *string* always
-  if type(a:uri) is# type({})
-  \   && has_key(a:uri, '__pattern_set')    " URI object
-    " Trust URI object value because
-    " it must be validated by parser.
-    let uriobj = a:uri
-    let uristr = a:uri.to_string()
-  elseif type(a:uri) is# type('')
-    let uristr = a:uri
-    if uristr =~# '^\s*$'
-      return
-    endif
-    let uriobj = s:URI.new_from_uri_like_string(a:uri, s:NONE)
-  else
-    return
+  let uri = a:uri
+  if type(uri) isnot# type('')
+    call s:throw('s:OpenBrowser.open() received non-String argument: uri = ' . string(uri))
+  endif
+  let regnames = get(a:000, 0, [])
+  if type(regnames) isnot# type([])
+    call s:throw('s:OpenBrowser.open() received non-List argument: regnames = ' . string(regnames))
   endif
 
-  let builder = s:get_opener_builder(uristr, uriobj)
+  let builder = s:get_opener_builder(a:uri)
   let failed = 0
   if s:Optional.empty(builder)
     let failed = 1
   elseif !empty(regnames)
     " Yank URI to registers
     let b = s:Optional.get(builder)
-    if b.type is# 'shellcmd'
-      let uri = b.uri
-    else
-      let uri = uristr
-    endif
+    let value = b.type is# 'shellcmd' ? b.uri : uri
     for reg in regnames
-      call setreg(reg, uri, 'v')
+      call setreg(reg, value, 'v')
     endfor
   else
     " Open URI in a browser / Open a file in Vim
@@ -85,7 +71,7 @@ function! s:open(uri, ...) abort
       if s:Config.get('message_verbosity') >= 2 && format_message.msg isnot# ''
         let msg = s:expand_format_message(format_message,
         \   {
-        \      'uri' : uristr,
+        \      'uri' : uri,
         \      'done' : 0,
         \      'command' : '',
         \   })
@@ -102,7 +88,7 @@ function! s:open(uri, ...) abort
         redraw
         let msg = s:expand_format_message(format_message,
         \   {
-        \      'uri' : uristr,
+        \      'uri' : uri,
         \      'done' : 1,
         \      'command' : b.cmd.name,
         \   })
@@ -122,7 +108,7 @@ function! s:open(uri, ...) abort
 
   if failed
     if s:Config.get('message_verbosity') >= 1
-      call s:Msg.warn("open-browser doesn't know how to open '" . uristr . "'.")
+      call s:Msg.warn("open-browser doesn't know how to open '" . uri . "'.")
     endif
   endif
 endfunction
@@ -131,10 +117,10 @@ endfunction
 " Builder is either Ex command opener or shell command opener.
 " Ex command opener builds an opener which opens a given file in Vim.
 " Shell command builder builds an opener which opens a given URI in a browser.
-function! s:get_opener_builder(uristr, uriobj) abort
-  let [uristr, uriobj] = [a:uristr, a:uriobj]
-  let type = s:detect_query_type(uristr, uriobj)
-  if type.filepath    " Existed file path or 'file://'
+function! s:get_opener_builder(uristr) abort
+  let uristr = a:uristr
+  let uriobj = s:URI.new_from_uri_like_string(uristr, s:NONE)
+  if s:seems_path(uristr)    " Existed file path or 'file://'
     " Convert to full path.
     if stridx(uristr, 'file://') is# 0    " file://
       let fullpath = substitute(uristr, '^file://', '', '')
@@ -158,7 +144,7 @@ function! s:get_opener_builder(uristr, uriobj) abort
       endif
       return s:get_shellcmd_opener_builder(fullpath)
     endif
-  elseif type.uri    " other URI
+  elseif s:valid_uri(uriobj)    " other URI
     " Fix scheme, host, path.
     " e.g.: "ttp" => "http"
     for where in ['scheme', 'host', 'path']
@@ -269,8 +255,7 @@ function! s:smart_search(query, ...) abort
   let engine = engine is# '' ? default_search : engine
   let regnames = get(a:000, 1, [])
 
-  let type = s:detect_query_type(a:query)
-  if type.uri || type.filepath
+  if s:seems_path(a:query) || s:valid_uri(s:URI.new(a:query, {}))
     return s:open(a:query, regnames)
   else
     return s:search(a:query, engine, regnames)
@@ -416,7 +401,7 @@ function! s:keymap_open(mode, ...) abort
     let text = s:get_selected_text()
     let urls = s:extract_urls(text)
     for url in urls
-      call s:open(url.obj)
+      call s:open(url.str)
     endfor
     return !empty(urls)
   endif
@@ -513,7 +498,7 @@ function! s:extract_urls(text) abort
     " Try to parse string as URI.
     let substr = a:text[start :]
     let results = s:URI.new_from_seq_string(substr, s:NONE, pattern_set)
-    if results is# s:NONE || !s:seems_uri(results[0])
+    if results is# s:NONE || !s:valid_uri(results[0])
       " start is# end: matching string can be empty string.
       " e.g.: echo [match('abc', 'd*'), matchend('abc', 'd*')]
       let start = (start is# end ? end+1 : end)
@@ -522,7 +507,7 @@ function! s:extract_urls(text) abort
     let [url, original_url] = results[0:1]
     let skip_num = len(original_url)
     let urls += [{
-    \   'obj': url,
+    \   'str': url.to_string(),
     \   'startidx': start,
     \   'endidx': start + skip_num,
     \}]
@@ -544,20 +529,9 @@ function! s:seems_path(uri) abort
   return getftype(path) isnot# ''
 endfunction
 
-function! s:seems_uri(uriobj) abort
+function! s:valid_uri(uriobj) abort
   return !empty(a:uriobj)
   \   && a:uriobj.scheme() isnot# ''
-endfunction
-
-function! s:detect_query_type(query, ...) abort
-  let uriobj = a:0 ? a:1 : {}
-  if empty(uriobj)
-    let uriobj = s:URI.new(a:query, {})
-  endif
-  return {
-  \   'uri': s:seems_uri(uriobj),
-  \   'filepath': s:seems_path(a:query),
-  \}
 endfunction
 
 " @vimlint(EVL104, 1, l:save_shellslash)
@@ -618,14 +592,27 @@ endfunction
 " :help openbrowser-url-detection
 function! s:get_url_on_cursor() abort
   let url = s:get_thing_on_cursor('s:detect_url_cb')
-  return url isnot s:NONE ? url : ''
+  return s:Optional.get_or(url, '')
+endfunction
+
+function! s:detect_url_cb() abort
+  let urls = s:extract_urls(expand('<cWORD>'))
+  if !empty(urls)
+    return s:Optional.some(urls[0].str)
+  endif
+  return s:Optional.none()
 endfunction
 
 " @return the filepath on cursor, or the first filepath after cursor
 " :help openbrowser-filepath-detection
 function! s:get_filepath_on_cursor() abort
   let filepath = s:get_thing_on_cursor('s:detect_filepath_cb')
-  return filepath isnot s:NONE ? filepath : ''
+  return s:Optional.get_or(filepath, '')
+endfunction
+
+function! s:detect_filepath_cb() abort
+  let path = expand('<cWORD>')
+  return s:seems_path(path) ? s:Optional.some(path) : s:Optional.none()
 endfunction
 
 function! s:get_thing_on_cursor(func) abort
@@ -637,38 +624,26 @@ function! s:get_thing_on_cursor(func) abort
       " Search left WORD.
       if search('\S', 'bnW')[0] ># 0
         normal! B
-        let [found, retval] = call(a:func, [])
-        if found | return retval | endif
+        let r = call(a:func, [])
+        if s:Optional.exists(r)
+          return r
+        endif
       endif
       " Search right WORD.
       if search('\S', 'nW')[0] ># 0
         normal! W
-        let [found, retval] = call(a:func, [])
-        if found | return retval | endif
+        let r = call(a:func, [])
+        if s:Optional.exists(r)
+          return r
+        endif
       endif
       " Not found.
-      return s:NONE
+      return s:Optional.none()
     finally
       call setpos('.', pos)
     endtry
   endif
-  let [found, retval] = call(a:func, [])
-  if found | return retval | endif
-  return s:NONE
-endfunction
-
-function! s:detect_url_cb() abort
-  let urls = s:extract_urls(expand('<cWORD>'))
-  if !empty(urls)
-    return [1, urls[0].obj]
-  endif
-  return [0, {}]
-endfunction
-
-function! s:detect_filepath_cb() abort
-  let retval = expand('<cWORD>')
-  let found = s:seems_path(retval)
-  return [found, retval]
+  return call(a:func, [])
 endfunction
 
 " This function is from quickrun.vim (http://github.com/thinca/vim-quickrun)
