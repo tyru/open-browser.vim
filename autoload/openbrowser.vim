@@ -4,7 +4,9 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 let s:V = vital#openbrowser#new()
-let s:OpenBrowser = s:V.import('OpenBrowser')
+let s:OpenBrowser = s:V.import('OpenBrowser').new(
+\ s:V.import('OpenBrowser.Config').new_global_var_source('openbrowser_')
+\)
 unlet s:V
 
 

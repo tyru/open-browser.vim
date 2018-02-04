@@ -13,7 +13,6 @@ function! s:_vital_depends() abort
   \ 'Web.HTTP',
   \ 'Vim.Buffer',
   \
-  \ 'OpenBrowser.Config',
   \ 'OpenBrowser.Opener',
   \]
 endfunction
@@ -30,16 +29,31 @@ function! s:_vital_loaded(V) abort
 
   let s:vimproc_is_installed = globpath(&rtp, 'autoload/vimproc.vim') isnot# ''
 
-  let s:Config = a:V.import('OpenBrowser.Config').new_global_var_source('openbrowser_')
   let s:Opener = a:V.import('OpenBrowser.Opener')
 endfunction
 
 let s:NONE = []
 lockvar s:NONE
 
+function! s:new(config) abort
+  return {
+  \ 'config': a:config,
+  \
+  \ 'open': function('s:OpenBrowser_open'),
+  \ 'search': function('s:OpenBrowser_search'),
+  \ 'smart_search': function('s:OpenBrowser_smart_search'),
+  \ 'cmd_open': function('s:OpenBrowser_cmd_open'),
+  \ 'cmd_search': function('s:OpenBrowser_cmd_search'),
+  \ 'cmd_smart_search': function('s:OpenBrowser_cmd_smart_search'),
+  \ 'cmd_search_complete': function('s:OpenBrowser_cmd_search_complete'),
+  \ 'keymap_open': function('s:OpenBrowser_keymap_open'),
+  \ 'keymap_search': function('s:OpenBrowser_keymap_search'),
+  \ 'keymap_smart_search': function('s:OpenBrowser_keymap_smart_search'),
+  \}
+endfunction
 
 " @param uri URI object or String
-function! s:open(uri, ...) abort
+function! s:OpenBrowser_open(uri, ...) abort dict
   let uri = a:uri
   if type(uri) isnot# type('')
     call s:throw('s:OpenBrowser.open() received non-String argument: uri = ' . string(uri))
@@ -49,7 +63,7 @@ function! s:open(uri, ...) abort
     call s:throw('s:OpenBrowser.open() received non-List argument: regnames = ' . string(regnames))
   endif
 
-  let builder = s:get_opener_builder(a:uri)
+  let builder = s:get_opener_builder(a:uri, self.config)
   let failed = 0
   if s:Optional.empty(builder)
     let failed = 1
@@ -67,8 +81,8 @@ function! s:open(uri, ...) abort
     " Show message
     if b.type is# 'shellcmd'
       redraw!
-      let format_message = s:Config.get('format_message')
-      if s:Config.get('message_verbosity') >= 2 && format_message.msg isnot# ''
+      let format_message = self.config.get('format_message')
+      if self.config.get('message_verbosity') >= 2 && format_message.msg isnot# ''
         let msg = s:expand_format_message(format_message,
         \   {
         \      'uri' : uri,
@@ -84,7 +98,7 @@ function! s:open(uri, ...) abort
 
     if !failed && b.type is# 'shellcmd'
       " Show message
-      if s:Config.get('message_verbosity') >= 2 && format_message.msg isnot# ''
+      if self.config.get('message_verbosity') >= 2 && format_message.msg isnot# ''
         redraw
         let msg = s:expand_format_message(format_message,
         \   {
@@ -107,7 +121,7 @@ function! s:open(uri, ...) abort
   endif
 
   if failed
-    if s:Config.get('message_verbosity') >= 1
+    if self.config.get('message_verbosity') >= 1
       call s:Msg.warn("open-browser doesn't know how to open '" . uri . "'.")
     endif
   endif
@@ -117,8 +131,8 @@ endfunction
 " Builder is either Ex command opener or shell command opener.
 " Ex command opener builds an opener which opens a given file in Vim.
 " Shell command builder builds an opener which opens a given URI in a browser.
-function! s:get_opener_builder(uristr) abort
-  let uristr = a:uristr
+function! s:get_opener_builder(uristr, config) abort
+  let [uristr, config] = [a:uristr, a:config]
   let uriobj = s:URI.new_from_uri_like_string(uristr, s:NONE)
   if s:seems_path(uristr)    " Existed file path or 'file://'
     " Convert to full path.
@@ -129,9 +143,9 @@ function! s:get_opener_builder(uristr) abort
     else    " relative path
       let fullpath = s:convert_to_fullpath(uristr)
     endif
-    if s:Config.get('open_filepath_in_vim')
+    if config.get('open_filepath_in_vim')
       let fullpath = tr(fullpath, '\', '/')
-      let command = s:Config.get('open_vim_command')
+      let command = config.get('open_vim_command')
       let builder = s:new_excmd_opener_builder(join([command, fullpath]))
       return s:Optional.some(builder)
     else
@@ -142,20 +156,20 @@ function! s:get_opener_builder(uristr) abort
       if !g:__openbrowser_platform.cygwin
         let fullpath = 'file://' . fullpath
       endif
-      return s:get_shellcmd_opener_builder(fullpath)
+      return s:get_shellcmd_opener_builder(fullpath, config)
     endif
   elseif s:valid_uri(uriobj)    " other URI
     " Fix scheme, host, path.
     " e.g.: "ttp" => "http"
     for where in ['scheme', 'host', 'path']
-      let fix = s:Config.get('fix_'.where.'s')
+      let fix = config.get('fix_'.where.'s')
       let value = uriobj[where]()
       if has_key(fix, value)
         call call(uriobj[where], [fix[value]], uriobj)
       endif
     endfor
     let uristr = uriobj.to_string()
-    return s:get_shellcmd_opener_builder(uristr)
+    return s:get_shellcmd_opener_builder(uristr, config)
   endif
   return s:Optional.none()
 endfunction
@@ -213,10 +227,10 @@ endfunction
 " If applicable browser is found, this returns s:Optional.some(builder) which
 " builds shell command opener from given URI. Otherwise this returns
 " s:Optional.none().
-function! s:get_shellcmd_opener_builder(uri) abort
-  let uri = a:uri
-  let use_vimproc = s:Config.get('use_vimproc')
-  for cmd in s:Config.get('browser_commands')
+function! s:get_shellcmd_opener_builder(uri, config) abort
+  let [uri, config] = [a:uri, a:config]
+  let use_vimproc = config.get('use_vimproc')
+  for cmd in config.get('browser_commands')
     let execmd = get(cmd, 'cmd', cmd.name)
     if executable(execmd)
       let builder = s:new_shellcmd_opener_builder(cmd, execmd, uri, use_vimproc)
@@ -227,17 +241,17 @@ function! s:get_shellcmd_opener_builder(uri) abort
 endfunction
 
 " :OpenBrowserSearch
-function! s:search(query, ...) abort
+function! s:OpenBrowser_search(query, ...) abort dict
   if a:query =~# '^\s*$'
     return
   endif
 
-  let default_search = s:Config.get('default_search')
+  let default_search = self.config.get('default_search')
   let engine = get(a:000, 0, default_search)
   let engine = engine is# '' ? default_search : engine
   let regnames = get(a:000, 1, [])
 
-  let search_engines = s:Config.get('search_engines')
+  let search_engines = self.config.get('search_engines')
   if !has_key(search_engines, engine)
     call s:Msg.error("Unknown search engine '" . engine . "'.")
     return
@@ -245,20 +259,20 @@ function! s:search(query, ...) abort
 
   let query = s:encodeURIComponent(a:query)
   let uri = s:expand_keywords(search_engines[engine], {'query': query})
-  call s:open(uri, regnames)
+  call self.open(uri, regnames)
 endfunction
 
 " :OpenBrowserSmartSearch
-function! s:smart_search(query, ...) abort
-  let default_search = s:Config.get('default_search')
+function! s:OpenBrowser_smart_search(query, ...) abort dict
+  let default_search = self.config.get('default_search')
   let engine = get(a:000, 0, default_search)
   let engine = engine is# '' ? default_search : engine
   let regnames = get(a:000, 1, [])
 
   if s:seems_path(a:query) || s:valid_uri(s:URI.new(a:query, {}))
-    return s:open(a:query, regnames)
+    return self.open(a:query, regnames)
   else
-    return s:search(a:query, engine, regnames)
+    return self.search(a:query, engine, regnames)
   endif
 endfunction
 
@@ -295,25 +309,25 @@ function! s:parse_regnames(cmdline) abort
 endfunction
 
 " :OpenBrowser
-function! s:cmd_open(cmdline) abort
+function! s:OpenBrowser_cmd_open(cmdline) abort dict
   let [regnames, uri] = s:parse_regnames(a:cmdline)
   let uri = s:parse_spaces(uri)
   if uri is# ''
     call s:Msg.error(':OpenBrowser [++clip | ++reg={regnames}] {uri}')
     return
   endif
-  call s:open(uri, regnames)
+  call self.open(uri, regnames)
 endfunction
 
 " :OpenBrowserSearch
-function! s:cmd_search(cmdline) abort
+function! s:OpenBrowser_cmd_search(cmdline) abort dict
   let [engine, regnames, c] = s:parse_search_args(a:cmdline)
   let c = s:parse_spaces(c)
   if c is# ''
     call s:Msg.error(':OpenBrowserSearch [++clip | ++reg={regnames}] [-{search-engine}] {query}')
     return
   endif
-  return s:search(c, s:Optional.get_or(engine, ''), regnames)
+  return self.search(c, s:Optional.get_or(engine, ''), regnames)
 endfunction
 
 " Parse command-line arguments of:
@@ -343,7 +357,7 @@ endfunction
 
 " @vimlint(EVL103, 1, a:arglead)
 " @vimlint(EVL103, 1, a:cursorpos)
-function! s:cmd_search_complete(arglead, cmdline, cursorpos) abort
+function! s:OpenBrowser_cmd_search_complete(arglead, cmdline, cursorpos) abort dict
   let excmd = '^\s*OpenBrowser\w\+\s\+'
   if a:cmdline !~# excmd
     return
@@ -351,7 +365,7 @@ function! s:cmd_search_complete(arglead, cmdline, cursorpos) abort
   let cmdline = substitute(a:cmdline, excmd, '', '')
 
   let engine_opts = map(
-  \   sort(keys(s:Config.get('search_engines'))),
+  \   sort(keys(self.config.get('search_engines'))),
   \   '''-'' . v:val'
   \)
   let reg_opts = ['++clip', '++reg=']
@@ -366,30 +380,30 @@ endfunction
 " @vimlint(EVL103, 0, a:cursorpos)
 
 " :OpenBrowserSmartSearch
-function! s:cmd_smart_search(cmdline) abort
+function! s:OpenBrowser_cmd_smart_search(cmdline) abort dict
   let [engine, regnames, c] = s:parse_search_args(a:cmdline)
   let c = s:parse_spaces(c)
   if c is# ''
     call s:Msg.error(':OpenBrowserSmartSearch [++clip | ++reg={regnames}] [-{search-engine}] {query}')
     return
   endif
-  return s:smart_search(c, s:Optional.get_or(engine, ''), regnames)
+  return self.smart_search(c, s:Optional.get_or(engine, ''), regnames)
 endfunction
 
 " <Plug>(openbrowser-open)
-function! s:keymap_open(mode, ...) abort
-  let silent = get(a:000, 0, s:Config.get('message_verbosity') is# 0)
+function! s:OpenBrowser_keymap_open(mode, ...) abort dict
+  let silent = get(a:000, 0, self.config.get('message_verbosity') is# 0)
   if a:mode is# 'n'
     " URL
-    let url = s:get_url_on_cursor()
+    let url = s:get_url_on_cursor(self.config)
     if !empty(url)
-      call s:open(url)
+      call self.open(url)
       return 1
     endif
     " FilePath
     let filepath = s:get_filepath_on_cursor()
     if !empty(filepath)
-      call s:open(filepath)
+      call self.open(filepath)
       return 1
     endif
     " Fail!
@@ -401,38 +415,38 @@ function! s:keymap_open(mode, ...) abort
     let text = s:get_selected_text()
     let urls = s:extract_urls(text)
     for url in urls
-      call s:open(url.str)
+      call self.open(url.str)
     endfor
     return !empty(urls)
   endif
 endfunction
 
 " <Plug>(openbrowser-search)
-function! s:keymap_search(mode) abort
+function! s:OpenBrowser_keymap_search(mode) abort dict
   if a:mode is# 'n'
-    return s:search(expand('<cword>'))
+    return self.search(expand('<cword>'))
   else
-    return s:search(s:get_selected_text())
+    return self.search(s:get_selected_text())
   endif
 endfunction
 
 " <Plug>(openbrowser-smart-search)
-function! s:keymap_smart_search(mode) abort
-  if s:keymap_open(a:mode, 1)
+function! s:OpenBrowser_keymap_smart_search(mode) abort dict
+  if self.keymap_open(a:mode, 1)
     " Suceeded to open!
     return
   endif
   " If neither URL nor FilePath is found...
   if a:mode is# 'n'
     " Search <cword>.
-    call s:search(
+    call self.search(
     \   expand('<cword>'),
-    \   s:Config.get('default_search'))
+    \   self.config.get('default_search'))
   else
     " Search selected text.
-    call s:search(
+    call self.search(
     \   s:get_selected_text(),
-    \   s:Config.get('default_search'))
+    \   self.config.get('default_search'))
   endif
 endfunction
 
@@ -474,12 +488,12 @@ endfunction
 "     'obj' url
 "     'startidx' start index
 "     'endidx' end index ([startidex, endidx), half-open interval)
-function! s:extract_urls(text) abort
+function! s:extract_urls(text, config) abort
   " NOTE: 'scheme_pattern' only allows "https", "http", "file"
   " and the keys of 'openbrowser_fix_schemes'.
   " However `pattern_set.get('scheme')` would be too tolerant
   " and useless (what can web browser do for git protocol? :( ).
-  let scheme_map = s:Config.get('fix_schemes')
+  let scheme_map = a:config.get('fix_schemes')
   let scheme_list = ['https\?', 'file'] + keys(scheme_map)
   let scheme_pattern = join(sort(scheme_list, 's:by_length'), '\|')
   let pattern_set = s:get_loose_pattern_set()
@@ -590,13 +604,13 @@ endfunction
 " @return Dictionary: the URL on cursor, or the first URL after cursor
 "   Empty Dictionary means no URLs found.
 " :help openbrowser-url-detection
-function! s:get_url_on_cursor() abort
-  let url = s:get_thing_on_cursor('s:detect_url_cb')
+function! s:get_url_on_cursor(config) abort
+  let url = s:get_thing_on_cursor('s:detect_url_cb', [a:config])
   return s:Optional.get_or(url, '')
 endfunction
 
-function! s:detect_url_cb() abort
-  let urls = s:extract_urls(expand('<cWORD>'))
+function! s:detect_url_cb(config) abort
+  let urls = s:extract_urls(expand('<cWORD>'), a:config)
   if !empty(urls)
     return s:Optional.some(urls[0].str)
   endif
@@ -606,7 +620,7 @@ endfunction
 " @return the filepath on cursor, or the first filepath after cursor
 " :help openbrowser-filepath-detection
 function! s:get_filepath_on_cursor() abort
-  let filepath = s:get_thing_on_cursor('s:detect_filepath_cb')
+  let filepath = s:get_thing_on_cursor('s:detect_filepath_cb', [])
   return s:Optional.get_or(filepath, '')
 endfunction
 
@@ -615,7 +629,7 @@ function! s:detect_filepath_cb() abort
   return s:seems_path(path) ? s:Optional.some(path) : s:Optional.none()
 endfunction
 
-function! s:get_thing_on_cursor(func) abort
+function! s:get_thing_on_cursor(func, args) abort
   let line = s:getconcealedline('.')
   let col = s:getconcealedcol('.')
   if line[col-1] =~# '\s'
@@ -624,7 +638,7 @@ function! s:get_thing_on_cursor(func) abort
       " Search left WORD.
       if search('\S', 'bnW')[0] ># 0
         normal! B
-        let r = call(a:func, [])
+        let r = call(a:func, a:args)
         if s:Optional.exists(r)
           return r
         endif
@@ -632,7 +646,7 @@ function! s:get_thing_on_cursor(func) abort
       " Search right WORD.
       if search('\S', 'nW')[0] ># 0
         normal! W
-        let r = call(a:func, [])
+        let r = call(a:func, a:args)
         if s:Optional.exists(r)
           return r
         endif
@@ -643,7 +657,7 @@ function! s:get_thing_on_cursor(func) abort
       call setpos('.', pos)
     endtry
   endif
-  return call(a:func, [])
+  return call(a:func, a:args)
 endfunction
 
 " This function is from quickrun.vim (http://github.com/thinca/vim-quickrun)
