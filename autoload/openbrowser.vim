@@ -17,7 +17,7 @@ unlet s:V
 
 
 " Save/Determine global variable values.
-let s:vimproc_is_installed = globpath(&rtp, 'autoload/vimproc.vim') !=# ''
+let s:vimproc_is_installed = globpath(&rtp, 'autoload/vimproc.vim') isnot# ''
 
 
 " Interfaces {{{
@@ -459,12 +459,12 @@ function! s:seems_path(uri) abort "{{{
   else
     let path = a:uri
   endif
-  return getftype(path) !=# ''
+  return getftype(path) isnot# ''
 endfunction "}}}
 
 function! s:seems_uri(uriobj) abort "{{{
   return !empty(a:uriobj)
-  \   && a:uriobj.scheme() !=# ''
+  \   && a:uriobj.scheme() isnot# ''
 endfunction "}}}
 
 function! s:detect_query_type(query, ...) abort "{{{
@@ -541,7 +541,7 @@ function! openbrowser#__open_browser__(uristr) abort "{{{
 
   let message_verbosity = s:get_var('openbrowser_message_verbosity')
   let format_message = s:get_var('openbrowser_format_message')
-  if message_verbosity >= 2 && format_message.msg !=# ''
+  if message_verbosity >= 2 && format_message.msg isnot# ''
     let msg = s:expand_format_message(format_message,
     \   {
     \      'uri' : uri,
@@ -591,7 +591,7 @@ function! openbrowser#__open_browser__(uristr) abort "{{{
     " because browser is spawned in background process
     " so can't check its return value.
 
-    if message_verbosity >= 2 && format_message.msg !=# ''
+    if message_verbosity >= 2 && format_message.msg isnot# ''
       redraw
       let msg = s:expand_format_message(format_message,
       \   {
@@ -686,7 +686,7 @@ endfunction
 " - "\{keyword}" => "{keyword}", not expression `keyword`.
 "   it does not expand vim variable `keyword`.
 function! s:expand_keywords(str, options) abort  " {{{
-  if type(a:str) != type('') || type(a:options) != type({})
+  if type(a:str) isnot# type('') || type(a:options) isnot# type({})
     call s:throw('s:expand_keywords(): invalid arguments. (a:str = '.string(a:str).', a:options = '.string(a:options).')')
   endif
   let rest = a:str
@@ -709,7 +709,7 @@ function! s:expand_keywords(str, options) abort  " {{{
     endif
 
     " Skip ordinary string.
-    if f != 0
+    if f isnot# 0
       let result .= rest[: f - 1]
       let rest = rest[f :]
     endif
@@ -782,8 +782,8 @@ function! s:getconcealedline(lnum, ...) abort "{{{
 
   while index <= endidx
     let concealed = synconcealed(a:lnum, index + 1)
-    if concealed[0] != 0
-      if region != concealed[2]
+    if concealed[0] isnot# 0
+      if region isnot# concealed[2]
         let region = concealed[2]
         let ret .= concealed[1]
       endif

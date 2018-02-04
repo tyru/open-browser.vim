@@ -112,7 +112,9 @@ elseif g:__openbrowser_platform.unix
   endfunction
 endif
 
-" Do not remove g:__openbrowser_platform for debug.
+" Do not remove g:__openbrowser_platform
+" because it is used in autoload/openbrowser.vim
+"
 " unlet g:__openbrowser_platform
 
 " }}}
@@ -270,7 +272,7 @@ xnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keyma
 if !get(g:, 'openbrowser_no_default_menus', (&guioptions =~# 'M'))
   function! s:add_menu() abort
     if get(g:, 'openbrowser_menu_lang',
-    \      &langmenu !=# '' ? &langmenu : v:lang) =~# '^ja'
+    \      &langmenu isnot# '' ? &langmenu : v:lang) =~# '^ja'
       runtime! lang/openbrowser_menu_ja.vim
     endif
 
