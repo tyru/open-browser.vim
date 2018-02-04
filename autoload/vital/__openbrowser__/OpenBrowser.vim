@@ -11,6 +11,8 @@ function! s:_vital_depends() abort
   \ 'Data.String',
   \ 'Web.HTTP',
   \ 'Vim.Buffer',
+  \
+  \ 'OpenBrowser.Config',
   \]
 endfunction
 
@@ -24,6 +26,8 @@ function! s:_vital_loaded(V) abort
   let s:get_last_selected = a:V.import('Vim.Buffer').get_last_selected
 
   let s:vimproc_is_installed = globpath(&rtp, 'autoload/vimproc.vim') isnot# ''
+
+  let s:Config = a:V.import('OpenBrowser.Config').new_global_var_source('openbrowser_')
 endfunction
 
 let s:NONE = []
@@ -76,7 +80,7 @@ function! s:open(uri, ...) abort
     endif
   endif
   if failed
-    if s:get_var('openbrowser_message_verbosity') >= 1
+    if s:Config.get('message_verbosity') >= 1
       call s:Msg.warn("open-browser doesn't know how to open '" . uristr . "'.")
     endif
   endif
@@ -94,9 +98,9 @@ function! s:get_opener(uristr, uriobj) abort
     else    " relative path
       let fullpath = s:convert_to_fullpath(uristr)
     endif
-    if s:get_var('openbrowser_open_filepath_in_vim')
+    if s:Config.get('open_filepath_in_vim')
       let fullpath = tr(fullpath, '\', '/')
-      let command = s:get_var('openbrowser_open_vim_command')
+      let command = s:Config.get('open_vim_command')
       return s:new_ex_command_opener(join([command, fullpath]))
     else
       let fullpath = tr(fullpath, '\', '/')
@@ -112,7 +116,7 @@ function! s:get_opener(uristr, uriobj) abort
     " Fix scheme, host, path.
     " e.g.: "ttp" => "http"
     for where in ['scheme', 'host', 'path']
-      let fix = s:get_var('openbrowser_fix_'.where.'s')
+      let fix = s:Config.get('fix_'.where.'s')
       let value = uriobj[where]()
       if has_key(fix, value)
         call call(uriobj[where], [fix[value]], uriobj)
@@ -163,8 +167,8 @@ function! s:UriOpener_open() abort dict
   " Clear previous message
   redraw!
 
-  let message_verbosity = s:get_var('openbrowser_message_verbosity')
-  let format_message = s:get_var('openbrowser_format_message')
+  let message_verbosity = s:Config.get('message_verbosity')
+  let format_message = s:Config.get('format_message')
   if message_verbosity >= 2 && format_message.msg isnot# ''
     let msg = s:expand_format_message(format_message,
     \   {
@@ -175,7 +179,7 @@ function! s:UriOpener_open() abort dict
     echo msg
   endif
 
-  for cmd in s:get_var('openbrowser_browser_commands')
+  for cmd in s:Config.get('browser_commands')
     let execmd = get(cmd, 'cmd', cmd.name)
     if !executable(execmd)
       continue
@@ -247,12 +251,12 @@ function! s:search(query, ...) abort
     return
   endif
 
-  let default_search = s:get_var('openbrowser_default_search')
+  let default_search = s:Config.get('default_search')
   let engine = get(a:000, 0, default_search)
   let engine = engine is# '' ? default_search : engine
   let regnames = get(a:000, 1, [])
 
-  let search_engines = s:get_var('openbrowser_search_engines')
+  let search_engines = s:Config.get('search_engines')
   if !has_key(search_engines, engine)
     call s:Msg.error("Unknown search engine '" . engine . "'.")
     return
@@ -265,7 +269,7 @@ endfunction
 
 " :OpenBrowserSmartSearch
 function! s:smart_search(query, ...) abort
-  let default_search = s:get_var('openbrowser_default_search')
+  let default_search = s:Config.get('default_search')
   let engine = get(a:000, 0, default_search)
   let engine = engine is# '' ? default_search : engine
   let regnames = get(a:000, 1, [])
@@ -342,7 +346,7 @@ function! s:cmd_search_complete(arglead, cmdline, cursorpos) abort
   let cmdline = substitute(a:cmdline, excmd, '', '')
 
   let engine_opts = map(
-  \   sort(keys(s:get_var('openbrowser_search_engines'))),
+  \   sort(keys(s:Config.get('search_engines'))),
   \   '''-'' . v:val'
   \)
   let reg_opts = ['++clip', '++reg=']
@@ -370,7 +374,7 @@ endfunction
 
 " <Plug>(openbrowser-open)
 function! s:keymap_open(mode, ...) abort
-  let silent = get(a:000, 0, s:get_var('openbrowser_message_verbosity') is# 0)
+  let silent = get(a:000, 0, s:Config.get('message_verbosity') is# 0)
   if a:mode is# 'n'
     " URL
     let url = s:get_url_on_cursor()
@@ -419,12 +423,12 @@ function! s:keymap_smart_search(mode) abort
     " Search <cword>.
     call s:search(
     \   expand('<cword>'),
-    \   s:get_var('openbrowser_default_search'))
+    \   s:Config.get('default_search'))
   else
     " Search selected text.
     call s:search(
     \   s:get_selected_text(),
-    \   s:get_var('openbrowser_default_search'))
+    \   s:Config.get('default_search'))
   endif
 endfunction
 
@@ -471,7 +475,7 @@ function! s:extract_urls(text) abort
   " and the keys of 'openbrowser_fix_schemes'.
   " However `pattern_set.get('scheme')` would be too tolerant
   " and useless (what can web browser do for git protocol? :( ).
-  let scheme_map = s:get_var('openbrowser_fix_schemes')
+  let scheme_map = s:Config.get('fix_schemes')
   let scheme_list = ['https\?', 'file'] + keys(scheme_map)
   let scheme_pattern = join(sort(scheme_list, 's:by_length'), '\|')
   let pattern_set = s:get_loose_pattern_set()
@@ -731,16 +735,6 @@ endfunction
 
 function! s:throw(msg) abort
   throw 'openbrowser: ' . a:msg
-endfunction
-
-function! s:get_var(varname) abort
-  for ns in [b:, w:, t:, g:]
-    if has_key(ns, a:varname)
-      return ns[a:varname]
-    endif
-  endfor
-  throw 'openbrowser: internal error: '
-  \   . "s:get_var() couldn't find variable '".a:varname."'."
 endfunction
 
 " From https://github.com/chikatoike/concealedyank.vim
