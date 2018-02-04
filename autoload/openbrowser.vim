@@ -7,7 +7,6 @@ set cpo&vim
 " }}}
 
 let s:V = vital#openbrowser#new()
-let s:Prelude = s:V.import('Prelude')
 let s:String = s:V.import('Data.String')
 let s:Process = s:V.import('Process')
 let s:URI = s:V.import('Web.URI')
@@ -65,7 +64,7 @@ function! openbrowser#open(uri, ...) abort "{{{
   else
     " Open URI in a browser
     let failed = !opener.open()
-    if !failed && g:openbrowser_force_foreground_after_open && s:Prelude.is_windows()
+    if !failed && g:openbrowser_force_foreground_after_open && g:__openbrowser_platform.mswin
       " XXX: Vim looses a focus after opening URI...
       " Is this same as non-Windows platform?
       augroup openbrowser-focuslost
