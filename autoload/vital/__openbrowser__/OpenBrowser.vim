@@ -8,11 +8,13 @@ function! s:_vital_depends() abort
   \ 'Process',
   \ 'Web.URI',
   \ 'Vim.Message',
+  \ 'Data.Optional',
   \ 'Data.String',
   \ 'Web.HTTP',
   \ 'Vim.Buffer',
   \
   \ 'OpenBrowser.Config',
+  \ 'OpenBrowser.Opener',
   \]
 endfunction
 
@@ -20,6 +22,7 @@ function! s:_vital_loaded(V) abort
   let s:Process = a:V.import('Process')
   let s:URI = a:V.import('Web.URI')
   let s:Msg = a:V.import('Vim.Message')
+  let s:Optional = a:V.import('Data.Optional')
 
   let s:truncate_skipping = a:V.import('Data.String').truncate_skipping
   let s:encodeURIComponent = a:V.import('Web.HTTP').encodeURIComponent
@@ -28,6 +31,7 @@ function! s:_vital_loaded(V) abort
   let s:vimproc_is_installed = globpath(&rtp, 'autoload/vimproc.vim') isnot# ''
 
   let s:Config = a:V.import('OpenBrowser.Config').new_global_var_source('openbrowser_')
+  let s:Opener = a:V.import('OpenBrowser.Opener')
 endfunction
 
 let s:NONE = []
@@ -53,30 +57,60 @@ function! s:open(uri, ...) abort
     return
   endif
 
-  let opener = s:get_opener(uristr, uriobj)
+  let builder = s:get_opener_builder(uristr, uriobj)
   let failed = 0
-  if opener is# s:NONE
+  if s:Optional.empty(builder)
     let failed = 1
   elseif !empty(regnames)
     " Yank URI to registers
-    let uri = opener.get_uri()
-    if uri is# ''
-      call s:Msg.error('open-browser failed to yank URI')
-      return
+    let b = s:Optional.get(builder)
+    if b.type is# 'shellcmd'
+      let uri = b.uri
+    else
+      let uri = a:uri
     endif
     for reg in regnames
       call setreg(reg, uri, 'v')
     endfor
   else
     " Open URI in a browser
+    let b = s:Optional.get(builder)
+    " Show message
+    if b.type is# 'shellcmd'
+      redraw!
+      let format_message = s:Config.get('format_message')
+      if s:Config.get('message_verbosity') >= 2 && format_message.msg isnot# ''
+        let msg = s:expand_format_message(format_message,
+        \   {
+        \      'uri' : a:uri,
+        \      'done' : 0,
+        \      'command' : '',
+        \   })
+        echo msg
+      endif
+    endif
+    " Open URI
+    let opener = b.build()
     let failed = !opener.open()
-    if !failed && g:openbrowser_force_foreground_after_open && g:__openbrowser_platform.mswin
-      " XXX: Vim looses a focus after opening URI...
-      " Is this same as non-Windows platform?
-      augroup openbrowser-focuslost
-        autocmd!
-        autocmd FocusLost * call foreground() | autocmd! openbrowser FocusLost
-      augroup END
+    if !failed
+      if b.type is# 'shellcmd' && s:Config.get('message_verbosity') >= 2 && format_message.msg isnot# ''
+        redraw
+        let msg = s:expand_format_message(format_message,
+        \   {
+        \      'uri' : a:uri,
+        \      'done' : 1,
+        \      'command' : b.cmd.name,
+        \   })
+        echo msg
+      endif
+      if g:openbrowser_force_foreground_after_open && g:__openbrowser_platform.mswin
+        " XXX: Vim looses a focus after opening URI...
+        " Is this same as non-Windows platform?
+        augroup openbrowser-focuslost
+          autocmd!
+          autocmd FocusLost * call foreground() | autocmd! openbrowser FocusLost
+        augroup END
+      endif
     endif
   endif
   if failed
@@ -86,7 +120,11 @@ function! s:open(uri, ...) abort
   endif
 endfunction
 
-function! s:get_opener(uristr, uriobj) abort
+" Returns s:Optional.some(builder) or s:Optional.none().
+" Builder is either Ex command opener or shell command opener.
+" Ex command opener builds an opener which opens a given file in Vim.
+" Shell command builder builds an opener which opens a given URI in a browser.
+function! s:get_opener_builder(uristr, uriobj) abort
   let [uristr, uriobj] = [a:uristr, a:uriobj]
   let type = s:detect_query_type(uristr, uriobj)
   if type.filepath    " Existed file path or 'file://'
@@ -101,7 +139,8 @@ function! s:get_opener(uristr, uriobj) abort
     if s:Config.get('open_filepath_in_vim')
       let fullpath = tr(fullpath, '\', '/')
       let command = s:Config.get('open_vim_command')
-      return s:new_ex_command_opener(join([command, fullpath]))
+      let builder = s:new_excmd_opener_builder(join([command, fullpath]))
+      return s:Optional.some(builder)
     else
       let fullpath = tr(fullpath, '\', '/')
       " Convert to file:// string.
@@ -110,7 +149,7 @@ function! s:get_opener(uristr, uriobj) abort
       if !g:__openbrowser_platform.cygwin
         let fullpath = 'file://' . fullpath
       endif
-      return s:new_uri_opener(fullpath)
+      return s:get_shellcmd_opener_builder(fullpath)
     endif
   elseif type.uri    " other URI
     " Fix scheme, host, path.
@@ -123,127 +162,76 @@ function! s:get_opener(uristr, uriobj) abort
       endif
     endfor
     let uristr = uriobj.to_string()
-    return s:new_uri_opener(uristr)
+    return s:get_shellcmd_opener_builder(uristr)
   endif
-  return s:NONE
+  return s:Optional.none()
 endfunction
 
-function! s:new_ex_command_opener(excmd) abort
-  let opener = deepcopy(s:ExCommandOpener)
-  let opener.excmd = a:excmd
-  return opener
+" Returns builder which builds Ex command opener.
+" `builder.build().open()` will open a file in Vim.
+function! s:new_excmd_opener_builder(excmd) abort
+  let builder = {
+  \ 'type': 'excmd',
+  \ 'excmd': a:excmd,
+  \}
+  function! builder.build() abort
+    return s:Opener.new_from_excmd(self.excmd)
+  endfunction
+  return builder
 endfunction
 
-function! s:ExCommandOpener_open() abort dict
-  try
-    execute self.excmd
-    return 1
-  catch
-    call s:Msg.error('open-browser failed to open in vim...: '
-    \          . 'v:exception = ' . v:exception
-    \          . ', v:throwpoint = ' . v:throwpoint)
-    return 0
-  endtry
-endfunction
-
-function! s:ExCommandOpener_get_uri() abort dict
-  return ''
-endfunction
-
-let s:ExCommandOpener = {
-\ 'open': function('s:ExCommandOpener_open'),
-\ 'get_uri': function('s:ExCommandOpener_get_uri'),
-\}
-
-function! s:new_uri_opener(uri) abort
-  let opener = deepcopy(s:UriOpener)
-  let opener.uri = a:uri
-  return opener
-endfunction
-
-function! s:UriOpener_open() abort dict
-  let uri = self.uri
-
-  " Clear previous message
-  redraw!
-
-  let message_verbosity = s:Config.get('message_verbosity')
-  let format_message = s:Config.get('format_message')
-  if message_verbosity >= 2 && format_message.msg isnot# ''
-    let msg = s:expand_format_message(format_message,
-    \   {
-    \      'uri' : uri,
-    \      'done' : 0,
-    \      'command' : '',
-    \   })
-    echo msg
-  endif
-
-  for cmd in s:Config.get('browser_commands')
-    let execmd = get(cmd, 'cmd', cmd.name)
-    if !executable(execmd)
-      continue
-    endif
-
+" Returns builder which builds shell command opener.
+" `builder.build().open()` will open the URI in a browser.
+function! s:new_shellcmd_opener_builder(cmd, execmd, uri, use_vimproc) abort
+  let builder = {
+  \ 'type': 'shellcmd',
+  \ 'cmd': a:cmd,
+  \ 'execmd': a:execmd,
+  \ 'uri': a:uri,
+  \ 'use_vimproc': a:use_vimproc,
+  \}
+  function! builder.build() abort
     " If args is not List, need to escape by open-browser,
     " not s:Process.system().
-    let args = deepcopy(cmd.args)
+    let args = deepcopy(self.cmd.args)
     let need_escape = type(args) isnot type([])
     let quote = need_escape ? "'" : ''
-    let use_vimproc = (g:openbrowser_use_vimproc && s:vimproc_is_installed)
     let expand_param = {
-    \  'browser'      : quote . execmd . quote,
-    \  'browser_noesc': execmd,
-    \  'uri'          : quote . uri . quote,
-    \  'uri_noesc'    : uri,
-    \  'use_vimproc'  : use_vimproc,
+    \  'browser'      : quote . self.execmd . quote,
+    \  'browser_noesc': self.execmd,
+    \  'uri'          : quote . self.uri . quote,
+    \  'uri_noesc'    : self.uri,
+    \  'use_vimproc'  : self.use_vimproc,
     \}
-    let system_args = map(
-    \   (type(args) is# type([]) ? copy(args) : [args]),
-    \   's:expand_keywords(v:val, expand_param)'
-    \)
-    try
-      call s:Process.system(
-      \   (type(args) is# type([]) ? system_args : system_args[0]),
-      \   {'use_vimproc': use_vimproc,
-      \    'background': get(cmd, 'background')}
+    if type(args) is# type([])
+      let system_args = map(
+      \ copy(args), 's:expand_keywords(v:val, expand_param)'
       \)
-    catch
-      call s:Msg.error('open-browser failed to open URI...')
-      call s:Msg.error('v:exception = ' . v:exception)
-      call s:Msg.error('v:throwpoint = ' . v:throwpoint)
-      return 0
-    endtry
-
-    " No need to check v:shell_error here
-    " because browser is spawned in background process
-    " so can't check its return value.
-
-    if message_verbosity >= 2 && format_message.msg isnot# ''
-      redraw
-      let msg = s:expand_format_message(format_message,
-      \   {
-      \      'uri' : uri,
-      \      'done' : 1,
-      \      'command' : cmd.name,
-      \   })
-      echo msg
+    else
+      let system_args = s:expand_keywords(args, expand_param)
     endif
-    " succeeded to open
-    return 1
+    return s:Opener.new_from_shellcmd(
+    \ system_args, get(self.cmd, 'background'), self.use_vimproc
+    \)
+  endfunction
+  return builder
+endfunction
+
+" If applicable browser is found, this returns s:Optional.some(builder) which
+" builds shell command opener from given URI. Otherwise this returns
+" s:Optional.none().
+function! s:get_shellcmd_opener_builder(uri) abort
+  let uri = a:uri
+  let use_vimproc = s:Config.get('use_vimproc')
+  for cmd in s:Config.get('browser_commands')
+    let execmd = get(cmd, 'cmd', cmd.name)
+    if executable(execmd)
+      let builder = s:new_shellcmd_opener_builder(cmd, execmd, uri, use_vimproc)
+      return s:Optional.some(builder)
+    endif
   endfor
-  " failed to open
-  return 0
+  return s:Optional.none()
 endfunction
-
-function! s:UriOpener_get_uri() abort dict
-  return self.uri
-endfunction
-
-let s:UriOpener = {
-\ 'open': function('s:UriOpener_open'),
-\ 'get_uri': function('s:UriOpener_get_uri'),
-\}
 
 " :OpenBrowserSearch
 function! s:search(query, ...) abort
