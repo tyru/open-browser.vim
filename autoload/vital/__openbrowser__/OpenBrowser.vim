@@ -28,6 +28,8 @@ function! s:_vital_loaded(V) abort
   let s:get_last_selected = a:V.import('Vim.Buffer').get_last_selected
 
   let s:vimproc_is_installed = globpath(&rtp, 'autoload/vimproc.vim') isnot# ''
+  let s:is_cygwin = has('win32unix')
+  let s:is_mswin = has('win16') || has('win32') || has('win64')
 
   let s:Opener = a:V.import('OpenBrowser.Opener')
 endfunction
@@ -111,7 +113,7 @@ function! s:OpenBrowser_open(uri, ...) abort dict
 
       " XXX: Vim looses a focus after opening URI...
       " Is this same as non-Windows platform?
-      if g:openbrowser_force_foreground_after_open && g:__openbrowser_platform.mswin
+      if g:openbrowser_force_foreground_after_open && s:is_mswin
         augroup openbrowser-focuslost
           autocmd!
           autocmd FocusLost * call foreground() | autocmd! openbrowser FocusLost
@@ -153,7 +155,7 @@ function! s:get_opener_builder(uristr, config) abort
       " Convert to file:// string.
       " NOTE: cygwin cannot treat file:// URI,
       " pass a string as fullpath.
-      if !g:__openbrowser_platform.cygwin
+      if !s:is_cygwin
         let fullpath = 'file://' . fullpath
       endif
       return s:get_shellcmd_opener_builder(fullpath, config)
