@@ -800,9 +800,5 @@ function! s:getconcealedcol(expr) abort
   return ret
 endfunction
 
-function! s:shellslash() abort
-  return exists('+shellslash') && &l:shellslash
-endfunction
-
 
 let &cpo = s:save_cpo
