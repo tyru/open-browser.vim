@@ -69,7 +69,7 @@ function! s:open(uri, ...) abort
     if b.type is# 'shellcmd'
       let uri = b.uri
     else
-      let uri = a:uri
+      let uri = uristr
     endif
     for reg in regnames
       call setreg(reg, uri, 'v')
@@ -85,7 +85,7 @@ function! s:open(uri, ...) abort
       if s:Config.get('message_verbosity') >= 2 && format_message.msg isnot# ''
         let msg = s:expand_format_message(format_message,
         \   {
-        \      'uri' : a:uri,
+        \      'uri' : uristr,
         \      'done' : 0,
         \      'command' : '',
         \   })
@@ -102,7 +102,7 @@ function! s:open(uri, ...) abort
         redraw
         let msg = s:expand_format_message(format_message,
         \   {
-        \      'uri' : a:uri,
+        \      'uri' : uristr,
         \      'done' : 1,
         \      'command' : b.cmd.name,
         \   })

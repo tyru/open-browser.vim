@@ -52,12 +52,12 @@ function! openbrowser#_keymap_open(...) abort
 endfunction
 
 " <Plug>(openbrowser-search)
-function! openbrowser#_keymap_search(mode) abort
+function! openbrowser#_keymap_search(...) abort
   return call(s:OpenBrowser.keymap_search, a:000, s:OpenBrowser)
 endfunction
 
 " <Plug>(openbrowser-smart-search)
-function! openbrowser#_keymap_smart_search(mode) abort
+function! openbrowser#_keymap_smart_search(...) abort
   return call(s:OpenBrowser.keymap_smart_search, a:000, s:OpenBrowser)
 endfunction
 
