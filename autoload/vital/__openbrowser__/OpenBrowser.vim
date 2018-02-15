@@ -25,7 +25,6 @@ function! s:_vital_loaded(V) abort
   let s:_encodeURIComponent = a:V.import('Web.HTTP').encodeURIComponent
   let s:_get_last_selected = a:V.import('Vim.Buffer').get_last_selected
 
-  let s:vimproc_is_installed = globpath(&rtp, 'autoload/vimproc.vim') isnot# ''
   let s:is_cygwin = has('win32unix')
   let s:is_mswin = has('win16') || has('win32') || has('win64')
 
