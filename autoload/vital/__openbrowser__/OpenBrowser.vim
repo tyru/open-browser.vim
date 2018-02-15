@@ -30,6 +30,7 @@ function! s:_vital_loaded(V) abort
   let s:is_mswin = has('win16') || has('win32') || has('win64')
 
   let s:Opener = a:V.import('OpenBrowser.Opener')
+  let s:URIExtractor = a:V.import('OpenBrowser.URIExtractor')
 endfunction
 
 let s:NONE = []
@@ -382,11 +383,11 @@ function! s:_OpenBrowser_keymap_open(mode, ...) abort dict
     return 0
   else
     let text = s:_get_selected_text()
-    let urls = s:_extract_urls(text, self.config)
-    for url in urls
-      call self.open(url.str)
+    let extracted = s:_extract_urls(text, self.config)
+    for e in extracted
+      call self.open(e.url.to_string())
     endfor
-    return !empty(urls)
+    return !empty(extracted)
   endif
 endfunction
 
@@ -425,11 +426,6 @@ function! s:_get_selected_text() abort
   return substitute(text, '^\s*\|\s*$', '', 'g')
 endfunction
 
-function! s:_by_length(s1, s2) abort
-  let [l1, l2] = [strlen(a:s1), strlen(a:s2)]
-  return l1 ># l2 ? -1 : l1 <# l2 ? 1 : 0
-endfunction
-
 
 " Define more tolerant URI parsing.
 " TODO: Make this configurable.
@@ -451,52 +447,32 @@ function! s:_get_loose_pattern_set() abort
 endfunction
 
 
-" @return List of Dictionary.
-"   Empty List means no URLs are found in a:text .
-"   Here are the keys of Dictionary.
-"     'obj' url
-"     'startidx' start index
-"     'endidx' end index ([startidex, endidx), half-open interval)
 function! s:_extract_urls(text, config) abort
-  " NOTE: 'scheme_pattern' only allows "https", "http", "file"
-  " and the keys of 'openbrowser_fix_schemes'.
-  " However `pattern_set.get('scheme')` would be too tolerant
-  " and useless (what can web browser do for git protocol? :( ).
-  let scheme_map = a:config.get('fix_schemes')
-  let scheme_list = ['https\?', 'file'] + keys(scheme_map)
-  let scheme_pattern = join(sort(scheme_list, 's:_by_length'), '\|')
   let pattern_set = s:_get_loose_pattern_set()
-  let head_pattern = scheme_pattern . '\|' . pattern_set.host()
-  let urls = []
-  let start = 0
-  let end = 0
-  let len = strlen(a:text)
-  while start <# len
-    " Search scheme.
-    let start = match(a:text, head_pattern, start)
-    if start is# -1
-      break
-    endif
-    let end = matchend(a:text, head_pattern, start)
-    " Try to parse string as URI.
-    let substr = a:text[start :]
-    let results = s:URI.new_from_seq_string(substr, s:NONE, pattern_set)
-    if results is# s:NONE || !s:_valid_uri(results[0])
-      " start is# end: matching string can be empty string.
-      " e.g.: echo [match('abc', 'd*'), matchend('abc', 'd*')]
-      let start = (start is# end ? end+1 : end)
-      continue
-    endif
-    let [url, original_url] = results[0:1]
-    let skip_num = len(original_url)
-    let urls += [{
-    \   'str': url.to_string(),
-    \   'startidx': start,
-    \   'endidx': start + skip_num,
-    \}]
-    let start += skip_num
-  endwhile
-  return urls
+  let schemes = keys(a:config.get('fix_schemes'))
+  let head_pattern = s:_get_url_head_pattern(schemes, pattern_set)
+  return s:URIExtractor.extract_from_text(a:text, {
+  \ 'uri_pattern_set': pattern_set,
+  \ 'head_pattern': head_pattern,
+  \})
+endfunction
+
+" This pattern matches:
+" * "https", "http", "file", and the keys of Dictionary returned by
+"   config.get('fix_schemes')
+"   * Above 3 schemes are used because most frequently used, and URI scheme
+"     regex is too tolerant
+" * URI hostname (for no scheme URI)
+function! s:_get_url_head_pattern(schemes, pattern_set) abort
+  let schemes = ['https', 'http', 'file'] + a:schemes
+  let scheme_pattern = join(sort(copy(a:schemes), 's:_by_length'), '\|')
+  let head_pattern = scheme_pattern . '\|' . a:pattern_set.host()
+  return head_pattern
+endfunction
+
+function! s:_by_length(s1, s2) abort
+  let [l1, l2] = [strlen(a:s1), strlen(a:s2)]
+  return l1 ># l2 ? -1 : l1 <# l2 ? 1 : 0
 endfunction
 
 function! s:_seems_path(uri) abort
@@ -579,9 +555,9 @@ function! s:_get_url_on_cursor(config) abort
 endfunction
 
 function! s:_detect_url_cb(config) abort
-  let urls = s:_extract_urls(expand('<cWORD>'), a:config)
-  if !empty(urls)
-    return s:O.some(urls[0].str)
+  let extracted = s:_extract_urls(expand('<cWORD>'), a:config)
+  if !empty(extracted)
+    return s:O.some(extracted[0].url.to_string())
   endif
   return s:O.none()
 endfunction
