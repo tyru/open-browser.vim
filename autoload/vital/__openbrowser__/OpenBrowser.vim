@@ -5,7 +5,6 @@ set cpo&vim
 
 function! s:_vital_depends() abort
   return [
-  \ 'Process',
   \ 'Web.URI',
   \ 'Vim.Message',
   \ 'Data.Optional',
@@ -18,7 +17,6 @@ function! s:_vital_depends() abort
 endfunction
 
 function! s:_vital_loaded(V) abort
-  let s:Process = a:V.import('Process')
   let s:URI = a:V.import('Web.URI')
   let s:Msg = a:V.import('Vim.Message')
   let s:Optional = a:V.import('Data.Optional')
