@@ -87,23 +87,23 @@ endfunction
 
 function! s:new_user_var_source(prefix) abort
   if !exists('s:_initialized')
-    call s:_init_global_vars()
+    call s:_init_global_vars(a:prefix)
     let s:_initialized = 1
   endif
   return {
   \ 'prefix': a:prefix,
-  \ 'get': function('s:UserVarConfig_get'),
+  \ 'get': function('s:_UserVarConfig_get'),
   \}
 endfunction
 
 function! s:new_default_source() abort
   return {
   \ '_values': s:default_values(),
-  \ 'get': function('s:DefaultConfig_get'),
+  \ 'get': function('s:_DefaultConfig_get'),
   \}
 endfunction
 
-function! s:UserVarConfig_get(key) abort dict
+function! s:_UserVarConfig_get(key) abort dict
   let name = self.prefix . a:key
   for ns in [b:, w:, t:, g:]
     if has_key(ns, name)
@@ -114,16 +114,16 @@ function! s:UserVarConfig_get(key) abort dict
   \   . "s:get_var() couldn't find variable '" . name . "'."
 endfunction
 
-function! s:DefaultConfig_get(key) abort dict
+function! s:_DefaultConfig_get(key) abort dict
   return self._values[a:key]
 endfunction
 
-function! s:_init_global_vars() abort
+function! s:_init_global_vars(prefix) abort
   let default = s:default_values()
 
   " Merge default values & user config values
   for [key, value] in items(default)
-    let name = 'openbrowser_' . key
+    let name = a:prefix . key
     if type(value) is# type({})
       let g:[name] = extend(get(g:, name, {}), value, 'keep')
     else

@@ -21,7 +21,7 @@ endfunction
 function! s:new_from_excmd(excmd) abort
   return {
   \ 'excmd': a:excmd,
-  \ 'open': function('s:ExcmdOpener_open'),
+  \ 'open': function('s:_ExcmdOpener_open'),
   \}
 endfunction
 
@@ -30,11 +30,11 @@ function! s:new_from_shellcmd(system_args, background, use_vimproc) abort
   \ 'system_args': a:system_args,
   \ 'background': a:background,
   \ 'use_vimproc': s:vimproc_is_installed && a:use_vimproc,
-  \ 'open': function('s:ShellCmdOpener_open'),
+  \ 'open': function('s:_ShellCmdOpener_open'),
   \}
 endfunction
 
-function! s:ExcmdOpener_open() abort dict
+function! s:_ExcmdOpener_open() abort dict
   try
     execute self.excmd
     return 1
@@ -46,7 +46,7 @@ function! s:ExcmdOpener_open() abort dict
   endtry
 endfunction
 
-function! s:ShellCmdOpener_open() abort dict
+function! s:_ShellCmdOpener_open() abort dict
   try
     call s:Process.system(
     \   self.system_args,
