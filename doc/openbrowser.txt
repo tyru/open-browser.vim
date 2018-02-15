@@ -382,6 +382,8 @@ COMMANDS					*openbrowser-commands* {{{
 :OpenBrowser [++clip | ++reg={regnames}] {uri}				*:OpenBrowser*
 	Opens URI with your favorite browser.
 
+	See |openbrowser-commands-reg-arg| for "++clip" and "++reg".
+
 :OpenBrowserSearch [++clip | ++reg={regnames}] [-{search-engine}] {query}		*:OpenBrowserSearch*
 	{query}: Query string
 	{search-engine}: >
@@ -389,10 +391,27 @@ COMMANDS					*openbrowser-commands* {{{
 <	This opens http://search.yahoo.com/search?p=word as default.
 	You can change this URI with |g:openbrowser_search_engines|.
 
+	See |openbrowser-commands-reg-arg| for "++clip" and "++reg".
+
 :OpenBrowserSmartSearch [++clip | ++reg={regnames}] [-{search-engine}] {uri-or-query}	*:OpenBrowserSmartSearch*
 	This is wrapper for two above Ex commands.
 	If {uri-or-query} _seems_ like URI, open the URI.
 	If {uri-or-query} _seems_ like query, search the query.
+
+	See |openbrowser-commands-reg-arg| for "++clip" and "++reg".
+
+
+								*openbrowser-commands-reg-arg*
+++clip and ++reg={regnames} argument
+------------------------------------
+
+If one or more "++clip" or "++reg={regnames}" argument(s) are specified,
+yank given URI / string into specified registers.
+{regnames} is comma-separated register names.
+"++clip" is same as "++reg=*,+" (|clipboard|).
+If multiple "++clip" or "++reg={regnames}" arguments are specified,
+merge the register names.
+e.g.: ":OpenBrowser ++clip ++reg=a http://example.com/" yanks "http://example.com/" into *,+,a registers
 
 }}}
 ------------------------------------------------------------------------------
