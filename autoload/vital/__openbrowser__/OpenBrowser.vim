@@ -19,7 +19,7 @@ endfunction
 function! s:_vital_loaded(V) abort
   let s:URI = a:V.import('Web.URI')
   let s:Msg = a:V.import('Vim.Message')
-  let s:Optional = a:V.import('Data.Optional')
+  let s:O = a:V.import('Data.Optional')
 
   let s:truncate_skipping = a:V.import('Data.String').truncate_skipping
   let s:encodeURIComponent = a:V.import('Web.HTTP').encodeURIComponent
@@ -61,11 +61,11 @@ function! s:_OpenBrowser_open(uri) abort dict
 
   let builder = s:_get_opener_builder(a:uri, self.config)
   let failed = 0
-  if s:Optional.empty(builder)
+  if s:O.empty(builder)
     let failed = 1
   else
     " Open URI in a browser / Open a file in Vim
-    let b = s:Optional.get(builder)
+    let b = s:O.get(builder)
 
     " Show message
     if b.type is# 'shellcmd'
@@ -116,7 +116,7 @@ function! s:_OpenBrowser_open(uri) abort dict
   endif
 endfunction
 
-" Returns s:Optional.some(builder) or s:Optional.none().
+" Returns s:O.some(builder) or s:O.none().
 " Builder is either Ex command opener or shell command opener.
 " Ex command opener builds an opener which opens a given file in Vim.
 " Shell command builder builds an opener which opens a given URI in a browser.
@@ -136,7 +136,7 @@ function! s:_get_opener_builder(uristr, config) abort
       let fullpath = tr(fullpath, '\', '/')
       let command = config.get('open_vim_command')
       let builder = s:_new_excmd_opener_builder(join([command, fullpath]))
-      return s:Optional.some(builder)
+      return s:O.some(builder)
     else
       let fullpath = tr(fullpath, '\', '/')
       " Convert to file:// string.
@@ -160,7 +160,7 @@ function! s:_get_opener_builder(uristr, config) abort
     let uristr = uriobj.to_string()
     return s:_get_shellcmd_opener_builder(uristr, config)
   endif
-  return s:Optional.none()
+  return s:O.none()
 endfunction
 
 " Returns builder which builds Ex command opener.
@@ -212,9 +212,9 @@ function! s:_new_shellcmd_opener_builder(cmd, execmd, uri, use_vimproc) abort
   return builder
 endfunction
 
-" If applicable browser is found, this returns s:Optional.some(builder) which
+" If applicable browser is found, this returns s:O.some(builder) which
 " builds shell command opener from given URI. Otherwise this returns
-" s:Optional.none().
+" s:O.none().
 function! s:_get_shellcmd_opener_builder(uri, config) abort
   let [uri, config] = [a:uri, a:config]
   let use_vimproc = config.get('use_vimproc')
@@ -222,10 +222,10 @@ function! s:_get_shellcmd_opener_builder(uri, config) abort
     let execmd = get(cmd, 'cmd', cmd.name)
     if executable(execmd)
       let builder = s:_new_shellcmd_opener_builder(cmd, execmd, uri, use_vimproc)
-      return s:Optional.some(builder)
+      return s:O.some(builder)
     endif
   endfor
-  return s:Optional.none()
+  return s:O.none()
 endfunction
 
 " :OpenBrowserSearch
@@ -270,10 +270,10 @@ endfunction
 " Parse engine if specified
 function! s:_parse_engine(cmdline) abort
   let c = s:_parse_spaces(a:cmdline)
-  let engine = s:Optional.none()
+  let engine = s:O.none()
   let m = matchlist(c, '^-\(\S\+\)\s\+\(.*\)')
   if !empty(m)
-    let engine = s:Optional.some(m[1])
+    let engine = s:O.some(m[1])
     let c = m[2]
   endif
   return [engine, c]
@@ -297,7 +297,7 @@ function! s:_OpenBrowser_cmd_search(cmdline) abort dict
     call s:Msg.error(':OpenBrowserSearch [-{search-engine}] {query}')
     return
   endif
-  return self.search(c, s:Optional.get_or(engine, ''))
+  return self.search(c, s:O.get_or(engine, ''))
 endfunction
 
 " Parse command-line arguments of:
@@ -305,11 +305,11 @@ endfunction
 " * :OpenBrowserSmartSearch
 function! s:_parse_search_args(cmdline) abort
   let c = s:_parse_spaces(a:cmdline)
-  let engine = s:Optional.none()
+  let engine = s:O.none()
   while 1
     if c =~# '^-'
       let [engine, c] = s:_parse_engine(c)
-      if s:Optional.empty(engine)
+      if s:O.empty(engine)
         break
       endif
     else
@@ -351,7 +351,7 @@ function! s:_OpenBrowser_cmd_smart_search(cmdline) abort dict
     call s:Msg.error(':OpenBrowserSmartSearch [-{search-engine}] {query}')
     return
   endif
-  return self.smart_search(c, s:Optional.get_or(engine, ''))
+  return self.smart_search(c, s:O.get_or(engine, ''))
 endfunction
 
 " <Plug>(openbrowser-open)
@@ -570,27 +570,27 @@ endfunction
 " :help openbrowser-url-detection
 function! s:_get_url_on_cursor(config) abort
   let url = s:_get_thing_on_cursor('s:_detect_url_cb', [a:config])
-  return s:Optional.get_or(url, '')
+  return s:O.get_or(url, '')
 endfunction
 
 function! s:_detect_url_cb(config) abort
   let urls = s:_extract_urls(expand('<cWORD>'), a:config)
   if !empty(urls)
-    return s:Optional.some(urls[0].str)
+    return s:O.some(urls[0].str)
   endif
-  return s:Optional.none()
+  return s:O.none()
 endfunction
 
 " @return the filepath on cursor, or the first filepath after cursor
 " :help openbrowser-filepath-detection
 function! s:_get_filepath_on_cursor() abort
   let filepath = s:_get_thing_on_cursor('s:_detect_filepath_cb', [])
-  return s:Optional.get_or(filepath, '')
+  return s:O.get_or(filepath, '')
 endfunction
 
 function! s:_detect_filepath_cb() abort
   let path = expand('<cWORD>')
-  return s:_seems_path(path) ? s:Optional.some(path) : s:Optional.none()
+  return s:_seems_path(path) ? s:O.some(path) : s:O.none()
 endfunction
 
 function! s:_get_thing_on_cursor(func, args) abort
@@ -603,7 +603,7 @@ function! s:_get_thing_on_cursor(func, args) abort
       if search('\S', 'bnW')[0] ># 0
         normal! B
         let r = call(a:func, a:args)
-        if s:Optional.exists(r)
+        if s:O.exists(r)
           return r
         endif
       endif
@@ -611,12 +611,12 @@ function! s:_get_thing_on_cursor(func, args) abort
       if search('\S', 'nW')[0] ># 0
         normal! W
         let r = call(a:func, a:args)
-        if s:Optional.exists(r)
+        if s:O.exists(r)
           return r
         endif
       endif
       " Not found.
-      return s:Optional.none()
+      return s:O.none()
     finally
       call setpos('.', pos)
     endtry
