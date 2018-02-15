@@ -42,6 +42,7 @@ function! s:new(config) abort
   \ 'open': function('s:_OpenBrowser_open'),
   \ 'search': function('s:_OpenBrowser_search'),
   \ 'smart_search': function('s:_OpenBrowser_smart_search'),
+  \ 'yank': function('s:_OpenBrowser_yank'),
   \ 'cmd_open': function('s:_OpenBrowser_cmd_open'),
   \ 'cmd_search': function('s:_OpenBrowser_cmd_search'),
   \ 'cmd_smart_search': function('s:_OpenBrowser_cmd_smart_search'),
@@ -53,27 +54,16 @@ function! s:new(config) abort
 endfunction
 
 " @param uri URI object or String
-function! s:_OpenBrowser_open(uri, ...) abort dict
+function! s:_OpenBrowser_open(uri) abort dict
   let uri = a:uri
   if type(uri) isnot# type('')
     call s:_throw('s:OpenBrowser.open() received non-String argument: uri = ' . string(uri))
-  endif
-  let regnames = get(a:000, 0, [])
-  if type(regnames) isnot# type([])
-    call s:_throw('s:OpenBrowser.open() received non-List argument: regnames = ' . string(regnames))
   endif
 
   let builder = s:_get_opener_builder(a:uri, self.config)
   let failed = 0
   if s:Optional.empty(builder)
     let failed = 1
-  elseif !empty(regnames)
-    " Yank URI to registers
-    let b = s:Optional.get(builder)
-    let value = b.type is# 'shellcmd' ? b.uri : uri
-    for reg in regnames
-      call setreg(reg, value, 'v')
-    endfor
   else
     " Open URI in a browser / Open a file in Vim
     let b = s:Optional.get(builder)
@@ -198,8 +188,7 @@ function! s:_new_shellcmd_opener_builder(cmd, execmd, uri, use_vimproc) abort
   \ 'use_vimproc': a:use_vimproc,
   \}
   function! builder.build() abort
-    " If args is not List, need to escape by open-browser,
-    " not s:Process.system().
+    " If args is not List, need to escape by open-browser
     let args = deepcopy(self.cmd.args)
     let need_escape = type(args) isnot type([])
     let quote = need_escape ? "'" : ''
@@ -249,7 +238,6 @@ function! s:_OpenBrowser_search(query, ...) abort dict
   let default_search = self.config.get('default_search')
   let engine = get(a:000, 0, default_search)
   let engine = engine is# '' ? default_search : engine
-  let regnames = get(a:000, 1, [])
 
   let search_engines = self.config.get('search_engines')
   if !has_key(search_engines, engine)
@@ -259,7 +247,7 @@ function! s:_OpenBrowser_search(query, ...) abort dict
 
   let query = s:encodeURIComponent(a:query)
   let uri = s:_expand_keywords(search_engines[engine], {'query': query})
-  call self.open(uri, regnames)
+  call self.open(uri)
 endfunction
 
 " :OpenBrowserSmartSearch
@@ -267,13 +255,35 @@ function! s:_OpenBrowser_smart_search(query, ...) abort dict
   let default_search = self.config.get('default_search')
   let engine = get(a:000, 0, default_search)
   let engine = engine is# '' ? default_search : engine
-  let regnames = get(a:000, 1, [])
 
   if s:_seems_path(a:query) || s:_valid_uri(s:URI.new(a:query, {}))
-    return self.open(a:query, regnames)
+    return self.open(a:query)
   else
-    return self.search(a:query, engine, regnames)
+    return self.search(a:query, engine)
   endif
+endfunction
+
+" Yank URI to registers
+function! s:_OpenBrowser_yank(uri, regnames) abort
+  if type(a:uri) isnot# type('')
+    throw 'openbrowser: yank(): receive non-List argument for {uri}'
+  endif
+  if type(a:regnames) isnot# type([])
+    throw 'openbrowser: yank(): receive non-List argument for {regnames}'
+  endif
+  if !has('clipboard')
+    for reg in a:regnames
+      if reg is# '*' || reg is# '+'
+        call s:Msg.error('You cannot use clipboard registers: ' .
+        \                'please use Vim with +clipboard feature')
+        return 0
+      endif
+    endfor
+  endif
+  for reg in a:regnames
+    call setreg(reg, a:uri, 'v')
+  endfor
+  return 1
 endfunction
 
 
@@ -295,16 +305,20 @@ endfunction
 
 " Parse regnames if specified
 function! s:_parse_regnames(cmdline) abort
-  let c = s:_parse_spaces(a:cmdline)
-  if c =~# '^++clip\%(\s\|$\)'
-    let regnames = ['+', '*']
-    let c = matchstr(c, '^++clip\s*\zs.*')
-  elseif c =~# '^++reg=\S\+'
-    let [arg, c] = matchlist(c, '^++reg=\(\S\+\)\s*\(.*\)')[1:2]
-    let regnames = split(arg, ',')
-  else
-    let regnames = []
-  endif
+  let c = a:cmdline
+  let regnames = []
+  while 1
+    let c = s:_parse_spaces(c)
+    if c =~# '^++clip\%(\s\|$\)'
+      let regnames += ['+', '*']
+      let c = matchstr(c, '^++clip\s*\zs.*')
+    elseif c =~# '^++reg=\S\+'
+      let [arg, c] = matchlist(c, '^++reg=\(\S\+\)\s*\(.*\)')[1:2]
+      let regnames += split(arg, ',')
+    else
+      break
+    endif
+  endwhile
   return [regnames, c]
 endfunction
 
@@ -316,7 +330,13 @@ function! s:_OpenBrowser_cmd_open(cmdline) abort dict
     call s:Msg.error(':OpenBrowser [++clip | ++reg={regnames}] {uri}')
     return
   endif
-  call self.open(uri, regnames)
+  if !empty(regnames)
+    if self.yank(uri, regnames)
+      echo 'Yank URI to registers.'
+    endif
+    return
+  endif
+  call self.open(uri)
 endfunction
 
 " :OpenBrowserSearch
@@ -327,7 +347,13 @@ function! s:_OpenBrowser_cmd_search(cmdline) abort dict
     call s:Msg.error(':OpenBrowserSearch [++clip | ++reg={regnames}] [-{search-engine}] {query}')
     return
   endif
-  return self.search(c, s:Optional.get_or(engine, ''), regnames)
+  if !empty(regnames)
+    if self.yank(c, regnames)
+      echo 'Yank URI to registers.'
+    endif
+    return
+  endif
+  return self.search(c, s:Optional.get_or(engine, ''))
 endfunction
 
 " Parse command-line arguments of:
@@ -387,7 +413,13 @@ function! s:_OpenBrowser_cmd_smart_search(cmdline) abort dict
     call s:Msg.error(':OpenBrowserSmartSearch [++clip | ++reg={regnames}] [-{search-engine}] {query}')
     return
   endif
-  return self.smart_search(c, s:Optional.get_or(engine, ''), regnames)
+  if !empty(regnames)
+    if self.yank(c, regnames)
+      echo 'Yank to registers.'
+    endif
+    return
+  endif
+  return self.smart_search(c, s:Optional.get_or(engine, ''))
 endfunction
 
 " <Plug>(openbrowser-open)

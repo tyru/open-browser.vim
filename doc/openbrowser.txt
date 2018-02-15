@@ -407,7 +407,7 @@ OpenBrowser({uri})				*OpenBrowser()*
 	Now it's same as |openbrowser#open()|.
 	Use |openbrowser#open()| instead.
 
-openbrowser#open({uri} [, {regnames}])			*openbrowser#open()*
+openbrowser#open({uri})			*openbrowser#open()*
 	Function version of |:OpenBrowser|.
 
 OpenBrowserSearch({query} [, {search-engine}])		*OpenBrowserSearch()*
@@ -415,12 +415,12 @@ OpenBrowserSearch({query} [, {search-engine}])		*OpenBrowserSearch()*
 	Now it's same as |openbrowser#search()|.
 	Use |openbrowser#search()| instead.
 
-openbrowser#search({query} [, {search-engine} [, {regnames}]])			*openbrowser#search()*
+openbrowser#search({query} [, {search-engine}])			*openbrowser#search()*
 	Function version of |:OpenBrowserSearch|.
 	If {search-engine} is omitted,
 	|g:openbrowser_default_search| is used instead.
 
-openbrowser#smart_search({query} [, {search-engine} [, {regnames}]])			*openbrowser#smart_search()*
+openbrowser#smart_search({query} [, {search-engine}])			*openbrowser#smart_search()*
 	Function version of |:OpenBrowserSmartSearch|.
 	If {search-engine} is omitted,
 	|g:openbrowser_default_search| is used instead.
