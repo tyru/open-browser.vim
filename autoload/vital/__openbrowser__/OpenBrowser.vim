@@ -21,9 +21,9 @@ function! s:_vital_loaded(V) abort
   let s:Msg = a:V.import('Vim.Message')
   let s:O = a:V.import('Data.Optional')
 
-  let s:truncate_skipping = a:V.import('Data.String').truncate_skipping
-  let s:encodeURIComponent = a:V.import('Web.HTTP').encodeURIComponent
-  let s:get_last_selected = a:V.import('Vim.Buffer').get_last_selected
+  let s:_truncate_skipping = a:V.import('Data.String').truncate_skipping
+  let s:_encodeURIComponent = a:V.import('Web.HTTP').encodeURIComponent
+  let s:_get_last_selected = a:V.import('Vim.Buffer').get_last_selected
 
   let s:vimproc_is_installed = globpath(&rtp, 'autoload/vimproc.vim') isnot# ''
   let s:is_cygwin = has('win32unix')
@@ -250,7 +250,7 @@ function! s:_OpenBrowser_search(query, ...) abort dict
     return
   endif
 
-  let query = s:encodeURIComponent(a:query)
+  let query = s:_encodeURIComponent(a:query)
   let uri = s:_expand_keywords(search_engines[engine], {'query': query})
   call self.open(uri)
 endfunction
@@ -421,7 +421,7 @@ function! s:_OpenBrowser_keymap_smart_search(mode) abort dict
 endfunction
 
 function! s:_get_selected_text() abort
-  let selected_text = s:get_last_selected()
+  let selected_text = s:_get_last_selected()
   let text = substitute(selected_text, '[\n\r]\+', ' ', 'g')
   return substitute(text, '^\s*\|\s*$', '', 'g')
 endfunction
@@ -529,16 +529,16 @@ function! s:_expand_format_message(format_message, keywords) abort
       let min_uri_len = a:format_message.min_uri_len
       if non_uri_len + min_uri_len <= maxlen
         " Truncate only URI.
-        let a:keywords.uri = s:truncate_skipping(
+        let a:keywords.uri = s:_truncate_skipping(
         \           a:keywords.uri, maxlen - 4 - non_uri_len, 0, '...')
         let expanded_msg = s:_expand_keywords(a:format_message.msg, a:keywords)
       else
         " Third, Fallback: Even if expanded_msg is longer than command-line
         " after "Second Try", truncate whole string.
-        let a:keywords.uri = s:truncate_skipping(
+        let a:keywords.uri = s:_truncate_skipping(
         \                   a:keywords.uri, min_uri_len, 0, '...')
         let expanded_msg = s:_expand_keywords(a:format_message.msg, a:keywords)
-        let expanded_msg = s:truncate_skipping(
+        let expanded_msg = s:_truncate_skipping(
         \                   expanded_msg, maxlen - 4, 0, '...')
       endif
     endif
