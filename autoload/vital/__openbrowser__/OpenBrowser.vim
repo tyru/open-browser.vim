@@ -59,6 +59,11 @@ function! s:_OpenBrowser_open(uri) abort dict
     call s:_throw('s:OpenBrowser.open() received non-String argument: uri = ' . string(uri))
   endif
 
+  " TODO: After deprecating Vim 7.x, refactoring by:
+  " * Using s:O.map(), ...
+  "   https://github.com/vim-jp/vital.vim/issues/576
+  " * Using partial, lambda, ...
+
   let builder = s:_get_opener_builder(a:uri, self.config)
   let failed = 0
   if s:O.empty(builder)
