@@ -415,7 +415,7 @@ function! s:_OpenBrowser_keymap_open(mode, ...) abort dict
     return 0
   else
     let text = s:_get_selected_text()
-    let urls = s:_extract_urls(text)
+    let urls = s:_extract_urls(text, self.config)
     for url in urls
       call self.open(url.str)
     endfor
