@@ -42,7 +42,6 @@ function! s:new(config) abort
   \ 'open': function('s:_OpenBrowser_open'),
   \ 'search': function('s:_OpenBrowser_search'),
   \ 'smart_search': function('s:_OpenBrowser_smart_search'),
-  \ 'yank': function('s:_OpenBrowser_yank'),
   \ 'cmd_open': function('s:_OpenBrowser_cmd_open'),
   \ 'cmd_search': function('s:_OpenBrowser_cmd_search'),
   \ 'cmd_smart_search': function('s:_OpenBrowser_cmd_smart_search'),
@@ -263,29 +262,6 @@ function! s:_OpenBrowser_smart_search(query, ...) abort dict
   endif
 endfunction
 
-" Yank URI to registers
-function! s:_OpenBrowser_yank(uri, regnames) abort
-  if type(a:uri) isnot# type('')
-    throw 'openbrowser: yank(): receive non-List argument for {uri}'
-  endif
-  if type(a:regnames) isnot# type([])
-    throw 'openbrowser: yank(): receive non-List argument for {regnames}'
-  endif
-  if !has('clipboard')
-    for reg in a:regnames
-      if reg is# '*' || reg is# '+'
-        call s:Msg.error('You cannot use clipboard registers: ' .
-        \                'please use Vim with +clipboard feature')
-        return 0
-      endif
-    endfor
-  endif
-  for reg in a:regnames
-    call setreg(reg, a:uri, 'v')
-  endfor
-  return 1
-endfunction
-
 
 function! s:_parse_spaces(cmdline) abort
   return substitute(a:cmdline, '^\s\+', '', '')
@@ -303,37 +279,11 @@ function! s:_parse_engine(cmdline) abort
   return [engine, c]
 endfunction
 
-" Parse regnames if specified
-function! s:_parse_regnames(cmdline) abort
-  let c = a:cmdline
-  let regnames = []
-  while 1
-    let c = s:_parse_spaces(c)
-    if c =~# '^++clip\%(\s\|$\)'
-      let regnames += ['+', '*']
-      let c = matchstr(c, '^++clip\s*\zs.*')
-    elseif c =~# '^++reg=\S\+'
-      let [arg, c] = matchlist(c, '^++reg=\(\S\+\)\s*\(.*\)')[1:2]
-      let regnames += split(arg, ',')
-    else
-      break
-    endif
-  endwhile
-  return [regnames, c]
-endfunction
-
 " :OpenBrowser
 function! s:_OpenBrowser_cmd_open(cmdline) abort dict
-  let [regnames, uri] = s:_parse_regnames(a:cmdline)
-  let uri = s:_parse_spaces(uri)
+  let uri = s:_parse_spaces(a:cmdline)
   if uri is# ''
-    call s:Msg.error(':OpenBrowser [++clip | ++reg={regnames}] {uri}')
-    return
-  endif
-  if !empty(regnames)
-    if self.yank(uri, regnames)
-      echo 'Yank URI to registers.'
-    endif
+    call s:Msg.error(':OpenBrowser {uri}')
     return
   endif
   call self.open(uri)
@@ -341,16 +291,10 @@ endfunction
 
 " :OpenBrowserSearch
 function! s:_OpenBrowser_cmd_search(cmdline) abort dict
-  let [engine, regnames, c] = s:_parse_search_args(a:cmdline)
+  let [engine, c] = s:_parse_search_args(a:cmdline)
   let c = s:_parse_spaces(c)
   if c is# ''
-    call s:Msg.error(':OpenBrowserSearch [++clip | ++reg={regnames}] [-{search-engine}] {query}')
-    return
-  endif
-  if !empty(regnames)
-    if self.yank(c, regnames)
-      echo 'Yank URI to registers.'
-    endif
+    call s:Msg.error(':OpenBrowserSearch [-{search-engine}] {query}')
     return
   endif
   return self.search(c, s:Optional.get_or(engine, ''))
@@ -362,23 +306,17 @@ endfunction
 function! s:_parse_search_args(cmdline) abort
   let c = s:_parse_spaces(a:cmdline)
   let engine = s:Optional.none()
-  let regnames = []
   while 1
     if c =~# '^-'
       let [engine, c] = s:_parse_engine(c)
       if s:Optional.empty(engine)
         break
       endif
-    elseif c =~# '^++'
-      let [regnames, c] = s:_parse_regnames(c)
-      if empty(regnames)
-        break
-      endif
     else
       break
     endif
   endwhile
-  return [engine, regnames, c]
+  return [engine, c]
 endfunction
 
 " @vimlint(EVL103, 1, a:arglead)
@@ -407,16 +345,10 @@ endfunction
 
 " :OpenBrowserSmartSearch
 function! s:_OpenBrowser_cmd_smart_search(cmdline) abort dict
-  let [engine, regnames, c] = s:_parse_search_args(a:cmdline)
+  let [engine, c] = s:_parse_search_args(a:cmdline)
   let c = s:_parse_spaces(c)
   if c is# ''
-    call s:Msg.error(':OpenBrowserSmartSearch [++clip | ++reg={regnames}] [-{search-engine}] {query}')
-    return
-  endif
-  if !empty(regnames)
-    if self.yank(c, regnames)
-      echo 'Yank to registers.'
-    endif
+    call s:Msg.error(':OpenBrowserSmartSearch [-{search-engine}] {query}')
     return
   endif
   return self.smart_search(c, s:Optional.get_or(engine, ''))
