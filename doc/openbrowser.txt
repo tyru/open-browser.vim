@@ -3,19 +3,7 @@
 Author:
   tyru <tyru.exe@gmail.com>
 Version: 0.1.1
-License:
-NEW BSD LICENSE {{{
-  Copyright (c) 2010, tyru
-  All rights reserved.
-
-  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-      * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-      * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-      * Neither the name of the tyru nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-}}}
+License: See LICENSE file in this repository
 
 ==============================================================================
 CONTENTS						*openbrowser-contents*
@@ -27,6 +15,7 @@ Interface			|openbrowser-interface|
   Menus				|openbrowser-menus|
   Commands			|openbrowser-commands|
   Functions			|openbrowser-functions|
+  Vital Modules			|openbrowser-vital-modules|
 Available Syntax in Options		|openbrowser-option-syntax|
 FAQ					|openbrowser-faq|
 Changelog			|openbrowser-changelog|
@@ -401,7 +390,7 @@ COMMANDS					*openbrowser-commands* {{{
 <	This opens http://search.yahoo.com/search?p=word as default.
 	You can change this URI with |g:openbrowser_search_engines|.
 
-:OpenBrowserSmartSearch {uri-or-query}	*:OpenBrowserSmartSearch*
+:OpenBrowserSmartSearch [-{search-engine}] {uri-or-query}	*:OpenBrowserSmartSearch*
 	This is wrapper for two above Ex commands.
 	If {uri-or-query} _seems_ like URI, open the URI.
 	If {uri-or-query} _seems_ like query, search the query.
@@ -436,6 +425,112 @@ openbrowser#smart_search({query} [, {search-engine}])			*openbrowser#smart_searc
 	Function version of |:OpenBrowserSmartSearch|.
 	If {search-engine} is omitted,
 	|g:openbrowser_default_search| is used instead.
+
+}}}
+------------------------------------------------------------------------------
+VITAL MODULES						*openbrowser-vital-modules* {{{
+
+open-browser.vim is now implemented in vital modules.
+Each module are freely, and easily usable as library.
+https://github.com/vim-jp/vital.vim/
+vim-jp is embeddable library and mechanism.
+It is `node_modules` directory for Node.js, vendor directory for Go.
+And set of functional modules, as listed in README.md in above repository.
+
+OpenBrowser				*OpenBrowser-module*
+	Methods for Ex commands, mappings.
+
+	new({config}) (return: |OpenBrowser-object|)				*OpenBrowser.new-module*
+	See |OpenBrowser.Config-object| for {config}.
+	open-browser plugin is initialized like this:
+>
+	  let s:OpenBrowser = s:V.import('OpenBrowser').new(
+	  \ s:V.import('OpenBrowser.Config').new_user_var_source('openbrowser_')
+	  \)
+<
+	*OpenBrowser-object* is a Dictionary which have:
+
+							*OpenBrowser-object.open()*
+	OpenBrowser.open({uri})
+		{uri} is a String of URI ("http://example.com/").
+		It opens a browser for URI.
+
+							*OpenBrowser-object.search()*
+	OpenBrowser.search({query} [, {search_engine}])
+		Opens a search page of search engine.
+		If {search_engine} was not given, default search engine
+		(|g:openbrowser_search_engines|) is used.
+
+							*OpenBrowser-object.smart_search()*
+	OpenBrowser.smart_search({query} [, {search_engine}])
+		If {query} is a URI, it opens a browser for URI.
+		Otherwise, it opens a search page of search engine.
+		If {search_engine} was not given, default search engine
+		(|g:openbrowser_search_engines|) is used.
+
+OpenBrowser.UriExtractor			*OpenBrowser.UriExtractor-module*
+
+							*OpenBrowser.extract_from_text()*
+	extract_from_text({text} [, {options}]) (return: List of URI)
+		Extracts URIs from given {text}.
+		{options} is Dictionary like this (all properties are optional):
+			"uri_pattern_set" (Default: Web.URI.new_default_pattern_set())
+				|Vital.Web.URI-PatternSet| object.
+			"head_pattern" (Default: 'https\?\|file\|' . uri_pattern_set.host())
+				The start of URI regexp pattern.
+
+OpenBrowser.Opener					*OpenBrowser.Opener-module*
+
+							*OpenBrowser.Opener.new_from_shellcmd()*
+	new_from_shellcmd({uri}) (return: |OpenBrowser.Opener-object|)
+		Returns opener which opens {uri} by a command in PATH.
+
+							*OpenBrowser.Opener.new_from_excmd()*
+	new_from_excmd({excmd}) (return: |OpenBrowser.Opener-object|)
+		Returns opener which executes Vim Ex command {excmd}.
+
+	*OpenBrowser.Opener-object* is a Dictionary which have:
+
+							*OpenBrowser.Opener-object.type*
+	Opener.type
+		If this opener is opened by |OpenBrowser.Opener.new_from_shellcmd()|,
+		it is "shellcmd".
+		If this opener is opened by |OpenBrowser.Opener.new_from_excmd()|,
+		it is "excmd".
+
+							*OpenBrowser.Opener-object.open()*
+	Opener.open() (return: Bool)
+		See the following constructors for what this method does:
+		* |OpenBrowser.Opener.new_from_shellcmd()|
+		* |OpenBrowser.Opener.new_from_excmd()|
+		If it succeeded, returns non-zero. Otherwise zero.
+
+OpenBrowser.Config			*OpenBrowser.Config-module*
+
+							*OpenBrowser.Config.new_user_var_source()*
+	new_user_var_source({prefix}) (return: |OpenBrowser.Config-object|)
+		{prefix} is a String: prefix of variable name.
+		`config.get(key)` tries to get value from scopes in the following order:
+		* `b:[prefix . key]`
+		* `w:[prefix . key]`
+		* `t:[prefix . key]`
+		* `g:[prefix . key]`
+		If the defined variable is found, return it.
+		If all scopes does not have the variable, |:throw| an exception.
+
+							*OpenBrowser.Config.new_default_source()*
+	new_default_source() (return: |OpenBrowser.Config-object|)
+		All values are constants: default values of open-browser global variables.
+		Other plugins can use this as a library to open a browser because this
+		config is not unaffected by global variable.
+
+	*OpenBrowser.Config-object* is a Dictionary which have:
+
+							*OpenBrowser.Config-object.get()*
+	Config.get({key})
+		See:
+		* |OpenBrowser.Config.new_user_var_source()|
+		* |OpenBrowser.Config.new_default_source()|
 
 }}}
 }}}
@@ -473,12 +568,12 @@ open-browser.vim only recognizes these strings:
 
 If query is "var_dump".
 
-	"http://php.net/{query}" => "http://php.net/var_dump"
+	`http://php.net/{query}` => `http://php.net/var_dump`
 
 If you would like "{" to stop the behavior,
 you can prepend escape character to "{".
 
-	"http://php.net/\{query}" => "http://php.net/{query}"
+	`http://php.net/\{query}` => `http://php.net/{query}`
 
 See |g:openbrowser_open_rules| and |g:openbrowser_search_engines|
 for available variables.
@@ -621,7 +716,7 @@ Great thanks for the peoples. (alphabetical order)
 * stardiviner (@stardiviner)
 * toooooooby (@toooooooby)
 
-More people listed in:
+And more people listed in:
 https://github.com/tyru/open-browser.vim/graphs/contributors
 
 }}}
