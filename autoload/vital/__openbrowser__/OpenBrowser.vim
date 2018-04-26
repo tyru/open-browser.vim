@@ -30,6 +30,8 @@ function! s:_vital_loaded(V) abort
 
   let s:Opener = a:V.import('OpenBrowser.Opener')
   let s:URIExtractor = a:V.import('OpenBrowser.URIExtractor')
+
+  let s:vimproc_is_installed = globpath(&rtp, 'autoload/vimproc.vim') isnot# ''
 endfunction
 
 let s:NONE = []
@@ -222,7 +224,7 @@ endfunction
 " s:O.none().
 function! s:_get_shellcmd_opener_builder(uri, config) abort
   let [uri, config] = [a:uri, a:config]
-  let use_vimproc = config.get('use_vimproc')
+  let use_vimproc = config.get('use_vimproc') && s:vimproc_is_installed
   for cmd in config.get('browser_commands')
     let execmd = get(cmd, 'cmd', cmd.name)
     if executable(execmd)

@@ -13,8 +13,6 @@ endfunction
 function! s:_vital_loaded(V) abort
   let s:Process = a:V.import('Process')
   let s:Msg = a:V.import('Vim.Message')
-
-  let s:vimproc_is_installed = globpath(&rtp, 'autoload/vimproc.vim') isnot# ''
 endfunction
 
 
@@ -29,7 +27,7 @@ function! s:new_from_shellcmd(system_args, background, use_vimproc) abort
   return {
   \ 'system_args': a:system_args,
   \ 'background': a:background,
-  \ 'use_vimproc': s:vimproc_is_installed && a:use_vimproc,
+  \ 'use_vimproc': a:use_vimproc,
   \ 'open': function('s:_ShellCmdOpener_open'),
   \}
 endfunction
