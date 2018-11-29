@@ -106,6 +106,10 @@ v <Plug>(openbrowser-smart-search)
 ------------------------------------------------------------------------------
 VARIABLES					*openbrowser-variables* {{{
 
+All variables can be specified by buffer-local (`b:`), window-local (`w:`),
+tabpage-local (`t:`), global (`g:`) scopes in that order. See
+|openbrowser-faq-3| for example.
+
 g:openbrowser_browser_commands		*g:openbrowser_browser_commands*
 								(default: Platform dependent)
 	Default value is platform dependant.
@@ -588,13 +592,25 @@ See :help |quickrun-syntax-option| for details.
 ==============================================================================
 FAQ							*openbrowser-faq* {{{
 
+							*openbrowser-faq-1*
 Q. How to open a current file in browser?
 A. Define the following command.
 >
 	command! OpenBrowserCurrent execute "OpenBrowser" "file:///" . expand('%:p:gs?\\?/?')
-
-Q. How do I add to default search engines?
+<
+							*openbrowser-faq-2*
+Q. How do I add a search engine?
 A. See |g:openbrowser_search_engines|.
+
+							*openbrowser-faq-3*
+Q. How do I specify the default search engine only in current buffer?
+   I want to open http://php.net/<word> only in php source code.
+A. You can define buffer-local |openbrowser_search_engines| variable. >
+
+	autocmd FileType php let b:openbrowser_default_search = 'php'
+<
+  All variables can be specified by buffer-local (`b:`), window-local (`w:`),
+  tabpage-local (`t:`), global (`g:`) scopes in that order.
 
 }}}
 ==============================================================================
