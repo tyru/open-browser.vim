@@ -27,6 +27,9 @@ function! s:_vital_loaded(V) abort
 
   let s:is_cygwin = has('win32unix')
   let s:is_mswin = has('win16') || has('win32') || has('win64')
+  let s:use_wslpath = has('unix') && filereadable('/proc/version_signature')
+  \ && get(readfile('/proc/version_signature', 'b', 1), 0, '') =~# '^Microsoft'
+  \ && executable('wslpath')
 
   let s:Opener = a:V.import('OpenBrowser.Opener')
   let s:URIExtractor = a:V.import('OpenBrowser.URIExtractor')
@@ -146,6 +149,11 @@ function! s:_get_opener_builder(uristr, config) abort
       return s:O.some(builder)
     else
       let fullpath = tr(fullpath, '\', '/')
+      " Windows Subsystem for Linux: Convert Unix path to Windows UNC path
+      if s:use_wslpath
+        let fullpath = substitute(
+        \ system('wslpath -am ' . shellescape(fullpath)), '\n', '', '')
+      endif
       " Convert to file:// string.
       " NOTE: cygwin cannot treat file:// URI,
       " pass a string as fullpath.
