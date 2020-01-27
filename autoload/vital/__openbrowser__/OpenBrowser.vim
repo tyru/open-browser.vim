@@ -312,7 +312,7 @@ function! s:_OpenBrowser_cmd_search(cmdline) abort dict
     call s:Msg.error(':OpenBrowserSearch [-{search-engine}] {query}')
     return
   endif
-  return self.search(c, s:O.get_or(engine, ''))
+  return self.search(c, s:O.get_or(engine, { -> '' }))
 endfunction
 
 " Parse command-line arguments of:
@@ -366,7 +366,7 @@ function! s:_OpenBrowser_cmd_smart_search(cmdline) abort dict
     call s:Msg.error(':OpenBrowserSmartSearch [-{search-engine}] {query}')
     return
   endif
-  return self.smart_search(c, s:O.get_or(engine, ''))
+  return self.smart_search(c, s:O.get_or(engine, { -> '' }))
 endfunction
 
 " <Plug>(openbrowser-open)
@@ -560,7 +560,7 @@ endfunction
 " :help openbrowser-url-detection
 function! s:_get_url_on_cursor(config) abort
   let url = s:_get_thing_on_cursor('s:_detect_url_cb', [a:config])
-  return s:O.get_or(url, '')
+  return s:O.get_or(url, { -> '' })
 endfunction
 
 function! s:_detect_url_cb(config) abort
@@ -575,7 +575,7 @@ endfunction
 " :help openbrowser-filepath-detection
 function! s:_get_filepath_on_cursor() abort
   let filepath = s:_get_thing_on_cursor('s:_detect_filepath_cb', [])
-  return s:O.get_or(filepath, '')
+  return s:O.get_or(filepath, { -> '' })
 endfunction
 
 function! s:_detect_filepath_cb() abort
