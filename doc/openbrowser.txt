@@ -249,6 +249,7 @@ g:openbrowser_search_engines		*g:openbrowser_search_engines*
 		\       'devdocs': 'http://devdocs.io/#q={query}',
 		\       'duckduckgo': 'http://duckduckgo.com/?q={query}',
 		\       'github': 'http://github.com/search?q={query}',
+		\       'go': 'https://pkg.go.dev/search?q={query}'
 		\       'google': 'http://google.com/search?q={query}',
 		\       'google-code': 'http://code.google.com/intl/en/query/#q={query}',
 		\       'php': 'http://php.net/{query}',
