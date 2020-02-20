@@ -202,6 +202,7 @@ function! s:default_values() abort
   \   'cpan': 'http://search.cpan.org/search?query={query}',
   \   'devdocs': 'https://devdocs.io/#q={query}',
   \   'duckduckgo': 'https://duckduckgo.com/?q={query}',
+  \   'go': 'https://pkg.go.dev/search?q={query}',
   \   'fileformat': 'https://www.fileformat.info/info/unicode/char/{query}/',
   \   'github': 'https://github.com/search?q={query}',
   \   'google': 'https://google.com/search?q={query}',
