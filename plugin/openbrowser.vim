@@ -8,17 +8,7 @@ if exists('g:loaded_openbrowser') && g:loaded_openbrowser
 endif
 let g:loaded_openbrowser = 1
 
-
-let s:is_unix = has('unix')
-let s:is_mswin = has('win16') || has('win32') || has('win64')
-let s:is_cygwin = has('win32unix')
-let s:is_macunix = !s:is_mswin && !s:is_cygwin && (has('mac') || has('macunix') || has('gui_macvim') || (!executable('xdg-open') && system('uname') =~? '^darwin'))
-lockvar s:is_unix
-lockvar s:is_mswin
-lockvar s:is_cygwin
-lockvar s:is_macunix
-
-if !(s:is_unix || s:is_mswin || s:is_cygwin || s:is_macunix)
+if !(has('unix') || has('win32'))
   echohl WarningMsg
   echomsg 'Your platform is not supported!'
   echohl None
