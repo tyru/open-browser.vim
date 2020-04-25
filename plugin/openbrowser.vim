@@ -47,8 +47,10 @@ command!
 
 
 " Key-mapping
-nnoremap <silent> <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymap_open('n')<CR>
-xnoremap <silent> <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymap_open('v')<CR>
+nnoremap <silent> <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymap_open('n', [])<CR>
+xnoremap <silent> <Plug>(openbrowser-open) :<C-u>call openbrowser#_keymap_open('v', [])<CR>
+nnoremap <silent> <Plug>(openbrowser-open-incognito) :<C-u>call openbrowser#_keymap_open('n', ['--incognito'])<CR>
+xnoremap <silent> <Plug>(openbrowser-open)-incognito :<C-u>call openbrowser#_keymap_open('v', ['--incognito'])<CR>
 nnoremap <silent> <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymap_search('n')<CR>
 xnoremap <silent> <Plug>(openbrowser-search) :<C-u>call openbrowser#_keymap_search('v')<CR>
 nnoremap <silent> <Plug>(openbrowser-smart-search) :<C-u>call openbrowser#_keymap_smart_search('n')<CR>
