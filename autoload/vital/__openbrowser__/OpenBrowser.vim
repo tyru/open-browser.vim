@@ -374,11 +374,12 @@ endfunction
 " <Plug>(openbrowser-open)
 function! s:_OpenBrowser_keymap_open(mode, ...) abort dict
   let silent = get(a:000, 0, self.config.get('message_verbosity') is# 0)
+  let options = get(a:000, 1, [])
   if a:mode is# 'n'
     " URL
     let url = s:_get_url_on_cursor(self.config)
     if !empty(url)
-      call self.open(url, a:000[0])
+      call self.open(url, options)
       return 1
     endif
     " FilePath
