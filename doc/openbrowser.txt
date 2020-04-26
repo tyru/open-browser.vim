@@ -90,7 +90,7 @@ v <Plug>(openbrowser-open)
 
 n <Plug>(openbrowser-open-incognito)	*<Plug>(openbrowser-open-incognito)*
 v <Plug>(openbrowser-open-incognito)
-	Same as |<Plug>(openbrowser-open)|, but with "--ingocnito" command
+	Same as |<Plug>(openbrowser-open)|, but with "--incognito" command
 	line option.
 
 n <Plug>(openbrowser-search)				*<Plug>(openbrowser-search)*
