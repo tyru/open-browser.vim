@@ -88,6 +88,13 @@ v <Plug>(openbrowser-open)
 	If openbrowser finds a URL(s) from selected text,
 	open the all URLs with |openbrowser#open()|.
 
+n <Plug>(openbrowser-open-incognito)	*<Plug>(openbrowser-open-incognito)*
+v <Plug>(openbrowser-open-incognito)
+	Same as |<Plug>(openbrowser-open)|, but with "--incognito" command
+	line option.
+
+	NOTE: This is an experimental mapping. It may be deleted in future.
+
 n <Plug>(openbrowser-search)				*<Plug>(openbrowser-search)*
 	Open current <cword> text with |:OpenBrowserSearch|.
 

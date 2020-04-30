@@ -58,8 +58,9 @@ function! s:new(config) abort
 endfunction
 
 " @param uri URI object or String
-function! s:_OpenBrowser_open(uri) abort dict
+function! s:_OpenBrowser_open(uri, ...) abort dict
   let uri = a:uri
+  let options = a:000[0]
   if type(uri) isnot# type('')
     call s:_throw('s:OpenBrowser.open() received non-String argument: uri = ' . string(uri))
   endif
@@ -92,6 +93,7 @@ function! s:_OpenBrowser_open(uri) abort dict
       endif
     endif
 
+    let b.cmd.args += options
     let opener = b.build()
     let failed = !opener.open()
 
@@ -372,11 +374,12 @@ endfunction
 " <Plug>(openbrowser-open)
 function! s:_OpenBrowser_keymap_open(mode, ...) abort dict
   let silent = get(a:000, 0, self.config.get('message_verbosity') is# 0)
+  let options = get(a:000, 1, [])
   if a:mode is# 'n'
     " URL
     let url = s:_get_url_on_cursor(self.config)
     if !empty(url)
-      call self.open(url)
+      call self.open(url, options)
       return 1
     endif
     " FilePath
