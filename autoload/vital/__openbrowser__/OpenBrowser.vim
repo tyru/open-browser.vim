@@ -60,7 +60,7 @@ endfunction
 " @param uri URI object or String
 function! s:_OpenBrowser_open(uri, ...) abort dict
   let uri = a:uri
-  let options = a:000[0]
+  let options = a:0 && type(a:1) ==# type([]) ? a:1 : []
   if type(uri) isnot# type('')
     call s:_throw('s:OpenBrowser.open() received non-String argument: uri = ' . string(uri))
   endif
