@@ -27,8 +27,8 @@ function! s:_vital_loaded(V) abort
 
   let s:is_cygwin = has('win32unix')
   let s:is_mswin = has('win16') || has('win32') || has('win64')
-  let s:use_wslpath = has('unix') && filereadable('/proc/version_signature')
-  \ && get(readfile('/proc/version_signature', 'b', 1), 0, '') =~# '^Microsoft'
+  let s:use_wslpath = has('unix') && filereadable('/proc/version')
+  \ && get(readfile('/proc/version', 'b', 1), 0, '') =~? 'microsoft'
   \ && executable('wslpath')
 
   let s:Opener = a:V.import('OpenBrowser.Opener')
