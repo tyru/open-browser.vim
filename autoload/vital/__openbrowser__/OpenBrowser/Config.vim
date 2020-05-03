@@ -49,9 +49,9 @@ function! s:_vital_loaded(V) abort
       \]
     endfunction
   elseif is_unix
-    function! s:_get_default_browser_commands() abort
-      if filereadable('/proc/version_signature') &&
-      \ get(readfile('/proc/version_signature', 'b', 1), 0, '') =~# '^Microsoft'
+    function! s:_get_default_browser_commands()
+      if filereadable('/proc/version') &&
+      \ get(readfile('/proc/version', 'b', 1), 0, '') =~? 'microsoft'
         " Windows Subsystem for Linux (recent version's directory name is 'WINDOWS')
         for rundll32 in [
         \ '/mnt/c/WINDOWS/System32/rundll32.exe',
