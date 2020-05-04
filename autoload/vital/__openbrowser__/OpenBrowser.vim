@@ -93,14 +93,13 @@ function! s:_OpenBrowser_open(uri, ...) abort dict
       endif
     endif
 
-    if type(b.cmd.args) == v:t_string
-      "String (Windows)
-      let b.cmd.args = join([b.cmd.args] + map(copy(options), 'shellescape(v:val)'), ' ')
-    else
-      "Array (Other platforms)
+    if type(b.cmd.args) is# type([])
       let b.cmd.args += options
+    else
+      if !empty(options)
+        let b.cmd.args .= ' ' . join(options, ' ')
+      endif
     endif
-
     let opener = b.build()
     let failed = !opener.open()
 
