@@ -60,7 +60,7 @@ function! s:_vital_loaded(V) abort
             return [
             \   {'name': 'rundll32',
             \    'cmd': rundll32,
-            \    'args': rundll32 . ' url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
+            \    'args': [rundll32, 'url.dll,FileProtocolHandler', '{use_vimproc ? uri : uri_noesc}']}
             \]
           endif
         endfor
