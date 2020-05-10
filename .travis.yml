@@ -4,7 +4,10 @@ install:
   - pip install vim-vint
 
 env:
-  - VIM_FILES="autoload/openbrowser.vim plugin/openbrowser.vim"
+  - VIM_VERSION=8.2.0000
+  - VIM_VERSION=8.1.0000
+  - VIM_VERSION=8.0.0000
+  - VIM_VERSION=7.4
 
 before_script:
   - git clone https://github.com/syngan/vim-vimlint /tmp/vim-vimlint
@@ -13,11 +16,24 @@ before_script:
   - git clone https://github.com/Shougo/vimproc.vim /tmp/vimproc
   - git clone https://github.com/kannokanno/vmock /tmp/vmock
   - (cd /tmp/vimproc && make)
+  - (if ! test -d $HOME/vim-$VIM_VERSION/bin; then
+       git clone https://github.com/vim/vim $HOME/vim &&
+       cd $HOME/vim &&
+       git checkout v$VIM_VERSION &&
+       ./configure --prefix=$HOME/vim-$VIM_VERSION &&
+       make &&
+       make install;
+     fi)
+
+cache:
+  directories:
+    - $HOME/vim-$VIM_VERSION
 
 script:
+  - export PATH=$HOME/vim-$VIM_VERSION/bin:$PATH
   - which -a vim
   - vim --cmd version --cmd quit
   - vim --cmd "try | helptags doc/ | catch | cquit | endtry" --cmd quit
-  - sh /tmp/vim-vimlint/bin/vimlint.sh -l /tmp/vim-vimlint -p /tmp/vim-vimlparser $VIM_FILES
-  - vint $VIM_FILES
+  - sh /tmp/vim-vimlint/bin/vimlint.sh -l /tmp/vim-vimlint -p /tmp/vim-vimlparser autoload/openbrowser.vim plugin/openbrowser.vim
+  - vint autoload/openbrowser.vim plugin/openbrowser.vim
   - /tmp/vim-themis/bin/themis --runtimepath /tmp/vimproc --runtimepath /tmp/vmock --reporter dot
