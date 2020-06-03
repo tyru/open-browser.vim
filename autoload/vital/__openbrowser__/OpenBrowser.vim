@@ -100,6 +100,7 @@ function! s:_OpenBrowser_open(uri, ...) abort dict
         let b.cmd.args .= ' ' . join(options, ' ')
       endif
     endif
+
     let opener = b.build()
     let failed = !opener.open()
 
