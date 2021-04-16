@@ -391,16 +391,19 @@ PopUp.Open URL or Word(s)	(modes: n, v)
 COMMANDS					*openbrowser-commands* {{{
 
 :OpenBrowser {uri}				*:OpenBrowser*
+:BrowserOpen {uri}				*:BrowserOpen*
 	Opens URI with your favorite browser.
 
 :OpenBrowserSearch [-{search-engine}] {query}		*:OpenBrowserSearch*
 	{query}: Query string
+:BrowserOpenSearch [-{search-engine}] {query}		*:BrowserOpenSearch*
 	{search-engine}: >
 		:OpenBrowserSearch -yahoo word
 <	This opens http://search.yahoo.com/search?p=word as default.
 	You can change this URI with |g:openbrowser_search_engines|.
 
 :OpenBrowserSmartSearch [-{search-engine}] {uri-or-query}	*:OpenBrowserSmartSearch*
+:BrowserOpenSmartSearch [-{search-engine}] {uri-or-query}	*:BrowserOpenSmartSearch*
 	This is wrapper for two above Ex commands.
 	If {uri-or-query} _seems_ like URI, open the URI.
 	If {uri-or-query} _seems_ like query, search the query.

@@ -31,18 +31,14 @@ endfunction
 
 
 " Ex command
-command!
-\   -nargs=+
-\   OpenBrowser
-\   call openbrowser#_cmd_open(<q-args>)
-command!
-\   -nargs=+ -complete=customlist,openbrowser#_cmd_search_complete
-\   OpenBrowserSearch
-\   call openbrowser#_cmd_search(<q-args>)
-command!
-\   -nargs=+ -complete=customlist,openbrowser#_cmd_search_complete
-\   OpenBrowserSmartSearch
-\   call openbrowser#_cmd_smart_search(<q-args>)
+command! -nargs=+                                                       OpenBrowser            call openbrowser#_cmd_open(<q-args>)
+command! -nargs=+                                                       BrowserOpen            call openbrowser#_cmd_open(<q-args>)
+
+command! -nargs=+ -complete=customlist,openbrowser#_cmd_search_complete OpenBrowserSearch      call openbrowser#_cmd_search(<q-args>)
+command! -nargs=+ -complete=customlist,openbrowser#_cmd_search_complete BrowserOpenSearch      call openbrowser#_cmd_search(<q-args>)
+
+command! -nargs=+ -complete=customlist,openbrowser#_cmd_search_complete OpenBrowserSmartSearch call openbrowser#_cmd_smart_search(<q-args>)
+command! -nargs=+ -complete=customlist,openbrowser#_cmd_search_complete BrowserOpenSmartSearch call openbrowser#_cmd_smart_search(<q-args>)
 
 
 
