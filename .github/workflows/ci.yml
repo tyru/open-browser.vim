@@ -16,6 +16,7 @@ jobs:
         with:
           github_token: ${{ secrets.github_token }}
           reporter: ${{ (github.event_name == 'pull_request' && 'github-pr-review') || 'github-check' }}
+          target: plugin autoload/openbrowser.vim autoload/vital/__openbrowser__
 
   unit-test:
     name: Unit tests
