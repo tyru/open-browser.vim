@@ -120,7 +120,7 @@ function! s:_OpenBrowser_open(uri, ...) abort dict
 
       " XXX: Vim looses a focus after opening URI...
       " Is this same as non-Windows platform?
-      if g:openbrowser_force_foreground_after_open && s:is_mswin
+      if self.config.get('force_foreground_after_open') && s:is_mswin
         augroup openbrowser-focuslost
           autocmd!
           autocmd FocusLost * call foreground() | autocmd! openbrowser FocusLost
