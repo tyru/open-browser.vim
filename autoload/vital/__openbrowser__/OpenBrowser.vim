@@ -57,6 +57,7 @@ function! s:new(config) abort
   \}
 endfunction
 
+" @vimlint(EVL104, 1, l:format_message)
 " @param uri URI object or String
 function! s:_OpenBrowser_open(uri, ...) abort dict
   let uri = a:uri
@@ -134,6 +135,7 @@ function! s:_OpenBrowser_open(uri, ...) abort dict
     endif
   endif
 endfunction
+" @vimlint(EVL104, 0, l:format_message)
 
 " Returns s:O.some(builder) or s:O.none().
 " Builder is either Ex command opener or shell command opener.

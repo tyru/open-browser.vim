@@ -4,6 +4,7 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 
+" @vimlint(EVL103, 1, a:V)
 function! s:_vital_loaded(V) abort
   let is_unix = has('unix')
   let is_mswin = has('win16') || has('win32') || has('win64')
@@ -84,6 +85,7 @@ function! s:_vital_loaded(V) abort
     throw 'OpenBrowser.Config: not supported environment'
   endif
 endfunction
+" @vimlint(EVL103, 0, a:V)
 
 function! s:new_user_var_source(prefix) abort
   if !exists('s:_initialized')
