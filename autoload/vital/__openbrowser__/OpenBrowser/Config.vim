@@ -17,7 +17,7 @@ function! s:_vital_loaded(V) abort
   if is_cygwin
     if executable('cygstart')
       " Cygwin
-      function! s:_get_default_browser_commands()
+      function! s:_get_default_browser_commands() abort
         return [
         \   {'name': 'cygstart',
         \    'args': ['{browser}', '{uri}']}
@@ -25,7 +25,7 @@ function! s:_vital_loaded(V) abort
       endfunction
     else
       " MSYS, MSYS2, ...
-      function! s:_get_default_browser_commands()
+      function! s:_get_default_browser_commands() abort
         return [
         \   {'name': 'rundll32',
         \    'args': 'rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
@@ -33,7 +33,7 @@ function! s:_vital_loaded(V) abort
       endfunction
     endif
   elseif is_macunix
-    function! s:_get_default_browser_commands()
+    function! s:_get_default_browser_commands() abort
       return [
       \   {'name': 'open',
       \    'args': ['{browser}', '{uri}'],
@@ -41,14 +41,14 @@ function! s:_vital_loaded(V) abort
       \]
     endfunction
   elseif is_mswin
-    function! s:_get_default_browser_commands()
+    function! s:_get_default_browser_commands() abort
       return [
       \   {'name': 'rundll32',
       \    'args': 'rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
       \]
     endfunction
   elseif is_unix
-    function! s:_get_default_browser_commands()
+    function! s:_get_default_browser_commands() abort
       if filereadable('/proc/version_signature') &&
       \ get(readfile('/proc/version_signature', 'b', 1), 0, '') =~# '^Microsoft'
         " Windows Subsystem for Linux (recent version's directory name is 'WINDOWS')
@@ -133,7 +133,7 @@ function! s:_init_global_vars(prefix) abort
 
   " ======= Some special treatments for backward compatibility =======
 
-  function! s:_valid_commands_and_rules()
+  function! s:_valid_commands_and_rules() abort
     let open_commands = g:openbrowser_open_commands
     let open_rules    = g:openbrowser_open_rules
     if type(open_commands) isnot type([])
@@ -154,7 +154,7 @@ function! s:_init_global_vars(prefix) abort
     if exists('g:openbrowser_open_commands')
     \   && exists('g:openbrowser_open_rules')
     \   && s:_valid_commands_and_rules()
-      function! s:_convert_commands_and_rules()
+      function! s:_convert_commands_and_rules() abort
         let open_commands = g:openbrowser_open_commands
         let open_rules    = g:openbrowser_open_rules
         let browser_commands = []
