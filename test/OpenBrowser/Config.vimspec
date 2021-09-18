@@ -1,0 +1,87 @@
+scriptencoding utf-8
+
+let s:V = vital#openbrowser#new()
+
+Describe OpenBrowser.Config
+  Before all
+    let Config = s:V.import('OpenBrowser.Config')
+  End
+
+  Describe .new_user_var_source()
+    It returns OpenBrowser.Config-object
+      let obj = Config.new_user_var_source('foo_')
+      Assert IsDictionary(obj)
+      Assert IsFunction(obj.get)
+    End
+
+    Describe .get()
+      Before each
+        let obj = Config.new_user_var_source('foo_')
+        let b:foo_bar = 'buffer-qux'
+        let w:foo_bar = 'window-qux'
+        let t:foo_bar = 'tab-qux'
+        let g:foo_bar = 'global-qux'
+      End
+
+      After each
+        unlet! b:foo_bar
+        unlet! w:foo_bar
+        unlet! t:foo_bar
+        unlet! g:foo_bar
+      End
+
+      It throws error, if variable not exists
+        Throws obj.get('baz')
+      End
+
+      It returns buffer-variable first
+        let ret = obj.get('bar')
+        Assert Equals(ret, 'buffer-qux')
+      End
+
+      It returns window-variable second
+        unlet! b:foo_bar
+        let ret = obj.get('bar')
+        Assert Equals(ret, 'window-qux')
+      End
+
+      It returns tab-variable third
+        unlet! b:foo_bar
+        unlet! w:foo_bar
+        let ret = obj.get('bar')
+        Assert Equals(ret, 'tab-qux')
+      End
+
+      It returns global-variable fourth
+        unlet! b:foo_bar
+        unlet! w:foo_bar
+        unlet! t:foo_bar
+        let ret = obj.get('bar')
+        Assert Equals(ret, 'global-qux')
+      End
+    End
+  End
+
+  Describe .new_default_source()
+    It returns OpenBrowser.Config-object
+      let obj = Config.new_default_source()
+      Assert IsDictionary(obj)
+      Assert IsFunction(obj.get)
+    End
+
+    Describe .get()
+      Before each
+        let obj = Config.new_default_source()
+      End
+
+      It throws error, if key not exists
+        Throws obj.get('baz')
+      End
+
+      It returns default parameter
+        let ret = obj.get('open_vim_command')
+        Assert Equals(ret, 'vsplit')
+      End
+    End
+  End
+End

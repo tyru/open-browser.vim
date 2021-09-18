@@ -1,0 +1,43 @@
+scriptencoding utf-8
+
+let s:V = vital#openbrowser#new()
+
+Describe OpenBrowser.URIExtractor
+  Before all
+    let URIExtractor = s:V.import('OpenBrowser.URIExtractor')
+  End
+
+  Describe .extract_from_text()
+    It returns empty list, if no URLs are found
+      let text = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit,'
+      \ .' sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+      \ .' $://this.is/not/a/url'
+      \ .' Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris'
+      \ .' nisi ut aliquip ex ea commodo consequat.'
+      let ret = URIExtractor.extract_from_text(text)
+      let want = []
+      Assert Equals(ret, want)
+    End
+
+    It returns list of URLs
+      let text = 'http://www.example.net/foo/bar'
+      \ .' Lorem ipsum dolor sit amet, consectetur adipisicing elit,'
+      \ .' sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+      \ .' https://localhost'
+      \ .' Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris'
+      \ .' nisi ut aliquip ex ea commodo consequat.'
+      \ .' file:///tmp/baz/qux-quux'
+      let ret = URIExtractor.extract_from_text(text)
+      let ret_to_string = map(copy(ret),
+            \ 'extend({''url'': v:val.url.to_string()}, v:val, ''keep'')')
+      let want = [
+      \ {'url': 'http://www.example.net/foo/bar', 'startidx': 0, 'endidx': 30},
+      \ {'url': 'https://localhost', 'startidx': 155, 'endidx': 173},
+      \ {'url': 'file:///tmp/baz/qux-quux', 'startidx': 281, 'endidx': 306},
+      \]
+      Assert Equals(ret_to_string, want)
+    End
+
+    " TODO: add tests for optional parameters for .extract_from_text()
+  End
+End

@@ -1,0 +1,99 @@
+scriptencoding utf-8
+
+let s:V = vital#openbrowser#new()
+let s:Process = s:V.import('Process')
+let s:vimproc_is_installed = globpath(&rtp, 'autoload/vimproc.vim') isnot# ''
+
+Describe OpenBrowser.Opener
+  Before all
+    let Opener = s:V.import('OpenBrowser.Opener')
+  End
+
+  Describe .new_from_excmd()
+    It returns OpenBrowser.Opener-object
+      let obj = Opener.new_from_excmd('call OpenerExCmd()')
+      Assert IsDictionary(obj)
+      " TODO: Assert Equals(obj.type, 'excmd')
+      Assert IsFunction(obj.open)
+    End
+
+    Describe .open()
+      Before each
+        let obj = Opener.new_from_excmd('call OpenerExCmd()')
+      End
+
+      After each
+        unlet! g:OpenerExCmd_called
+        silent! delfunction OpenerExCmd
+      End
+
+      It returns 1, if succeeded
+        function! OpenerExCmd() abort
+          let g:OpenerExCmd_called = v:true
+        endfunction
+        let ret = obj.open()
+        Assert Equals(ret, 1)
+        Assert Exists('g:OpenerExCmd_called', 'excmd must be executed')
+      End
+
+      It returns 0, if failed
+        function! OpenerExCmd() abort
+          let g:OpenerExCmd_called = v:true
+          throw 'Failed FOOBAR'
+        endfunction
+        let ret = obj.open()
+        Assert Equals(ret, 0)
+        Assert Exists('g:OpenerExCmd_called', 'excmd must be executed')
+      End
+    End
+  End
+
+  Describe .new_from_shellcmd()
+    It returns OpenBrowser.Opener-object
+      " TODO: to match args with document
+      let obj = Opener.new_from_shellcmd('touch foobar', 1, 1)
+      Assert IsDictionary(obj)
+      " TODO: Assert Equals(obj.type, 'shellcmd')
+      Assert IsFunction(obj.open)
+    End
+
+    Describe .open()
+      Before each
+        let tempfile = tempname()
+      End
+
+      After each
+        call delete(tempfile)
+      End
+
+      It returns 0, if args is invalid type
+        let obj = Opener.new_from_shellcmd({}, 1, 0)
+        let ret = obj.open()
+        Assert Equals(ret, 0)
+      End
+
+      It with (use_vimproc=0) returns 1, if succeeded
+        let args = ['sh', '-c', 'echo foo > "$1"', '--', tempfile]
+        let obj = Opener.new_from_shellcmd(args, 1, 0)
+        let ret = obj.open()
+        Assert Equals(ret, 1)
+        sleep 100m
+        let command_executed = filereadable(tempfile)
+        Assert True(command_executed)
+      End
+
+      It with (use_vimproc=1) returns 1, if succeeded
+        if !s:vimproc_is_installed
+          Skip 'vimproc is not installed'
+        endif
+        let args = ['sh', '-c', 'echo foo > "$1"', '--', tempfile]
+        let obj = Opener.new_from_shellcmd(args, 1, 1)
+        let ret = obj.open()
+        Assert Equals(ret, 1)
+        sleep 100m
+        let command_executed = filereadable(tempfile)
+        Assert True(command_executed)
+      End
+    End
+  End
+End
