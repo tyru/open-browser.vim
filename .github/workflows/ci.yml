@@ -1,0 +1,95 @@
+name: CI
+
+on: [push, pull_request]
+
+env:
+  WORKTEMP: .tmp
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: vimlint
+        uses: tsuyoshicho/action-vimlint@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: ${{ (github.event_name == 'pull_request' && 'github-pr-review') || 'github-check' }}
+
+  unit-test:
+    name: Unit tests
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        vim_version: [nightly]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup vim
+        id: vim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          version: ${{ matrix.vim_version }}
+      - uses: actions/checkout@v2
+        with:
+          repository: thinca/vim-themis
+          path: ${{ env.WORKTEMP }}/vim-themis
+      - uses: actions/checkout@v2
+        with:
+          repository: kannokanno/vmock
+          path: ${{ env.WORKTEMP }}/vmock
+      - uses: actions/checkout@v2
+        with:
+          repository: Shougo/vimproc.vim
+          path: ${{ env.WORKTEMP }}/vimproc
+      - name: Make vimproc
+        run: |
+          cd "$WORKTEMP/vimproc" && make
+      - name: Run tests
+        shell: bash
+        run: |
+          "$THEMIS_VIM" --version
+          "$THEMIS_VIM" --cmd "try | helptags doc/ | catch | cquit | endtry" --cmd quit
+          "$WORKTEMP/vim-themis/bin/themis" -r --runtimepath "$WORKTEMP/vimproc" --runtimepath "$WORKTEMP/vmock" --reporter dot
+        env:
+          THEMIS_VIM: ${{ steps.vim.outputs.executable }}
+
+  unit-test-windows:
+    name: Unit tests
+    strategy:
+      matrix:
+        os: [windows-latest]
+        vim_version: [nightly]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup vim
+        id: vim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          version: ${{ matrix.vim_version }}
+      - uses: actions/checkout@v2
+        with:
+          repository: thinca/vim-themis
+          path: ${{ env.WORKTEMP }}/vim-themis
+      - uses: actions/checkout@v2
+        with:
+          repository: kannokanno/vmock
+          path: ${{ env.WORKTEMP }}/vmock
+      - uses: actions/checkout@v2
+        with:
+          repository: Shougo/vimproc.vim
+          path: ${{ env.WORKTEMP }}/vimproc
+      - name: Download vimproc DLL
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -URI https://github.com/Shougo/vimproc.vim/releases/download/ver.9.3/vimproc_win64.dll -OutFile "$Env:WORKTEMP\vimproc\lib\vimproc_win64.dll"
+      - name: Run tests
+        shell: pwsh
+        run: |
+          & $Env:THEMIS_VIM --version
+          & $Env:THEMIS_VIM --cmd "try | helptags doc/ | catch | cquit | endtry" --cmd quit
+          & $Env:WORKTEMP/vim-themis/bin/themis.bat -r --runtimepath "$Env:WORKTEMP/vimproc" --runtimepath "$Env:WORKTEMP/vmock" --reporter dot
+        env:
+          THEMIS_VIM: ${{ steps.vim.outputs.executable }}

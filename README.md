@@ -2,7 +2,7 @@
 
 | Service        | Status           |
 | ------------- |:-------------:|
-
+| GitHub Actions | [![CI](../../actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml) |
 
 # open-browser.vim
 
