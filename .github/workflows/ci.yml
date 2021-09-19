@@ -23,7 +23,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        vim_version: [nightly]
+        vim_version: [nightly, v8.0.0000, v8.2.0000]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -61,7 +61,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        vim_version: [nightly]
+        vim_version: [nightly, v8.0.0003, v8.2.0008]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
