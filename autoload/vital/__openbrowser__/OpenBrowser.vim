@@ -57,6 +57,7 @@ function! s:new(config) abort
   \}
 endfunction
 
+" @vimlint(EVL104, 1, l:format_message)
 " @param uri URI object or String
 function! s:_OpenBrowser_open(uri, ...) abort dict
   let uri = a:uri
@@ -119,7 +120,7 @@ function! s:_OpenBrowser_open(uri, ...) abort dict
 
       " XXX: Vim looses a focus after opening URI...
       " Is this same as non-Windows platform?
-      if g:openbrowser_force_foreground_after_open && s:is_mswin
+      if self.config.get('force_foreground_after_open') && s:is_mswin
         augroup openbrowser-focuslost
           autocmd!
           autocmd FocusLost * call foreground() | autocmd! openbrowser FocusLost
@@ -134,6 +135,7 @@ function! s:_OpenBrowser_open(uri, ...) abort dict
     endif
   endif
 endfunction
+" @vimlint(EVL104, 0, l:format_message)
 
 " Returns s:O.some(builder) or s:O.none().
 " Builder is either Ex command opener or shell command opener.

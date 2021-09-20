@@ -20,11 +20,11 @@ endif
 " - OpenBrowser()
 " - OpenBrowserSearch()
 
-function! OpenBrowser(...)
+function! OpenBrowser(...) abort
   return call('openbrowser#open', a:000)
 endfunction
 
-function! OpenBrowserSearch(...)
+function! OpenBrowserSearch(...) abort
   return call('openbrowser#search', a:000)
 endfunction
 
