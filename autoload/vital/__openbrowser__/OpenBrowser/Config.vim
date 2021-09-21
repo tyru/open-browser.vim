@@ -29,7 +29,7 @@ function! s:_vital_loaded(V) abort
       function! s:_get_default_browser_commands() abort
         return [
         \   {'name': 'rundll32',
-        \    'args': 'rundll32 url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
+        \    'args': ['rundll32', 'url.dll,FileProtocolHandler', '{uri}']}
         \]
       endfunction
     endif
@@ -61,7 +61,7 @@ function! s:_vital_loaded(V) abort
             return [
             \   {'name': 'rundll32',
             \    'cmd': rundll32,
-            \    'args': rundll32 . ' url.dll,FileProtocolHandler {use_vimproc ? uri : uri_noesc}'}
+            \    'args': [rundll32, 'url.dll,FileProtocolHandler', '{uri}']}
             \]
           endif
         endfor
