@@ -501,11 +501,8 @@ function! s:_seems_path(uri) abort
   " and, either
   " - file:// prefixed string and existed file path
   " - Existed file path
-  if stridx(a:uri, 'file://') is# 0
-    let path = substitute(a:uri, '^file://', '', '')
-  else
-    let path = a:uri
-  endif
+  let path = substitute(a:uri, '^file://', '', '')
+  let path = s:_convert_to_fullpath(path)
   return getftype(path) isnot# ''
 endfunction
 
