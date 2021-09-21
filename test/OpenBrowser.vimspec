@@ -129,7 +129,7 @@ Describe OpenBrowser-object
         let command_executed = filereadable(tempfile)
         Assert True(command_executed)
         let delivered_path = s:get_delivered_path(tempfile)
-        let want_path = s:get_want_path(targetfile)
+        let want_path = s:get_want_path(resolve(targetfile))
         Assert Equals(delivered_path, want_path)
       End
 
@@ -147,7 +147,7 @@ Describe OpenBrowser-object
         let command_executed = filereadable(tempfile)
         Assert True(command_executed)
         let delivered_path = s:get_delivered_path(tempfile)
-        let want_path = s:get_want_path(targetfile)
+        let want_path = s:get_want_path(resolve(targetfile))
         Assert Equals(delivered_path, want_path)
       End
     End
