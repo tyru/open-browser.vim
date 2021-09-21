@@ -53,18 +53,14 @@ function! s:_vital_loaded(V) abort
       if filereadable('/proc/version') &&
       \ get(readfile('/proc/version', 'b', 1), 0, '') =~? 'microsoft'
         " Windows Subsystem for Linux (recent version's directory name is 'WINDOWS')
-        for rundll32 in [
-        \ '/mnt/c/WINDOWS/System32/rundll32.exe',
-        \ '/mnt/c/Windows/System32/rundll32.exe',
-        \]
-          if executable(rundll32)
-            return [
-            \   {'name': 'rundll32',
-            \    'cmd': rundll32,
-            \    'args': [rundll32, 'url.dll,FileProtocolHandler', '{uri}']}
-            \]
-          endif
-        endfor
+        return map([
+        \   '/mnt/c/WINDOWS/System32/rundll32.exe',
+        \   '/mnt/c/Windows/System32/rundll32.exe',
+        \], {_, rundll32 ->
+        \   {'name': 'rundll32',
+        \    'cmd': rundll32,
+        \    'args': [rundll32, 'url.dll,FileProtocolHandler', '{uri}']}
+        \})
       endif
       return [
       \   {'name': 'xdg-open',
