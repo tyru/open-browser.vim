@@ -50,8 +50,11 @@ function! s:_vital_loaded(V) abort
     endfunction
   elseif is_unix
     function! s:_get_default_browser_commands()
-      if filereadable('/proc/version') &&
-      \ get(readfile('/proc/version', 'b', 1), 0, '') =~? 'microsoft'
+      if !exists('s:is_wsl')
+        let s:is_wsl = filereadable('/proc/version') &&
+        \ get(readfile('/proc/version', 'b', 1), 0, '') =~? 'microsoft'
+      endif
+      if s:is_wsl
         " Windows Subsystem for Linux (recent version's directory name is 'WINDOWS')
         return map([
         \   '/mnt/c/WINDOWS/System32/rundll32.exe',
