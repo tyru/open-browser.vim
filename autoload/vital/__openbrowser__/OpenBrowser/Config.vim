@@ -49,7 +49,7 @@ function! s:_vital_loaded(V) abort
       \]
     endfunction
   elseif is_unix
-    function! s:_get_default_browser_commands()
+    function! s:_get_default_browser_commands() abort
       if !exists('s:is_wsl')
         let s:is_wsl = filereadable('/proc/version') &&
         \ get(readfile('/proc/version', 'b', 1), 0, '') =~? 'microsoft'
