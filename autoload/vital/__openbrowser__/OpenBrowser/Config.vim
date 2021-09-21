@@ -56,6 +56,7 @@ function! s:_vital_loaded(V) abort
         return map([
         \   '/mnt/c/WINDOWS/System32/rundll32.exe',
         \   '/mnt/c/Windows/System32/rundll32.exe',
+        \   'rundll32.exe',
         \], {_, rundll32 ->
         \   {'name': 'rundll32',
         \    'cmd': rundll32,
