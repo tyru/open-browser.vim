@@ -66,27 +66,90 @@ Describe OpenBrowser-object
       Throws /\<42\>/ obj.open(42)
     End
 
-    It should call browser command, if specified url
-      call obj.open('http://example.net/foo/bar')
-      sleep 100m
-      let command_executed = filereadable(tempfile)
-      Assert True(command_executed)
-      let delivered_url = get(readfile(tempfile), 0)
-      Assert Equals(delivered_url, 'http://example.net/foo/bar')
+    Context with url
+      It should call browser command
+        call obj.open('http://example.net/foo/bar')
+        sleep 100m
+        let command_executed = filereadable(tempfile)
+        Assert True(command_executed)
+        let delivered_url = get(readfile(tempfile), 0)
+        Assert Equals(delivered_url, 'http://example.net/foo/bar')
+      End
     End
 
-    It should call browser command, if specified filepath
-      let targetfile = s:tempfile()
-      call writefile([], targetfile)
-      call obj.open(targetfile)
-      sleep 100m
-      let command_executed = filereadable(tempfile)
-      Assert True(command_executed)
-      let delivered_path = substitute(get(readfile(tempfile), 0), '\\', '/', 'g')
-      let delivered_path = substitute(delivered_path, '^file://', '', '')
-      let delivered_path = substitute(delivered_path, '^//wsl$/[^/]*', '', '')
-      let want_path = substitute(targetfile, '\\', '/', 'g')
-      Assert Equals(delivered_path, want_path)
+    Context with filepath
+      Before each
+        let targetfile = s:tempfile()
+        call writefile([], targetfile)
+        function! s:get_delivered_path(tempfile) abort
+          let path = get(readfile(a:tempfile), 0)
+          let path = substitute(path, '\\', '/', 'g')
+          let path = substitute(path, '^file://', '', '')
+          let path = substitute(path, '^//wsl$/[^/]*', '', '')
+          return path
+        endfunction
+        function! s:get_want_path(targetfile) abort
+          return substitute(a:targetfile, '\\', '/', 'g')
+        endfunction
+      End
+
+      It (file scheme url) should call browser command
+        let file_url = 'file://' . targetfile
+        call obj.open(file_url)
+        sleep 100m
+        let command_executed = filereadable(tempfile)
+        Assert True(command_executed)
+        let delivered_path = s:get_delivered_path(tempfile)
+        let want_path = s:get_want_path(targetfile)
+        Assert Equals(delivered_path, want_path)
+      End
+
+      It (absolute) should call browser command
+        call obj.open(targetfile)
+        sleep 100m
+        let command_executed = filereadable(tempfile)
+        Assert True(command_executed)
+        let delivered_path = s:get_delivered_path(tempfile)
+        let want_path = s:get_want_path(targetfile)
+        Assert Equals(delivered_path, want_path)
+      End
+
+      It (relative) should call browser command
+        let targetfile = s:tempfile()
+        let targetfile_tail = fnamemodify(targetfile, ':t')
+        call writefile([], targetfile)
+        let lcd_saved = getcwd()
+        try
+          execute 'lcd' fnameescape(fnamemodify(targetfile, ':h'))
+          call obj.open(targetfile_tail)
+        finally
+          execute 'lcd' fnameescape(lcd_saved)
+        endtry
+        sleep 100m
+        let command_executed = filereadable(tempfile)
+        Assert True(command_executed)
+        let delivered_path = s:get_delivered_path(tempfile)
+        let want_path = s:get_want_path(resolve(targetfile))
+        Assert Equals(delivered_path, want_path)
+      End
+
+      It (userhome relative) should call browser command
+        let targetfile = s:tempfile()
+        let targetfile_tail = fnamemodify(targetfile, ':t')
+        call writefile([], targetfile)
+        let [home_saved, $HOME] = [$HOME, fnamemodify(targetfile, ':h')]
+        try
+          call obj.open('~/' . targetfile_tail)
+        finally
+          let $HOME = home_saved
+        endtry
+        sleep 100m
+        let command_executed = filereadable(tempfile)
+        Assert True(command_executed)
+        let delivered_path = s:get_delivered_path(tempfile)
+        let want_path = s:get_want_path(resolve(targetfile))
+        Assert Equals(delivered_path, want_path)
+      End
     End
   End
 
