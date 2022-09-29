@@ -449,7 +449,6 @@ endfunction
 
 
 " Define more tolerant URI parsing.
-" TODO: Make this configurable.
 
 let s:LoosePatternSet = {}
 
@@ -468,13 +467,23 @@ function! s:_get_loose_pattern_set() abort
 endfunction
 
 function! s:_extract_urls(text, config) abort
-  let pattern_set = s:_get_loose_pattern_set()
-  let schemes = keys(a:config.get('fix_schemes'))
-  let head_pattern = s:_get_url_head_pattern(schemes, pattern_set)
-  let extracted = s:URIExtractor.extract_from_text(a:text, {
-  \ 'uri_pattern_set': pattern_set,
-  \ 'head_pattern': head_pattern,
-  \})
+  let allowed_schemes = a:config.get('allowed_schemes')
+  let schemes = copy(allowed_schemes) + keys(a:config.get('fix_schemes'))
+  if !empty(allowed_schemes)
+    let head_pattern = s:_get_url_scheme_pattern(schemes)
+    let options = {
+          \ 'head_pattern': head_pattern,
+          \}
+  else
+    " When allowed_schemes is empty, match any URI.
+    let pattern_set = s:_get_loose_pattern_set()
+    let head_pattern = s:_get_url_head_pattern(schemes, pattern_set)
+    let options = {
+          \ 'uri_pattern_set': pattern_set,
+          \ 'head_pattern': head_pattern,
+          \}
+  endif
+  let extracted = s:URIExtractor.extract_from_text(a:text, options)
   return map(extracted, "substitute(v:val.url.to_string(), '\\.$', '', '')")
 endfunction
 
@@ -486,9 +495,14 @@ endfunction
 " * URI hostname (for no scheme URI)
 function! s:_get_url_head_pattern(schemes, pattern_set) abort
   let schemes = ['https', 'http', 'file'] + a:schemes
-  let scheme_pattern = join(sort(copy(schemes), 's:_by_length'), '\|')
+  let scheme_pattern = s:_get_url_scheme_pattern(schemes)
   let head_pattern = scheme_pattern . '\|' . a:pattern_set.host()
   return head_pattern
+endfunction
+
+" Builds a pattern that matches any of the input words.
+function! s:_get_url_scheme_pattern(schemes) abort
+  return join(sort(copy(a:schemes), 's:_by_length'), '\|')
 endfunction
 
 function! s:_by_length(s1, s2) abort
