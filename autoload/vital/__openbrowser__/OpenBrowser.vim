@@ -486,7 +486,7 @@ endfunction
 " * URI hostname (for no scheme URI)
 function! s:_get_url_head_pattern(schemes, pattern_set) abort
   let schemes = ['https', 'http', 'file'] + a:schemes
-  let scheme_pattern = join(sort(copy(a:schemes), 's:_by_length'), '\|')
+  let scheme_pattern = join(sort(copy(schemes), 's:_by_length'), '\|')
   let head_pattern = scheme_pattern . '\|' . a:pattern_set.host()
   return head_pattern
 endfunction
