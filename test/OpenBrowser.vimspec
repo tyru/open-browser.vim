@@ -225,4 +225,53 @@ Describe OpenBrowser-object
       Assert Equals(delivered_url, 'https://example.net/QU+UX')
     End
   End
+
+  Describe .keymap_open()
+    Before each
+      new
+    End
+
+    After each
+      close!
+    End
+
+    It opens a URL under the cursor in normal mode
+      call setline(1, 'https://example.com')
+      let opened = obj.keymap_open('n')
+      Assert True(opened)
+      sleep 100m
+      let command_executed = filereadable(tempfile)
+      Assert True(command_executed)
+      let delivered_url = get(readfile(tempfile), 0)
+      Assert Equals(delivered_url, 'https://example.com')
+    End
+
+    It opens a URL under in selected text in visual mode
+      call setline(1, 'https://example.com')
+      " Enter visual mode and select line which contains the URL and leave
+      " from visual mode immediately. This is necessary since keymap_open()
+      " extracts URLs from the last selected text.
+      execute 'normal!' "V\<Esc>"
+      let opened = obj.keymap_open('v')
+      Assert True(opened)
+      sleep 100m
+      let command_executed = filereadable(tempfile)
+      Assert True(command_executed)
+      let delivered_url = get(readfile(tempfile), 0)
+      Assert Equals(delivered_url, 'https://example.com')
+    End
+
+    It trims trailing period in URL
+      call setline(1, 'Hello, https://example.com.')
+      " Go to 'h' at https://...
+      normal! fh
+      let opened = obj.keymap_open('n')
+      Assert True(opened)
+      sleep 100m
+      let command_executed = filereadable(tempfile)
+      Assert True(command_executed)
+      let delivered_url = get(readfile(tempfile), 0)
+      Assert Equals(delivered_url, 'https://example.com')
+    End
+  End
 End
