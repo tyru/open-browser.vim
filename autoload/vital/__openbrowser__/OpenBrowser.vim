@@ -475,7 +475,7 @@ function! s:_extract_urls(text, config) abort
   \ 'uri_pattern_set': pattern_set,
   \ 'head_pattern': head_pattern,
   \})
-  return map(extracted, {_, e -> trim(e.url.to_string(), '.', 2)})
+  return map(extracted, "trim(v:val.url.to_string(), '.', 2)")
 endfunction
 
 " This pattern matches:
