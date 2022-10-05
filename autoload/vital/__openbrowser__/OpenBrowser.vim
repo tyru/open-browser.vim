@@ -405,8 +405,8 @@ function! s:_OpenBrowser_keymap_open(mode, ...) abort dict
   else
     let text = s:_get_selected_text()
     let extracted = s:_extract_urls(text, self.config)
-    for e in extracted
-      call self.open(e.url.to_string())
+    for url in extracted
+      call self.open(url)
     endfor
     return !empty(extracted)
   endif
@@ -467,15 +467,15 @@ function! s:_get_loose_pattern_set() abort
   return s:LoosePatternSet
 endfunction
 
-
 function! s:_extract_urls(text, config) abort
   let pattern_set = s:_get_loose_pattern_set()
   let schemes = keys(a:config.get('fix_schemes'))
   let head_pattern = s:_get_url_head_pattern(schemes, pattern_set)
-  return s:URIExtractor.extract_from_text(a:text, {
+  let extracted = s:URIExtractor.extract_from_text(a:text, {
   \ 'uri_pattern_set': pattern_set,
   \ 'head_pattern': head_pattern,
   \})
+  return map(extracted, "substitute(v:val.url.to_string(), '\\.$', '', '')")
 endfunction
 
 " This pattern matches:
@@ -575,7 +575,7 @@ endfunction
 function! s:_detect_url_cb(config) abort
   let extracted = s:_extract_urls(expand('<cWORD>'), a:config)
   if !empty(extracted)
-    return s:O.some(extracted[0].url.to_string())
+    return s:O.some(extracted[0])
   endif
   return s:O.none()
 endfunction
