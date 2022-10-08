@@ -194,6 +194,7 @@ function! s:default_values() abort
   \   'ttp': 'http',
   \   'ttps': 'https',
   \ },
+  \ 'allowed_schemes': [],
   \ 'fix_hosts': {},
   \ 'fix_paths': {},
   \ 'default_search': 'google',

@@ -183,6 +183,24 @@ g:openbrowser_open_rules			*g:openbrowser_open_rules*
 	but these variable might be going to be removed for the next release)
 	Use |g:openbrowser_browser_commands| instead.
 
+g:openbrowser_allowed_schemes		*g:openbrowser_allowed_schemes*
+								(default: [])
+	If non empty, only the listed schemes and ones in
+	|g:openbrowser_fix_schemes| will be detected as URIs for opening with
+	|openbrowser-menu-smart-search|
+
+	If you execute |<Plug>(openbrowser-smart-search)| on code like: >
+		call s:SomeVimFunction()
+<	Or: >
+		function Type:SomeLuaFunction()
+<	OpenBrowser will open them as a URI.
+
+	If you set in your |ftplugin|/vim.vim and ftplugin/lua.vim: >
+		let b:openbrowser_allowed_schemes = [ 'http', 'https' ]
+<	Then only http:// and https:// links (and their short forms from
+	|g:openbrowser_fix_schemes|) will be opened as URIs for vim and lua files.
+	All others will be considered search queries.
+
 g:openbrowser_fix_schemes			*g:openbrowser_fix_schemes*
 								(default: {"ttp": "http"})
 	If this value is default,
