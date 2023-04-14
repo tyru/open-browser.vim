@@ -231,5 +231,6 @@ function! s:default_values() abort
   \}
 endfunction
 
-
 let &cpo = s:save_cpo
+unlet s:save_cpo
+
