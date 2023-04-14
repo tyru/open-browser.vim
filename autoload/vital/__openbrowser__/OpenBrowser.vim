@@ -785,5 +785,6 @@ function! s:_getconcealedcol(expr) abort
   return ret
 endfunction
 
-
 let &cpo = s:save_cpo
+unlet s:save_cpo
+

@@ -81,5 +81,6 @@ if !get(g:, 'openbrowser_no_default_menus', (&guioptions =~# 'M'))
   augroup END
 endif
 
-
 let &cpo = s:save_cpo
+unlet s:save_cpo
+

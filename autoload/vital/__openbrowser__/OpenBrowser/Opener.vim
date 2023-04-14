@@ -62,5 +62,6 @@ function! s:_ShellCmdOpener_open() abort dict
   endtry
 endfunction
 
-
 let &cpo = s:save_cpo
+unlet s:save_cpo
+
